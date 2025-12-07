@@ -1,0 +1,27 @@
+{
+  "name": "milpa_presenter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "dev": "tsx watch src/server.ts"
+  },
+  "dependencies": {
+    "fastify": "^5.6.0",
+    "@fastify/cors": "^11.1.0",
+    "@fastify/rate-limit": "^10.3.0",
+    "@fastify/sensible": "^6.0.0",
+    "got": "^14.4.8",
+    "sanitize-html": "^2.17.0",
+    "prom-client": "^15.1.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "tslib": "^2.6.3",
+    "@types/node": "^22.5.0",
+    "@types/sanitize-html": "^2.16.0",
+    "tsx": "^4.16.2"
+  }
+}

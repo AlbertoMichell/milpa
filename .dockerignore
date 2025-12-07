@@ -1,0 +1,24 @@
+# Excluir artefactos locales y temporales del build context
+**/__pycache__/
+**/.pytest_cache/
+**/.venv/
+**/.env
+**/.DS_Store
+**/*.pyc
+**/*.pyo
+
+# Directorios de datos pesados o temporales
+milpa_ai_backend/data/tmp/
+milpa_ai_backend/data/tmp/**
+milpa_ai_backend/data/vector_db/
+milpa_ai_backend/data/vector_db/**
+milpa_ai_backend/data/vector_db_test/
+milpa_ai_backend/data/vector_db_test/**
+
+# Node
+**/node_modules/
+**/dist/
+
+# Git
+.git
+.gitignore

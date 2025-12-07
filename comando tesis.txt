@@ -1,0 +1,38 @@
+Comando 5: Ejecutar fuzzing con Schemathesis (requiere AI backend activo)
+schemathesis run http://localhost:8000/openapi.json --checks all --max-examples=100 --hypothesis-deadline=5000
+
+Comando 6: Aplicar migrations con yoyo
+cd C:\milpa\milpa_ai_backend ; yoyo list --database sqlite:///data/main.db ; yoyo apply --database sqlite:///data/main.db
+
+Comando 7: Rollback de última migration
+cd C:\milpa\milpa_ai_backend ; yoyo rollback --database sqlite:///data/main.db -r 1
+
+Comando 8: Levantar stack completo con Prometheus y Grafana
+cd C:\milpa ; docker compose down ; docker compose up --build -d
+
+Comando 9: Verificar que Prometheus scrapes métricas
+curl http://localhost:9090/api/v1/targets | ConvertFrom-Json | Select-Object -ExpandProperty data | Select-Object -ExpandProperty activeTargets
+
+Comando 10: Acceder a Grafana (usuario: admin, password: milpa_grafana_2025)
+Start-Process "http://localhost:3000"
+
+Comando 11: Verificar métricas custom en Presenter
+curl http://localhost:8080/metrics | Select-String "milpa_rag_insufficient_evidence_rate|milpa_retrieval_recall_drop|milpa_top_crops_consulted"
+
+Comando 12: Verificar feature flags en BD
+cd C:\milpa\milpa_ai_backend ; sqlite3 data/main.db "SELECT flag_name, enabled, config_json FROM feature_flags;"
+
+Comando 13: Cambiar feature flag dinámicamente (ejemplo: habilitar v2 con 10% rollout)
+cd C:\milpa\milpa_ai_backend ; sqlite3 data/main.db "UPDATE feature_flags SET enabled=1, config_json='{\"rollout_percent\": 10}' WHERE flag_name='BLUE_GREEN_V2_ENABLED';"
+
+Comando 14: Verificar logs de OpenTelemetry (console exporter en desarrollo)
+docker logs milpa_ai | Select-String "SpanContext|trace_id|span_id"
+
+Comando 15: Ejecutar CI pipeline localmente con act (si tienes act instalado)
+cd C:\milpa ; act -j test-backend
+
+Comando 16: Verificar seccomp profile aplicado en contenedor
+docker inspect milpa_ai | Select-String "SecurityOpt"
+
+Comando 17: Verificar que contenedores ejecutan como non-root
+docker exec milpa_ai whoami ; docker exec milpa_presenter whoami ; docker exec clamav whoami

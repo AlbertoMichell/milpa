@@ -1,0 +1,77 @@
+# C:\milpa\milpa_ai_backend\Dockerfile
+# Imagen reproducible, no-root, con dependencias nativas para OCR y tablas,
+# Torch CPU y soporte para sentence-transformers.
+
+FROM python:3.11-slim AS base
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+# -------------------------------------------------------------------
+# SO deps:
+# - tini: init para manejar señales/zombies
+# - ca-certificates: TLS
+# - tesseract-ocr + tesseract-ocr-spa: OCR (español)
+# - poppler-utils: utilidades PDF (pdftotext, pdfimages, etc.)
+# - ghostscript + libgl1: soporte Camelot (lattice) / OpenCV
+# - libglib2.0-0, libsm6, libxext6, libxrender1: evitan errores de cv2/GLib
+# - build-essential: toolchain para compilar wheels cuando haga falta
+# -------------------------------------------------------------------
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tini ca-certificates \
+    tesseract-ocr tesseract-ocr-spa \
+    poppler-utils ghostscript libgl1 \
+    libglib2.0-0 libsm6 libxext6 libxrender1 \
+    build-essential \
+ && rm -rf /var/lib/apt/lists/*
+
+# Usuario no-root y directorio de trabajo
+RUN useradd -m -u 1000 appuser
+WORKDIR /app
+
+# -------------------------------------------------------------------
+# Dependencias Python
+# - Copiamos primero requirements para cachear capa de pip.
+# - Instalamos Torch CPU desde el índice oficial (fuera de requirements.txt).
+# - Luego instalamos el resto desde requirements.txt.
+# -------------------------------------------------------------------
+COPY milpa_ai_backend/requirements.txt /app/requirements.txt
+
+RUN python -m pip install --upgrade pip && \
+    python -m pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu \
+        "torch==2.3.*" && \
+    python -m pip install --no-cache-dir -r /app/requirements.txt && \
+    python -m spacy download es_core_news_sm
+
+# -------------------------------------------------------------------
+# Copiado del código
+# IMPORTANTE: usamos barras finales para "aplanar" el árbol bajo /app
+# de modo que existan /app/main.py, /app/api, /app/core, /app/models, etc.
+# -------------------------------------------------------------------
+COPY --chown=appuser:appuser milpa_ai_backend/ /app/
+
+# Instalar el paquete milpa_ai_backend para que las importaciones absolutas funcionen
+# El setup.py ya está copiado arriba junto con todo milpa_ai_backend/
+RUN python -m pip install --no-cache-dir -e /app
+
+# Variables por defecto (pueden sobreescribirse en docker-compose)
+# MODELS_DIR apunta ahora a /app/models (por el aplanado).
+ENV MODELS_DIR=/app/models \
+    CHROMA_DIR=/app/data/vector_db \
+    DATA_DIR=/app/data \
+    SQLITE_PATH=/app/data/milpa_knowledge.db \
+    BM25_INDEX_DIR=/app/data/bm25_idx \
+    PYTHONPATH=/app
+
+# Crear directorios de datos con permisos para appuser
+RUN mkdir -p /app/data && chown -R appuser:appuser /app
+
+# Runtime
+USER appuser
+EXPOSE 8000
+
+# Usamos tini como init y arrancamos uvicorn sobre milpa_ai_backend.main:app
+# Ejecutamos con python -m para garantizar imports correctos con el paquete instalado
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["python", "-m", "uvicorn", "milpa_ai_backend.main:app", "--host=0.0.0.0", "--port=8000", "--workers=2"]

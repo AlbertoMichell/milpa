@@ -1,0 +1,240 @@
+name: MILPA AI - CI Pipeline
+# Pipeline de integración continua: tests, linting, contract validation, fuzzing.
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # ────────────────────────────────────────────────────────────────
+  # JOB 1: Tests unitarios y de integración
+  # ────────────────────────────────────────────────────────────────
+  test-backend:
+    name: Backend Tests (Python)
+    runs-on: ubuntu-latest
+    
+    services:
+      # SQLite no necesita servicio externo, pero si usaras Postgres:
+      # postgres:
+      #   image: postgres:15-alpine
+      #   env:
+      #     POSTGRES_PASSWORD: test
+      #   options: >-
+      #     --health-cmd pg_isready
+      #     --health-interval 10s
+      
+      clamav:
+        image: clamav/clamav:latest
+        ports:
+          - 3310:3310
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        working-directory: ./milpa_ai_backend
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run pytest (unit + integration)
+        working-directory: ./milpa_ai_backend
+        run: |
+          pytest tests/ -v --tb=short --ignore=tests/test_schemathesis_fuzzing.py
+      
+      - name: Run contract tests
+        working-directory: ./milpa_ai_backend
+        run: |
+          pytest tests/test_contract_api.py -v
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-results
+          path: milpa_ai_backend/htmlcov/
+
+  # ────────────────────────────────────────────────────────────────
+  # JOB 2: Golden Answers - Quality Gate
+  # ────────────────────────────────────────────────────────────────
+  golden-answers:
+    name: RAG Quality Gate (Golden Answers)
+    runs-on: ubuntu-latest
+    needs: test-backend
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        working-directory: ./milpa_ai_backend
+        run: |
+          pip install -r requirements.txt
+      
+      - name: Start AI backend
+        working-directory: ./milpa_ai_backend
+        run: |
+          # Iniciar servidor en background para tests
+          uvicorn api.server:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+      
+      - name: Run golden answers tests
+        working-directory: ./milpa_ai_backend
+        run: |
+          pytest tests/test_golden_answers.py -v --tb=short
+        env:
+          # CRITICAL: Falla si faithfulness < 0.85 o citation_coverage < 0.95
+          FAIL_ON_LOW_QUALITY: "true"
+      
+      - name: Upload golden results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-answers-results
+          path: milpa_ai_backend/tests/golden_results.json
+
+  # ────────────────────────────────────────────────────────────────
+  # JOB 3: OpenAPI Fuzzing con Schemathesis
+  # ────────────────────────────────────────────────────────────────
+  fuzzing:
+    name: OpenAPI Fuzzing (Schemathesis)
+    runs-on: ubuntu-latest
+    needs: test-backend
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        working-directory: ./milpa_ai_backend
+        run: |
+          pip install -r requirements.txt
+      
+      - name: Start AI backend
+        working-directory: ./milpa_ai_backend
+        run: |
+          uvicorn api.server:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+      
+      - name: Run Schemathesis fuzzing
+        run: |
+          schemathesis run http://localhost:8000/openapi.json \
+            --checks all \
+            --max-examples=100 \
+            --hypothesis-deadline=5000 \
+            --hypothesis-seed=42 \
+            --show-errors-tracebacks
+      
+      - name: Run pytest-based fuzzing tests
+        working-directory: ./milpa_ai_backend
+        run: |
+          pytest tests/test_schemathesis_fuzzing.py -v
+
+  # ────────────────────────────────────────────────────────────────
+  # JOB 4: Linting y formato
+  # ────────────────────────────────────────────────────────────────
+  lint:
+    name: Linting (ruff + mypy)
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install linters
+        run: |
+          pip install ruff mypy
+      
+      - name: Run ruff
+        working-directory: ./milpa_ai_backend
+        run: |
+          ruff check . --select=E,F,W --ignore=E501
+      
+      - name: Run mypy (optional type checking)
+        working-directory: ./milpa_ai_backend
+        run: |
+          mypy api/ core/ --ignore-missing-imports || true
+
+  # ────────────────────────────────────────────────────────────────
+  # JOB 5: Tests del Presenter (TypeScript)
+  # ────────────────────────────────────────────────────────────────
+  test-presenter:
+    name: Presenter Tests (TypeScript)
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: milpa_presenter/package.json
+      
+      - name: Install dependencies
+        working-directory: ./milpa_presenter
+        run: npm ci
+      
+      - name: Run TypeScript compiler check
+        working-directory: ./milpa_presenter
+        run: npx tsc --noEmit
+      
+      - name: Run tests (if exist)
+        working-directory: ./milpa_presenter
+        run: |
+          # Si tienes tests con vitest o jest:
+          # npm test
+          echo "No presenter tests configured yet"
+
+  # ────────────────────────────────────────────────────────────────
+  # JOB 6: Security scanning
+  # ────────────────────────────────────────────────────────────────
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'

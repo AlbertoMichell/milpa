@@ -1,0 +1,179 @@
+# archivo: docker-compose.yml
+# ubicación: raíz del proyecto (C:\milpa\docker-compose.yml)
+# -----------------------------------------------------------------------------
+# MILPA stack (Compose v2)
+# Ejecuta:
+#   docker compose config
+#   docker compose down
+#   docker compose up --build -d
+# -----------------------------------------------------------------------------
+# NOTA CLAVE (/tmp y ClamAV):
+#   Para que clamd acepte escaneo por stream (INSTREAM/--stream), su /tmp DEBE ser
+#   ESCRITURA (RW). Antes estaba montado como :ro y por eso EICAR pasaba como OK.
+#   En este archivo se monta /tmp como RW en 'clamav' (y en 'ai' también RW).
+# -----------------------------------------------------------------------------
+
+services:
+  clamav:
+    image: clamav/clamav:stable                 # Imagen oficial de ClamAV (incluye clamd/clamdscan/freshclam)
+    container_name: clamav
+    # SPRINT 18: Hardening de seguridad
+    user: "clamav:clamav"                       # Non-root execution
+    read_only: true                             # Filesystem read-only (except tmpfs)
+    security_opt:
+      - no-new-privileges:true                  # Prevent privilege escalation
+      - seccomp=default.json                    # Seccomp profile (creates default.json en docs)
+    cap_drop:
+      - ALL                                     # Drop all capabilities
+    cap_add:
+      - DAC_OVERRIDE                            # Needed for ClamAV to read quarantine
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=512m         # Temporary filesystem for clamd working dir
+      - /var/tmp:rw,noexec,nosuid,size=256m
+    ports:
+      - "3310:3310"                             # Exponemos clamd por TCP para que 'ai' lo use (ClamdNetworkSocket)
+    healthcheck:
+      test: ["CMD-SHELL", "clamdscan --version || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 30
+    volumes:
+      # Montamos el mismo directorio de datos que usa 'ai' (solo lectura para clamd).
+      - ./milpa_ai_backend/data:/app/data:ro
+      # Sobrescribimos la configuración para forzar TCP (TCPSocket/TCPAddr) y no usar LocalSocket.
+      - ./clamav/clamd.conf:/etc/clamav/clamd.conf:ro
+    command: ["clamd", "--foreground", "--config-file=/etc/clamav/clamd.conf"]
+    restart: unless-stopped
+
+  ai:
+    build:
+      context: .
+      dockerfile: milpa_ai_backend/Dockerfile   # Backend FastAPI (uvicorn) ya configurado con Prometheus y migraciones
+    container_name: milpa_ai
+    # SPRINT 18: Hardening de seguridad
+    user: "1000:1000"                           # Non-root user (ajustar según Dockerfile USER)
+    # read_only: true                           # TEMPORALMENTE DESHABILITADO para permitir escritura en DB
+    security_opt:
+      - no-new-privileges:true
+      - seccomp=default.json
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=1g           # Temporary files for AI processing
+      - /app/data/tmp:rw,noexec,nosuid,size=2g  # TMPDIR para uploads temporales
+      - /home/appuser/.cache:rw,noexec,nosuid,size=3g  # Caché de Hugging Face (modelos)
+    environment:
+      ALLOWED_ORIGIN: "http://localhost:8080"
+      CLAMAV_HOST: "clamav"
+      CLAMAV_PORT: "3310"
+      AV_OPTIONAL: "true"
+      MAX_UPLOAD_MB: "25"
+      TMPDIR: "/app/data/tmp"
+    ports:
+      - "8000:8000"                             # API pública del backend IA
+    volumes:
+      # Persistencia de documentos y BD (WAL). Compartida con 'clamav' (este último RO).
+      - ./milpa_ai_backend/data:/app/data
+    # NOTA: ClamAV deshabilitado temporalmente (tarda 5-10 min en iniciar)
+    # depends_on:
+    #   clamav:
+    #     condition: service_healthy
+    restart: unless-stopped
+
+  presenter:
+    build:
+      context: .
+      dockerfile: milpa_presenter/Dockerfile    # Node 20 + build reproducible (npm ci con package-lock)
+    container_name: milpa_presenter
+    # SPRINT 18: Hardening de seguridad
+    user: "node:node"                           # Non-root execution
+    read_only: true                             # Read-only filesystem
+    security_opt:
+      - no-new-privileges:true
+      - seccomp=default.json
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=256m         # Temp files for Node.js
+    environment:
+      PORT: "8080"                              # Puerto de escucha del presenter
+      IA_URL: "http://ai:8000"                  # URL interna al backend IA (nombre de servicio dentro de la red)
+      ALLOWED_ORIGINS: "http://localhost:8080"  # CORS del presenter para su propia UI
+    ports:
+      - "8080:8080"                             # Dashboard / health del presenter
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health | grep -q '\"ok\":true' || exit 1"]
+      interval: 3s
+      timeout: 2s
+      retries: 15
+    depends_on:
+      - ai                                      # Inicia tras el backend IA
+    restart: unless-stopped
+
+  # ────────────────────────────────────────────────────────────────
+  # SPRINT 18: Observabilidad - Prometheus & Grafana
+  # ────────────────────────────────────────────────────────────────
+  
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: milpa_prometheus
+    user: "65534:65534"                         # nobody:nogroup (UID/GID numéricos para portabilidad)
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+      - seccomp=default.json
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=128m
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docs/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.3.1
+    container_name: milpa_grafana
+    user: "472:472"                             # Grafana default UID/GID
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+      - seccomp=default.json
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=256m
+      - /var/lib/grafana/plugins:rw,noexec,nosuid,size=128m
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: milpa_grafana_2025
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docs/observability/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./docs/observability/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+networks:
+  default:
+    name: milpa_net                             # Nombre explícito para fácil referencia (docker --network milpa_net …)
+
+volumes:
+  # SPRINT 18: Volúmenes de datos persistentes para observabilidad
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local

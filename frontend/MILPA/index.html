@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema MILPA: Cultivo Inteligente, Tradición Sostenible</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Variables de Color y Fuentes */
+        :root {
+            --forest-green: #2E7D32;
+            --forest-dark: #1B5E20;
+            --light-green: #66BB6A;
+            --beige-bg: #F5F5F5; /* Un beige más neutro y claro */
+            --warm-beige: #FFF8E1; /* Beige cálido para acentos */
+            --gold-accent: #FFCA28; /* Dorado para CTAs o detalles */
+            --text-dark: #333;
+            --text-light: #f8f9fa;
+            --text-muted-custom: #6c757d;
+            
+            --font-primary: 'Poppins', sans-serif;
+            --font-secondary: 'Roboto', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-secondary);
+            color: var(--text-dark);
+            line-height: 1.7;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-primary);
+            font-weight: 600;
+            color: var(--forest-dark);
+        }
+
+        /* Navbar Mejorada */
+        .navbar-milpa {
+            background-color: var(--forest-green) !important;
+            transition: box-shadow 0.3s ease;
+        }
+        .navbar-milpa .navbar-brand {
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: var(--text-light) !important;
+        }
+        .navbar-milpa .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            padding: 0.8rem 1rem;
+        }
+        .navbar-milpa .nav-link:hover,
+        .navbar-milpa .nav-link.active {
+            color: var(--text-light) !important;
+        }
+        .navbar-milpa .btn-login {
+            background-color: var(--gold-accent);
+            color: var(--forest-dark);
+            border-color: var(--gold-accent);
+            font-weight: 600;
+        }
+        .navbar-milpa .btn-login:hover {
+            background-color: #FFB300; /* Dorado más oscuro */
+            border-color: #FFB300;
+        }
+        .navbar-scrolled { /* Añadir con JS al hacer scroll */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Hero Section Mejorada */
+        .hero-section {
+    /* La ruta ahora busca la carpeta 'elementos' en el mismo nivel que el CSS */
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('elementos/campo.jfif') no-repeat center center/cover;
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+    color: var(--text-light);
+    padding: 4rem 0;
+}
+        .hero-section h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--text-light);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .hero-section p.lead {
+            font-size: 1.3rem;
+            margin-bottom: 2.5rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        .hero-section .btn-hero {
+            background-color: var(--gold-accent);
+            color: var(--forest-dark);
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        .hero-section .btn-hero:hover {
+            background-color: #FFB300;
+            transform: translateY(-3px);
+        }
+
+        /* Estilo general de secciones */
+        .section-padding {
+            padding: 6rem 0;
+        }
+        .bg-beige-custom {
+            background-color: var(--beige-bg);
+        }
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--forest-dark);
+        }
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted-custom);
+            margin-bottom: 3rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Tarjetas de Características Mejoradas ("Por Qué MILPA") */
+        .feature-card-milpa {
+            background-color: #fff;
+            border: 1px solid #eee;
+            border-radius: 15px;
+            padding: 2.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .feature-card-milpa:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .feature-card-milpa .icon-bg {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--warm-beige);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        .feature-card-milpa .icon-bg i {
+            font-size: 2.5rem;
+            color: var(--forest-green);
+        }
+        .feature-card-milpa h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--forest-green);
+        }
+
+        /* Sección "Cómo Funciona" */
+        .how-it-works-step {
+            text-align: center;
+            padding: 2rem;
+        }
+        .how-it-works-step .step-icon {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: var(--forest-green);
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem auto;
+            font-size: 3rem;
+            box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
+        }
+         .how-it-works-step h4 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Sección "Acerca de" Mejorada */
+        #about img {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        #about .list-unstyled i {
+            color: var(--light-green);
+        }
+
+        /* Sección de Contacto Mejorada */
+        #contact {
+            background-color: var(--beige-bg);
+        }
+        #contact .form-control {
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid #ddd;
+        }
+        #contact .form-control:focus {
+            border-color: var(--forest-green);
+            box-shadow: 0 0 0 0.25rem rgba(46, 125, 50, 0.25);
+        }
+        #contact .btn-submit-contact {
+            background-color: var(--forest-green);
+            color: var(--text-light);
+            border: none;
+            padding: 0.9rem 2rem;
+            font-weight: 600;
+        }
+        #contact .btn-submit-contact:hover {
+            background-color: var(--forest-dark);
+        }
+
+        /* Footer Mejorado */
+        .footer-milpa {
+            background-color: var(--forest-dark);
+            color: rgba(255, 255, 255, 0.7);
+            padding: 4rem 0 1rem 0;
+        }
+        .footer-milpa h5 {
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+        .footer-milpa a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .footer-milpa a:hover {
+            color: var(--text-light);
+        }
+        .footer-milpa .social-icons a {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+        .footer-milpa .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        /* Animaciones básicas (si no usas animations.css) */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideInUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideInLeft { from { transform: translateX(-50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        .fade-in { animation: fadeIn 0.8s ease-out forwards; opacity: 0; }
+        .slide-in-up { animation: slideInUp 0.8s ease-out forwards; opacity: 0; }
+        .slide-in-left { animation: slideInLeft 0.8s ease-out forwards; opacity: 0; }
+
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; }
+
+        /* Efecto Hover Lift general */
+        .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        .rounded-pill {
+            border-radius: 50rem !important;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-milpa sticky-top" id="mainNavbar">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-leaf me-2"></i>MILPA
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#why-milpa">Por Qué MILPA</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#how-it-works">Cómo Funciona</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">Acerca de</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Contacto</a>
+                    </li>
+                    <li class="nav-item ms-lg-3">
+                        <a class="btn btn-login rounded-pill px-4 py-2" href="login.html">Iniciar Sesión</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero-section">
+        <div class="container h-100">
+            <div class="row h-100 align-items-center">
+                <div class="col-lg-7 col-md-8">
+                    <h1 class="display-4 fw-bold mb-4 slide-in-left">Sistema MILPA: Cultivo Inteligente, Tradición Sostenible</h1>
+                    <p class="lead mb-5 slide-in-left delay-1">Integrando sabiduría ancestral con tecnología moderna para una agricultura resiliente y productiva.</p>
+                    <a href="login.html" class="btn btn-hero rounded-pill px-4 py-2 slide-in-left delay-2">Comenzar Ahora <i class="fas fa-arrow-right ms-2"></i></a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="why-milpa" class="section-padding bg-beige-custom">
+    <div class="container">
+        <div class="text-center">
+            <h2 class="section-title">Las Tres Hermanas: El Corazón de MILPA</h2>
+            <p class="section-subtitle">Descubre la sinergia ancestral del maíz, frijol y calabaza, potenciada por la tecnología.</p>
+        </div>
+        <div class="row g-4 justify-content-center">
+            
+            <div class="col-md-6 col-lg-4 d-flex align-items-stretch">
+                <div class="feature-card-milpa text-center w-100 fade-in delay-1">
+                    <div class="icon-bg mx-auto">
+                        <i class="fas fa-wheat-awn"></i>
+                    </div>
+                    <h3>Maíz: El Pilar</h3>
+                    <p class="text-muted">Estructura y sostén. Nuestra plataforma optimiza su crecimiento basándose en datos precisos del suelo y clima.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4 d-flex align-items-stretch">
+                <div class="feature-card-milpa text-center w-100 fade-in delay-2">
+                    <div class="icon-bg mx-auto">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <h3>Frijol: El Nutriente</h3>
+                    <p class="text-muted">Fija nitrógeno en el suelo, enriqueciéndolo. Te ofrecemos recomendaciones para una siembra complementaria efectiva.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4 d-flex align-items-stretch">
+                <div class="feature-card-milpa text-center w-100 fade-in delay-3">
+                     <div class="icon-bg mx-auto">
+                        <i class="fas fa-eggplant"></i>
+                    </div>
+                    <h3>Calabaza: La Protectora</h3>
+                    <p class="text-muted">Cubre el suelo, conserva humedad y previene malezas. Monitorea su desarrollo y necesidades hídricas.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+    <section id="how-it-works" class="section-padding">
+        <div class="container">
+            <div class="text-center">
+                <h2 class="section-title">Plataforma MILPA: Simple y Poderosa</h2>
+                <p class="section-subtitle">Integramos tecnología de punta para facilitar la gestión de tu cultivo tradicional.</p>
+            </div>
+            <div class="row text-center g-4">
+                <div class="col-md-4 slide-in-up">
+                    <div class="how-it-works-step">
+                        <div class="step-icon"><i class="fas fa-satellite-dish"></i></div>
+                        <h4>1. Recolección de Datos</h4>
+                        <p class="text-muted">Sensores IoT y datos satelitales monitorean tu parcela.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 slide-in-up delay-1">
+                    <div class="how-it-works-step">
+                        <div class="step-icon"><i class="fas fa-brain"></i></div>
+                        <h4>2. Análisis Inteligente</h4>
+                        <p class="text-muted">Nuestra IA procesa la información para generar insights y predicciones.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 slide-in-up delay-2">
+                    <div class="how-it-works-step">
+                        <div class="step-icon"><i class="fas fa-tasks"></i></div>
+                        <h4>3. Acción y Recomendación</h4>
+                        <p class="text-muted">Recibes alertas y recomendaciones personalizadas para optimizar tu cultivo.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="section-padding bg-beige-custom">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <img src="elementos/extension.jpg" alt="Agricultores usando el Sistema MILPA" class="img-fluid rounded shadow-lg fade-in">
+                    </div>
+                <div class="col-lg-6 slide-in-left">
+                    <h2 class="section-title mb-3">Tecnología al Servicio de la Tradición</h2>
+                    <p class="lead text-muted mb-4">El sistema MILPA es una práctica agrícola mesoamericana que combina el cultivo de maíz, frijol y calabaza de manera simbiótica, creando un ecosistema resiliente y productivo.</p>
+                    <p>Nuestra plataforma digitaliza esta sabiduría ancestral, utilizando sensores IoT y algoritmos de inteligencia artificial para:</p>
+                    <ul class="list-unstyled mb-4">
+                        <li class="mb-2"><i class="fas fa-check-circle text-forest-green me-2"></i> Monitorear la salud del suelo y las condiciones climáticas.</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-forest-green me-2"></i> Predecir rendimientos y optimizar tiempos de siembra/cosecha.</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-forest-green me-2"></i> Alertar tempranamente sobre posibles plagas o enfermedades.</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-forest-green me-2"></i> Recomendar riego y fertilización de precisión.</li>
+                    </ul>
+                    <a href="registro.html" class="btn btn-outline-success rounded-pill px-4 py-2 hover-lift">Únete a la Revolución Agrícola</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="section-padding">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 text-center">
+                    <h2 class="section-title">¿Tienes Preguntas? Contáctanos</h2>
+                    <p class="section-subtitle">Estamos aquí para ayudarte a integrar la tecnología en tu milpa y cosechar mejores resultados.</p>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-7">
+                    <form id="contactForm" class="needs-validation p-4 p-md-5 border rounded-3 bg-white shadow-sm" novalidate>
+                        <div id="formMessage" class="mb-3"></div> 
+                        <div class="mb-4">
+                            <label for="contactName" class="form-label visually-hidden">Nombre</label>
+                            <input type="text" class="form-control py-3" id="contactName" placeholder="Nombre completo" required>
+                            <div class="invalid-feedback">Por favor, ingresa tu nombre.</div>
+                        </div>
+                        <div class="mb-4">
+                             <label for="contactEmail" class="form-label visually-hidden">Correo electrónico</label>
+                            <input type="email" class="form-control py-3" id="contactEmail" placeholder="Correo electrónico" required>
+                            <div class="invalid-feedback">Por favor, ingresa un correo válido.</div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="contactMessage" class="form-label visually-hidden">Mensaje</label>
+                            <textarea class="form-control py-3" id="contactMessage" rows="5" placeholder="Tu mensaje..." required></textarea>
+                            <div class="invalid-feedback">Por favor, escribe tu mensaje.</div>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-submit-contact rounded-pill w-100 py-3 hover-lift">Enviar Mensaje <i class="fas fa-paper-plane ms-2"></i></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer-milpa">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+                    <h5 class="text-uppercase"><i class="fas fa-leaf me-2"></i>Sistema MILPA</h5>
+                    <p>Tecnología y tradición agrícola trabajando juntas para un futuro sostenible y productivo.</p>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4 mb-lg-0">
+                    <h5 class="text-uppercase">Enlaces</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li><a href="#">Inicio</a></li>
+                        <li><a href="login.html">Iniciar Sesión</a></li>
+                        <li><a href="#about">Acerca de</a></li>
+                        <li><a href="#contact">Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
+                    <h5 class="text-uppercase">Legal</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li><a href="#">Términos de Servicio</a></li>
+                        <li><a href="#">Política de Privacidad</a></li>
+                        <li><a href="#">Política de Cookies</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="text-uppercase">Accesibilidad</h5>
+                    <div class="d-flex mb-3">
+                        <button class="btn btn-sm btn-outline-light me-2" id="fontIncrease" aria-label="Aumentar tamaño de fuente">A+</button>
+                        <button class="btn btn-sm btn-outline-light" id="fontDecrease" aria-label="Disminuir tamaño de fuente">A-</button>
+                    </div>
+                    <h5 class="text-uppercase mt-3">Síguenos</h5>
+                    <div class="social-icons">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom text-center">
+                <p class="small mb-0 mt-4">&copy; <span id="currentYear"></span> Sistema MILPA. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Script para el año actual en el footer
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        // Script para la navbar con sombra al hacer scroll (opcional)
+        const mainNavbar = document.getElementById('mainNavbar');
+        if (mainNavbar) {
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    mainNavbar.classList.add('navbar-scrolled');
+                } else {
+                    mainNavbar.classList.remove('navbar-scrolled');
+                }
+            });
+        }
+
+        // Scripts de accesibilidad para tamaño de fuente
+        const htmlElement = document.documentElement;
+        const fontIncreaseButton = document.getElementById('fontIncrease');
+        const fontDecreaseButton = document.getElementById('fontDecrease');
+        let currentFontSize = parseFloat(window.getComputedStyle(htmlElement).fontSize);
+
+        if(fontIncreaseButton) {
+            fontIncreaseButton.addEventListener('click', () => {
+                currentFontSize += 1;
+                htmlElement.style.fontSize = currentFontSize + 'px';
+            });
+        }
+        if(fontDecreaseButton) {
+            fontDecreaseButton.addEventListener('click', () => {
+                currentFontSize -= 1;
+                htmlElement.style.fontSize = currentFontSize + 'px';
+            });
+        }
+
+        // Validación de formulario de contacto Bootstrap
+        (() => {
+            'use strict'
+            const forms = document.querySelectorAll('.needs-validation')
+            const formMessage = document.getElementById('formMessage');
+
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    } else {
+                        // Aquí iría la lógica de envío del formulario (ej. con fetch)
+                        // Por ahora, solo simulamos un mensaje.
+                        event.preventDefault(); // Prevenir envío real para demo
+                        if (formMessage) {
+                            formMessage.innerHTML = '<div class="alert alert-success" role="alert">¡Gracias! Tu mensaje ha sido enviado.</div>';
+                            form.reset(); // Limpiar el formulario
+                        }
+                        form.classList.remove('was-validated'); // Remover clases de validación
+                         setTimeout(() => { if(formMessage) formMessage.innerHTML = ''; }, 5000); // Limpiar mensaje después de 5s
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })();
+
+        // Puedes añadir más scripts de tu archivo main.js aquí o mantenerlos separados.
+    </script>
+    </body>
+</html>

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conocimiento - Sistema MILPA</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <style>
+
+    /* ————————— Estilos para el sidebar ————————— */
+        .sidebar {
+            background-color: #2E7D32; /* Verde MILPA */
+            color: white;
+            height: 100vh;
+            position: fixed;
+            width: 250px;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        .sidebar-collapsed {
+            width: 80px;
+        }
+        .sidebar-collapsed .sidebar-text,
+        .sidebar-collapsed .sidebar-brand-text {
+            display: none;
+        }
+        .sidebar-collapsed .sidebar-icon {
+            margin-right: 0;
+        }
+
+        /* ————————— Estilos para desplazar contenido al lado del sidebar ————————— */
+        .main-content {
+            margin-left: 250px;
+            transition: all 0.3s;
+        }
+        .main-content-expanded {
+            margin-left: 80px;
+        }
+
+
+
+        /* ———————– ESTILOS DE NAVEGACIÓN DEL SIDEBAR ———————– */
+.sidebar-nav {
+    padding: 0;
+    list-style: none;
+    margin-top: 1rem;        
+}
+.sidebar-nav-item {
+    margin-bottom: 5px;
+    position: relative;
+}
+.sidebar-nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: all 0.3s;
+    border-left: 3px solid transparent;
+}
+.sidebar-nav-link:hover,
+.sidebar-nav-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-left: 3px solid #fff;
+}
+.sidebar-icon {
+    margin-right: 10px;
+    font-size: 1.2rem;
+}
+/* texto de los enlaces, para esconderlo al colapsar */
+.sidebar-text { white-space: nowrap; } 
+
+/* Style para la marca del sidebar */
+.sidebar-brand {
+    padding: 1.5rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.sidebar-brand-text {
+    margin-left: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+/* Badge de alertas sobre el icono */
+.alert-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 0.7rem;
+}
+
+
+
+        .knowledge-card {
+            border-radius: 10px;
+            transition: all 0.3s;
+            height: 100%;
+        }
+        .knowledge-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .knowledge-icon {
+            font-size: 2rem;
+            color: #2E7D32;
+            margin-bottom: 15px;
+        }
+        .search-box {
+            position: relative;
+        }
+        .search-box .form-control {
+            padding-left: 40px;
+            border-radius: 20px;
+        }
+        .search-box .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+        .category-badge {
+            font-size: 0.75rem;
+        }
+        .article-card {
+            border-left: 4px solid #2E7D32;
+            transition: all 0.3s;
+        }
+        .article-card:hover {
+            transform: translateX(5px);
+        }
+    </style>
+</head>
+<body>
+    
+
+  <!-- ————————— Menú de navegación ————————— -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand d-flex align-items-center justify-content-center">
+            <i class="fas fa-leaf sidebar-icon fa-lg"></i>
+            <span class="sidebar-brand-text ms-2 fs-5 fw-bold">MILPA</span>
+        </div>
+        <ul class="sidebar-nav mt-3">
+            <li class="sidebar-nav-item">
+                <a href="dashboard.html" class="sidebar-nav-link active">
+                    <i class="fas fa-home sidebar-icon"></i>
+                    <span class="sidebar-text">Inicio</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="recomendaciones.html" class="sidebar-nav-link">
+                    <i class="fas fa-lightbulb sidebar-icon"></i>
+                    <span class="sidebar-text">Recomendaciones</span>
+                    <span class="badge bg-danger alert-badge">3</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="datos.html" class="sidebar-nav-link">
+                    <i class="fas fa-chart-line sidebar-icon"></i>
+                    <span class="sidebar-text">Datos</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="tiempo-real.html" class="sidebar-nav-link">
+                    <i class="fas fa-clock sidebar-icon"></i>
+                    <span class="sidebar-text">Monitoreo</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="calendario.html" class="sidebar-nav-link">
+                    <i class="fas fa-calendar-alt sidebar-icon"></i>
+                    <span class="sidebar-text">Calendario</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="base.html" class="sidebar-nav-link">
+                    <i class="fas fa-book sidebar-icon"></i>
+                    <span class="sidebar-text">Conocimiento</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item mt-4">
+                <a href="configuracion.html" class="sidebar-nav-link">
+                    <i class="fas fa-cog sidebar-icon"></i>
+                    <span class="sidebar-text">Configuración</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- ————————— AGREGADO: inicio del contenedor principal que empuja el contenido al lado del sidebar ————————— -->
+    <div class="main-content" id="mainContent">
+
+    <!-- Main Content (igual que en recommendations.html) -->
+
+    <!-- Page Content -->
+    <div class="container-fluid px-4 py-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="fw-bold">Base de Conocimiento</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="dashboard.html">Inicio</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Conocimiento</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Barra de búsqueda -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="form-control py-3" placeholder="Buscar en la base de conocimiento...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Categorías principales -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4 class="mb-3">Categorías</h4>
+                <div class="row g-4">
+                    <!-- Categoría 1 -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card knowledge-card border-0 shadow-sm text-center p-4">
+                            <i class="fas fa-seedling knowledge-icon"></i>
+                            <h5>Técnicas de siembra</h5>
+                            <p class="text-muted small">Métodos tradicionales y modernos para la siembra en el sistema MILPA.</p>
+                            <a href="#" class="btn btn-outline-forest-green btn-sm">Explorar</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Categoría 2 -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card knowledge-card border-0 shadow-sm text-center p-4">
+                            <i class="fas fa-bug knowledge-icon"></i>
+                            <h5>Control de plagas</h5>
+                            <p class="text-muted small">Identificación y manejo ecológico de plagas comunes.</p>
+                            <a href="#" class="btn btn-outline-forest-green btn-sm">Explorar</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Categoría 3 -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card knowledge-card border-0 shadow-sm text-center p-4">
+                            <i class="fas fa-tint knowledge-icon"></i>
+                            <h5>Manejo del agua</h5>
+                            <p class="text-muted small">Técnicas de riego y conservación de humedad.</p>
+                            <a href="#" class="btn btn-outline-forest-green btn-sm">Explorar</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Categoría 4 -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card knowledge-card border-0 shadow-sm text-center p-4">
+                            <i class="fas fa-moon knowledge-icon"></i>
+                            <h5>Calendario lunar</h5>
+                            <p class="text-muted small">Influencia de las fases lunares en la agricultura.</p>
+                            <a href="#" class="btn btn-outline-forest-green btn-sm">Explorar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Artículos destacados -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">Artículos destacados</h4>
+                    <a href="#" class="btn btn-sm btn-outline-forest-green">Ver todos</a>
+                </div>
+                
+                <div class="list-group">
+                    <!-- Artículo 1 -->
+                    <a href="#" class="list-group-item list-group-item-action article-card mb-2">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">Rotación de cultivos en el sistema MILPA</h5>
+                            <span class="category-badge badge bg-success">Siembra</span>
+                        </div>
+                        <p class="mb-1">Cómo planificar la rotación de cultivos para maximizar la productividad y salud del suelo.</p>
+                        <small class="text-muted">Actualizado hace 3 días</small>
+                    </a>
+                    
+                    <!-- Artículo 2 -->
+                    <a href="#" class="list-group-item list-group-item-action article-card mb-2">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">Control natural de plagas en maíz</h5>
+                            <span class="category-badge badge bg-danger">Plagas</span>
+                        </div>
+                        <p class="mb-1">Métodos tradicionales para controlar plagas sin usar químicos dañinos.</p>
+                        <small class="text-muted">Actualizado hace 1 semana</small>
+                    </a>
+                    
+                    <!-- Artículo 3 -->
+                    <a href="#" class="list-group-item list-group-item-action article-card mb-2">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">Uso eficiente del agua en épocas de sequía</h5>
+                            <span class="category-badge badge bg-primary">Agua</span>
+                        </div>
+                        <p class="mb-1">Técnicas ancestrales y modernas para conservar la humedad del suelo.</p>
+                        <small class="text-muted">Actualizado hace 2 semanas</small>
+                    </a>
+                    
+                    <!-- Artículo 4 -->
+                    <a href="#" class="list-group-item list-group-item-action article-card mb-2">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">Beneficios de la asociación maíz-frijol-calabaza</h5>
+                            <span class="category-badge badge bg-warning text-dark">Biodiversidad</span>
+                        </div>
+                        <p class="mb-1">Cómo estas plantas se benefician mutuamente cuando se cultivan juntas.</p>
+                        <small class="text-muted">Actualizado hace 3 semanas</small>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preguntas frecuentes -->
+        <div class="row">
+            <div class="col-12">
+                <h4 class="mb-3">Preguntas frecuentes</h4>
+                <div class="accordion" id="faqAccordion">
+                    <!-- Pregunta 1 -->
+                    <div class="accordion-item mb-2 border-0 shadow-sm">
+                        <h2 class="accordion-header" id="headingOne">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                ¿Cuál es el mejor momento para sembrar maíz?
+                            </button>
+                        </h2>
+                        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>El momento ideal para sembrar maíz en el sistema MILPA depende de varios factores:</p>
+                                <ul>
+                                    <li>Región: En zonas tropicales puede sembrarse casi todo el año, mientras que en zonas templadas debe ser después de las últimas heladas.</li>
+                                    <li>Lluvias: Ideal sembrar al inicio de la temporada de lluvias.</li>
+                                    <li>Temperatura del suelo: Mínimo 10°C para germinación, óptimo 18-24°C.</li>
+                                    <li>Calendario lunar: Tradicionalmente se siembra en luna creciente.</li>
+                                </ul>
+                                <p>Nuestro sistema analiza estos factores para dar recomendaciones personalizadas.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pregunta 2 -->
+                    <div class="accordion-item mb-2 border-0 shadow-sm">
+                        <h2 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                ¿Cómo controlar plagas sin químicos?
+                            </button>
+                        </h2>
+                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>El sistema MILPA tradicional incluye varios métodos ecológicos:</p>
+                                <ol>
+                                    <li><strong>Asociación de cultivos:</strong> Algunas plantas repelen plagas de otras.</li>
+                                    <li><strong>Preparados naturales:</strong> Infusiones de ajo, chile, jabón potásico.</li>
+                                    <li><strong>Control biológico:</strong> Atraer insectos benéficos que son depredadores naturales.</li>
+                                    <li><strong>Barreras físicas:</strong> Trampas amarillas, ceniza alrededor de plantas.</li>
+                                    <li><strong>Rotación de cultivos:</strong> Interrumpir ciclos de vida de plagas.</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pregunta 3 -->
+                    <div class="accordion-item mb-2 border-0 shadow-sm">
+                        <h2 class="accordion-header" id="headingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                ¿Qué beneficios tiene el sistema MILPA frente a monocultivos?
+                            </button>
+                        </h2>
+                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                <p>El sistema MILPA ofrece múltiples ventajas:</p>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Beneficios ecológicos:</h6>
+                                        <ul>
+                                            <li>Mayor biodiversidad</li>
+                                            <li>Mejor control natural de plagas</li>
+                                            <li>Protección del suelo contra erosión</li>
+                                            <li>Optimización del uso de nutrientes</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Beneficios económicos:</h6>
+                                        <ul>
+                                            <li>Diversificación de productos</li>
+                                            <li>Menor dependencia de insumos externos</li>
+                                            <li>Mayor resiliencia ante cambios climáticos</li>
+                                            <li>Producción más estable a largo plazo</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+   </div>
+    <!-- Bootstrap Bundle con Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- JS personalizado -->
+    <script>
+        // Toggle para la sidebar
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('sidebar-collapsed');
+            document.getElementById('mainContent').classList.toggle('main-content-expanded');
+        });
+    </script>
+</body>
+</html>

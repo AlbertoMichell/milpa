@@ -1,0 +1,2 @@
+{"query": "fertilizacion maiz macollaje", "pred_ids": ["f1", "f9", "f2"], "pred_entities": [["maiz"], ["soja"], ["n"]], "faithfulness": 1.0}
+{"query": "control gusano cogollero", "pred_ids": ["x", "f3"], "pred_entities": [["plaga:oruga"], ["plaga:gusano_cogollero"]]}

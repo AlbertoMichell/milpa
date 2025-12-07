@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recomendaciones - Sistema MILPA</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <style>
+
+   /* ————————— MODIFICADO: añadidos estilos para el sidebar ————————— */
+        .sidebar {
+            background-color: #2E7D32; /* Verde MILPA */
+            color: white;
+            height: 100vh;
+            position: fixed;
+            width: 250px;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        .sidebar-collapsed {
+            width: 80px;
+        }
+        .sidebar-collapsed .sidebar-text,
+        .sidebar-collapsed .sidebar-brand-text {
+            display: none;
+        }
+        .sidebar-collapsed .sidebar-icon {
+            margin-right: 0;
+        }
+
+        /* ————————— MODIFICADO: estilos para desplazar contenido al lado del sidebar ————————— */
+        .main-content {
+            margin-left: 130px;
+            transition: all 0.3s;
+        }
+        .main-content-expanded {
+            margin-left: 80px;
+        }
+
+
+
+        /* ———————– ESTILOS DE NAVEGACIÓN DEL SIDEBAR ———————– */
+.sidebar-nav {
+    padding: 0;
+    list-style: none;
+    margin-top: 1rem;        /* ya tenías mt-3, pero si lo quieres inline */
+}
+.sidebar-nav-item {
+    margin-bottom: 5px;
+    position: relative;
+}
+.sidebar-nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: all 0.3s;
+    border-left: 3px solid transparent;
+}
+.sidebar-nav-link:hover,
+.sidebar-nav-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-left: 3px solid #fff;
+}
+.sidebar-icon {
+    margin-right: 10px;
+    font-size: 1.2rem;
+}
+/* texto de los enlaces, para esconderlo al colapsar */
+.sidebar-text { white-space: nowrap; } 
+
+/* Style para la marca del sidebar */
+.sidebar-brand {
+    padding: 1.5rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.sidebar-brand-text {
+    margin-left: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+/* Badge de alertas sobre el icono */
+.alert-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 0.7rem;
+}
+
+
+
+
+
+
+        .recommendation-container {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        .recommendation-container:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .priority-indicator {
+            width: 10px;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            border-radius: 5px 0 0 5px;
+        }
+        .priority-high {
+            background-color: #dc3545;
+        }
+        .priority-medium {
+            background-color: #ffc107;
+        }
+        .priority-low {
+            background-color: #28a745;
+        }
+        .recommendation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .recommendation-title {
+            font-weight: 600;
+            color: #2E7D32;
+            margin-bottom: 5px;
+        }
+        .recommendation-meta {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        .recommendation-badge {
+            font-size: 0.8rem;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        .recommendation-content {
+            margin-top: 15px;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .filter-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .stats-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .stats-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+            color: #2E7D32;
+        }
+        .stats-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .stats-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .empty-state-icon {
+            font-size: 3rem;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+        .recommendation-details {
+            background-color: #f1f8e9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .detail-item {
+            margin-bottom: 10px;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #2E7D32;
+        }
+        .crop-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+        }
+        .crop-maiz {
+            background-color: #FF9800;
+        }
+        .crop-frijol {
+            background-color: #795548;
+        }
+        .crop-calabaza {
+            background-color: #FFC107;
+        }
+        .crop-chile {
+            background-color: #F44336;
+        }
+        .crop-tomate {
+            background-color: #E91E63;
+        }
+
+
+
+ /* Media Queries (Unificado) */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 80px;
+        }
+        .sidebar-text, .sidebar-brand-text {
+            display: none;
+        }
+        .sidebar-icon {
+            margin-right: 0; /* Icono centrado cuando está colapsado */
+        }
+        .main-content {
+            margin-left: 80px;
+            padding-top: 70px; /* Un poco menos padding para pantallas pequeñas */
+        }
+        /* El JS maneja el 'left' del navbar, no el 'width' directamente en esta media query */
+        
+        .profile-summary-card, .map-card-display, .chat-card-display {
+            margin-bottom: 1.5rem; /* Mejor espaciado vertical en móvil */
+        }
+        .map-container-custom { height: 300px; } /* Mapa más pequeño en móvil */
+        #chat { height: 250px; } /* Chat más pequeño en móvil */
+    }
+
+
+
+        
+    </style>
+</head>
+<body>
+   
+  <!-- ————————— AGREGADO: Sidebar panel con menú de navegación ————————— -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand d-flex align-items-center justify-content-center">
+            <i class="fas fa-leaf sidebar-icon fa-lg"></i>
+            <span class="sidebar-brand-text ms-2 fs-5 fw-bold">MILPA</span>
+        </div>
+        <ul class="sidebar-nav mt-3">
+            <li class="sidebar-nav-item">
+                <a href="dashboard.html" class="sidebar-nav-link active">
+                    <i class="fas fa-home sidebar-icon"></i>
+                    <span class="sidebar-text">Inicio</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="recomendaciones.html" class="sidebar-nav-link">
+                    <i class="fas fa-lightbulb sidebar-icon"></i>
+                    <span class="sidebar-text">Recomendaciones</span>
+                    <span class="badge bg-danger alert-badge">3</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="datos.html" class="sidebar-nav-link">
+                    <i class="fas fa-chart-line sidebar-icon"></i>
+                    <span class="sidebar-text">Datos</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="tiempo-real.html" class="sidebar-nav-link">
+                    <i class="fas fa-clock sidebar-icon"></i>
+                    <span class="sidebar-text">Monitoreo</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="calendario.html" class="sidebar-nav-link">
+                    <i class="fas fa-calendar-alt sidebar-icon"></i>
+                    <span class="sidebar-text">Calendario</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="base.html" class="sidebar-nav-link">
+                    <i class="fas fa-book sidebar-icon"></i>
+                    <span class="sidebar-text">Conocimiento</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item mt-4">
+                <a href="configuracion.html" class="sidebar-nav-link">
+                    <i class="fas fa-cog sidebar-icon"></i>
+                    <span class="sidebar-text">Configuración</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- ————————— AGREGADO: inicio del contenedor principal que empuja el contenido al lado del sidebar ————————— -->
+    <div class="main-content" id="mainContent">
+
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Top Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white">
+            <div class="container-fluid">
+                
+                <div class="d-flex align-items-center ms-auto">
+                    <div class="dropdown me-3">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="notificationsDropdown" data-bs-toggle="dropdown">
+                            <i class="fas fa-bell fs-5 text-forest-green"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                3
+                                <span class="visually-hidden">notificaciones no leídas</span>
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
+                            <li><h6 class="dropdown-header">Notificaciones</h6></li>
+                            <li><a class="dropdown-item" href="#">Nueva recomendación disponible</a></li>
+                            <li><a class="dropdown-item" href="#">Alerta de clima: posible sequía</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-primary" href="#">Ver todas</a></li>
+                        </ul>
+                    </div>
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown">
+                            <img src="images/farmer-avatar.jpg" alt="Usuario" class="rounded-circle me-2" width="40" height="40">
+                            <span class="d-none d-md-inline">Juan Pérez</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="#">Perfil</a></li>
+                            <li><a class="dropdown-item" href="#">Configuración</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">Cerrar sesión</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div class="container-fluid px-4 py-4">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="fw-bold mb-1">Recomendaciones</h2>
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="dashboard.html">Inicio</a></li>
+                                    <li class="breadcrumb-item active" aria-current="page">Recomendaciones</li>
+                                </ol>
+                            </nav>
+                        </div>
+                        <button class="btn btn-forest-green">
+                            <i class="fas fa-plus me-2"></i> Nueva consulta
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros y estadísticas -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="filter-card">
+                        <h5 class="mb-3"><i class="fas fa-filter me-2 text-forest-green"></i>Filtrar recomendaciones</h5>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="cropFilter" class="form-label">Cultivo</label>
+                                <select class="form-select" id="cropFilter">
+                                    <option selected>Todos los cultivos</option>
+                                    <option value="maiz">Maíz</option>
+                                    <option value="frijol">Frijol</option>
+                                    <option value="calabaza">Calabaza</option>
+                                    <option value="chile">Chile</option>
+                                    <option value="tomate">Tomate</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="typeFilter" class="form-label">Tipo</label>
+                                <select class="form-select" id="typeFilter">
+                                    <option selected>Todos los tipos</option>
+                                    <option value="riego">Riego</option>
+                                    <option value="fertilizacion">Fertilización</option>
+                                    <option value="plagas">Control de plagas</option>
+                                    <option value="siembra">Siembra</option>
+                                    <option value="cosecha">Cosecha</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="statusFilter" class="form-label">Estado</label>
+                                <select class="form-select" id="statusFilter">
+                                    <option selected>Todos los estados</option>
+                                    <option value="pendiente">Pendientes</option>
+                                    <option value="aplicada">Aplicadas</option>
+                                    <option value="pospuesta">Pospuestas</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <div class="row">
+                            <div class="col-4 text-center">
+                                <div class="stats-icon text-danger">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <div class="stats-value">3</div>
+                                <div class="stats-label">Urgentes</div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="stats-icon text-warning">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="stats-value">7</div>
+                                <div class="stats-label">Pendientes</div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="stats-icon text-success">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="stats-value">12</div>
+                                <div class="stats-label">Aplicadas</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de recomendaciones -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">5 recomendaciones activas</h4>
+                        <div class="d-flex">
+                            <button class="btn btn-outline-secondary me-2">
+                                <i class="fas fa-download me-1"></i> Exportar
+                            </button>
+                            <button class="btn btn-outline-forest-green">
+                                <i class="fas fa-sync-alt me-1"></i> Actualizar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Recomendación 1 - Prioridad Alta -->
+                    <div class="recommendation-container position-relative">
+                        <div class="priority-indicator priority-high"></div>
+                        <div class="ps-3">
+                            <div class="recommendation-header">
+                                <div class="d-flex align-items-center">
+                                    <div class="crop-icon crop-maiz">
+                                        <i class="fas fa-seedling"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="recommendation-title">Ajuste urgente de riego en maíz</h5>
+                                        <div class="recommendation-meta">
+                                            <i class="fas fa-clock me-1"></i>Generada hoy a las 08:45 AM
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="recommendation-badge bg-danger">Alta prioridad</span>
+                            </div>
+                            
+                            <div class="recommendation-content">
+                                <p>Los sensores indican que el nivel de humedad del suelo está 25% por debajo del óptimo para la fase de crecimiento actual del maíz en el sector norte.</p>
+                                
+                                <div class="recommendation-details">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-tint me-2"></i>Humedad actual:</span>
+                                                <span class="badge bg-danger">35% (bajo óptimo)</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-temperature-low me-2"></i>Temperatura suelo:</span>
+                                                <span>28°C</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-cloud-sun me-2"></i>Pronóstico:</span>
+                                                <span>Sin lluvia en 5 días</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-calendar-alt me-2"></i>Ventana óptima:</span>
+                                                <span>Próximas 48 horas</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-map-marker-alt me-2"></i>Ubicación:</span>
+                                                <span>Sector Norte - Parcela 3</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-chart-line me-2"></i>Tendencia:</span>
+                                                <span class="text-danger">Empeorando</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="action-buttons">
+                                        <button class="btn btn-success">
+                                            <i class="fas fa-check me-1"></i> Marcar como aplicada
+                                        </button>
+                                        <button class="btn btn-outline-secondary">
+                                            <i class="fas fa-clock me-1"></i> Posponer
+                                        </button>
+                                        <button class="btn btn-outline-primary">
+                                            <i class="fas fa-info-circle me-1"></i> Más detalles
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recomendación 2 - Prioridad Media -->
+                    <div class="recommendation-container position-relative">
+                        <div class="priority-indicator priority-medium"></div>
+                        <div class="ps-3">
+                            <div class="recommendation-header">
+                                <div class="d-flex align-items-center">
+                                    <div class="crop-icon crop-frijol">
+                                        <i class="fas fa-vine"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="recommendation-title">Sembrar frijol complementario</h5>
+                                        <div class="recommendation-meta">
+                                            <i class="fas fa-clock me-1"></i>Generada ayer a las 03:30 PM
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="recommendation-badge bg-warning text-dark">Media prioridad</span>
+                            </div>
+                            
+                            <div class="recommendation-content">
+                                <p>El análisis de suelo sugiere que es momento óptimo para sembrar frijol como cultivo complementario al maíz para mejorar la fijación de nitrógeno.</p>
+                                
+                                <div class="recommendation-details">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-temperature-low me-2"></i>Temperatura óptima:</span>
+                                                <span>22-28°C</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-ruler-combined me-2"></i>Distancia recomendada:</span>
+                                                <span>40cm entre plantas</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-calendar-alt me-2"></i>Ventana óptima:</span>
+                                                <span>Próximos 5 días</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-seedling me-2"></i>Variedad recomendada:</span>
+                                                <span>Frijol negro</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="action-buttons">
+                                        <button class="btn btn-success">
+                                            <i class="fas fa-check me-1"></i> Marcar como aplicada
+                                        </button>
+                                        <button class="btn btn-outline-secondary">
+                                            <i class="fas fa-clock me-1"></i> Posponer
+                                        </button>
+                                        <button class="btn btn-outline-primary">
+                                            <i class="fas fa-info-circle me-1"></i> Más detalles
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recomendación 3 - Prioridad Alta -->
+                    <div class="recommendation-container position-relative">
+                        <div class="priority-indicator priority-high"></div>
+                        <div class="ps-3">
+                            <div class="recommendation-header">
+                                <div class="d-flex align-items-center">
+                                    <div class="crop-icon crop-chile">
+                                        <i class="fas fa-pepper-hot"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="recommendation-title">Alerta de plaga en chile</h5>
+                                        <div class="recommendation-meta">
+                                            <i class="fas fa-clock me-1"></i>Generada hoy a las 10:15 AM
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="recommendation-badge bg-danger">Alta prioridad</span>
+                            </div>
+                            
+                            <div class="recommendation-content">
+                                <p>Posible infestación de áfidos detectada mediante análisis de imagen en hojas de chile en el sector este. Tasa de propagación del 8% diario.</p>
+                                
+                                <div class="recommendation-details">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-bug me-2"></i>Tipo de plaga:</span>
+                                                <span>Áfidos (pulgones)</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-chart-line me-2"></i>Severidad:</span>
+                                                <span class="badge bg-warning text-dark">Moderada (35%)</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-history me-2"></i>Tasa de propagación:</span>
+                                                <span>8% diario</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-map-marker-alt me-2"></i>Área afectada:</span>
+                                                <span>Sector Este - Parcela 2</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="action-plan bg-light p-3 rounded mb-3">
+                                        <h6 class="fw-bold text-danger mb-2"><i class="fas fa-lightbulb me-2"></i>Plan de acción recomendado:</h6>
+                                        <ol>
+                                            <li>Aplicar solución de jabón potásico (20ml por litro)</li>
+                                            <li>Tratar preferiblemente al atardecer</li>
+                                            <li>Repetir cada 3 días por 2 semanas</li>
+                                            <li>Monitorear plantas vecinas</li>
+                                        </ol>
+                                    </div>
+                                    
+                                    <div class="action-buttons">
+                                        <button class="btn btn-success">
+                                            <i class="fas fa-check me-1"></i> Marcar como aplicada
+                                        </button>
+                                        <button class="btn btn-outline-secondary">
+                                            <i class="fas fa-clock me-1"></i> Posponer
+                                        </button>
+                                        <button class="btn btn-outline-primary">
+                                            <i class="fas fa-info-circle me-1"></i> Más detalles
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recomendación 4 - Prioridad Baja -->
+                    <div class="recommendation-container position-relative">
+                        <div class="priority-indicator priority-low"></div>
+                        <div class="ps-3">
+                            <div class="recommendation-header">
+                                <div class="d-flex align-items-center">
+                                    <div class="crop-icon crop-calabaza">
+                                        <i class="fas fa-pumpkin"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="recommendation-title">Aplicar abono foliar en calabaza</h5>
+                                        <div class="recommendation-meta">
+                                            <i class="fas fa-clock me-1"></i>Generada hace 2 días
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="recommendation-badge bg-success">Baja prioridad</span>
+                            </div>
+                            
+                            <div class="recommendation-content">
+                                <p>Las plantas de calabaza muestran leve deficiencia de nitrógeno que podría mejorarse con aplicación de abono foliar en las próximas semanas.</p>
+                                
+                                <div class="recommendation-details">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-flask me-2"></i>Nivel de nitrógeno:</span>
+                                                <span>2.3% (óptimo 3-3.5%)</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-leaf me-2"></i>Síntomas:</span>
+                                                <span>Amarillamiento leve en hojas viejas</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-cloud-rain me-2"></i>Condiciones ideales:</span>
+                                                <span>Aplicar en día nublado</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-prescription-bottle me-2"></i>Fórmula recomendada:</span>
+                                                <span>NPK 20-10-10 (0.5%)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="action-buttons">
+                                        <button class="btn btn-success">
+                                            <i class="fas fa-check me-1"></i> Marcar como aplicada
+                                        </button>
+                                        <button class="btn btn-outline-secondary">
+                                            <i class="fas fa-clock me-1"></i> Posponer
+                                        </button>
+                                        <button class="btn btn-outline-primary">
+                                            <i class="fas fa-info-circle me-1"></i> Más detalles
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recomendación 5 - Prioridad Media -->
+                    <div class="recommendation-container position-relative">
+                        <div class="priority-indicator priority-medium"></div>
+                        <div class="ps-3">
+                            <div class="recommendation-header">
+                                <div class="d-flex align-items-center">
+                                    <div class="crop-icon crop-tomate">
+                                        <i class="fas fa-apple-alt"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="recommendation-title">Preparar suelo para nueva rotación</h5>
+                                        <div class="recommendation-meta">
+                                            <i class="fas fa-clock me-1"></i>Generada hace 1 día
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="recommendation-badge bg-warning text-dark">Media prioridad</span>
+                            </div>
+                            
+                            <div class="recommendation-content">
+                                <p>El análisis de suelo sugiere preparar el terreno para la próxima rotación de cultivos en 2 semanas, considerando los niveles actuales de nutrientes.</p>
+                                
+                                <div class="recommendation-details">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-seedling me-2"></i>Cultivo anterior:</span>
+                                                <span>Maíz</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-prescription-bottle me-2"></i>Nivel de fósforo:</span>
+                                                <span class="badge bg-warning text-dark">Bajo (1.5%)</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-water me-2"></i>Retención humedad:</span>
+                                                <span>68% (mejorable)</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <span class="detail-label"><i class="fas fa-calendar-alt me-2"></i>Momento ideal:</span>
+                                                <span>15 días antes de siembra</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="action-plan bg-light p-3 rounded mb-3">
+                                        <h6 class="fw-bold text-warning mb-2"><i class="fas fa-tasks me-2"></i>Acciones recomendadas:</h6>
+                                        <ul class="mb-0">
+                                            <li>Añadir compost orgánico (3kg/m²)</li>
+                                            <li>Voltear el suelo a 20cm de profundidad</li>
+                                            <li>Considerar rotación con leguminosas</li>
+                                            <li>Regar moderadamente después de preparación</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="action-buttons">
+                                        <button class="btn btn-success">
+                                            <i class="fas fa-check me-1"></i> Marcar como aplicada
+                                        </button>
+                                        <button class="btn btn-outline-secondary">
+                                            <i class="fas fa-clock me-1"></i> Posponer
+                                        </button>
+                                        <button class="btn btn-outline-primary">
+                                            <i class="fas fa-info-circle me-1"></i> Más detalles
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle con Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- JS personalizado -->
+    <script>
+        // Función para filtrar recomendaciones
+        function filterRecommendations() {
+            const cropFilter = document.getElementById('cropFilter').value;
+            const typeFilter = document.getElementById('typeFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            // Aquí iría la lógica para filtrar las recomendaciones
+            console.log(`Filtrando por: Cultivo=${cropFilter}, Tipo=${typeFilter}, Estado=${statusFilter}`);
+            
+            // Simulación de filtrado
+            alert(`Filtrando recomendaciones...\nCultivo: ${cropFilter}\nTipo: ${typeFilter}\nEstado: ${statusFilter}`);
+        }
+
+        // Event listeners para los filtros
+        document.getElementById('cropFilter').addEventListener('change', filterRecommendations);
+        document.getElementById('typeFilter').addEventListener('change', filterRecommendations);
+        document.getElementById('statusFilter').addEventListener('change', filterRecommendations);
+
+        // Función para marcar recomendación como aplicada
+        function markAsApplied(button) {
+            const card = button.closest('.recommendation-container');
+            card.style.opacity = '0.7';
+            card.style.borderLeft = '4px solid #28a745';
+            
+            // Cambiar el botón
+            button.innerHTML = '<i class="fas fa-check-circle me-1"></i> Aplicada';
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-success');
+            button.disabled = true;
+            
+            // Mostrar feedback al usuario
+            const feedback = document.createElement('div');
+            feedback.className = 'alert alert-success mt-3 mb-0';
+            feedback.innerHTML = '<i class="fas fa-check-circle me-2"></i> Esta recomendación ha sido marcada como aplicada';
+            card.querySelector('.recommendation-details').appendChild(feedback);
+        }
+
+        // Asignar eventos a los botones "Marcar como aplicada"
+        document.querySelectorAll('.btn-success').forEach(button => {
+            button.addEventListener('click', function() {
+                markAsApplied(this);
+            });
+        });
+
+        // Toggle para la sidebar
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('sidebar-collapsed');
+            document.getElementById('mainContent').classList.toggle('main-content-expanded');
+        });
+
+        // Mostrar/ocultar detalles de recomendación
+        document.querySelectorAll('.btn-outline-primary').forEach(button => {
+            button.addEventListener('click', function() {
+                const details = this.closest('.recommendation-container').querySelector('.recommendation-details');
+                details.style.display = details.style.display === 'none' ? 'block' : 'none';
+                
+                // Cambiar ícono y texto del botón
+                const icon = this.querySelector('i');
+                if (details.style.display === 'none') {
+                    icon.classList.remove('fa-info-circle');
+                    icon.classList.add('fa-eye');
+                    this.innerHTML = '<i class="fas fa-eye me-1"></i> Mostrar detalles';
+                } else {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-info-circle');
+                    this.innerHTML = '<i class="fas fa-info-circle me-1"></i> Ocultar detalles';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

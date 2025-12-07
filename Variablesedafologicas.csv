@@ -1,0 +1,10 @@
+location,lat,lon,depth_cm_from,depth_cm_to,ph_h2o,soc_g_per_kg,nitrogen_g_per_kg,sand_pct,silt_pct,clay_pct,bulk_density_bdod_kg_per_m3,cec_cmolc_per_kg,coarse_fragments_vol_pct,soil_moisture_vol_frac,soil_temperature_C,electrical_conductivity_dS_per_m,phosphorus_P_mg_per_kg,potassium_K_mg_per_kg
+Xalapa,19.5312,-96.9159,0,5,,,,,,,,,,,,,,
+Xalapa,19.5312,-96.9159,5,15,,,,,,,,,,,,,,
+Xalapa,19.5312,-96.9159,15,30,,,,,,,,,,,,,,
+Naolinco,19.6513661,-96.8576763,0,5,,,,,,,,,,,,,,
+Naolinco,19.6513661,-96.8576763,5,15,,,,,,,,,,,,,,
+Naolinco,19.6513661,-96.8576763,15,30,,,,,,,,,,,,,,
+Coacoatzintla,19.65163,-96.94043,0,5,,,,,,,,,,,,,,
+Coacoatzintla,19.65163,-96.94043,5,15,,,,,,,,,,,,,,
+Coacoatzintla,19.65163,-96.94043,15,30,,,,,,,,,,,,,,

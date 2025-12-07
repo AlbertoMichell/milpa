@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datos - Sistema MILPA</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <style>
+    /* ————————— MODIFICADO: añadidos estilos para el sidebar ————————— */
+        .sidebar {
+            background-color: #2E7D32; /* Verde MILPA */
+            color: white;
+            height: 100vh;
+            position: fixed;
+            width: 250px;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        .sidebar-collapsed {
+            width: 80px;
+        }
+        .sidebar-collapsed .sidebar-text,
+        .sidebar-collapsed .sidebar-brand-text {
+            display: none;
+        }
+        .sidebar-collapsed .sidebar-icon {
+            margin-right: 0;
+        }
+
+        /* ————————— MODIFICADO: estilos para desplazar contenido al lado del sidebar ————————— */
+        .main-content {
+            margin-left: 250px;
+            transition: all 0.3s;
+        }
+        .main-content-expanded {
+            margin-left: 80px;
+        }
+
+
+
+        /* ———————– ESTILOS DE NAVEGACIÓN DEL SIDEBAR ———————– */
+.sidebar-nav {
+    padding: 0;
+    list-style: none;
+    margin-top: 1rem;        /* ya tenías mt-3, pero si lo quieres inline */
+}
+.sidebar-nav-item {
+    margin-bottom: 5px;
+    position: relative;
+}
+.sidebar-nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: all 0.3s;
+    border-left: 3px solid transparent;
+}
+.sidebar-nav-link:hover,
+.sidebar-nav-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-left: 3px solid #fff;
+}
+.sidebar-icon {
+    margin-right: 10px;
+    font-size: 1.2rem;
+}
+/* texto de los enlaces, para esconderlo al colapsar */
+.sidebar-text { white-space: nowrap; } 
+
+/* Style para la marca del sidebar */
+.sidebar-brand {
+    padding: 1.5rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.sidebar-brand-text {
+    margin-left: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+/* Badge de alertas sobre el icono */
+.alert-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 0.7rem;
+}
+
+
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 30px;
+        }
+        .data-card {
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        .data-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .stat-icon {
+            font-size: 2rem;
+            opacity: 0.8;
+        }
+        .nav-tabs .nav-link {
+            border: none;
+            color: #495057;
+            font-weight: 500;
+        }
+        .nav-tabs .nav-link.active {
+            color: #2E7D32;
+            border-bottom: 3px solid #2E7D32;
+            background-color: transparent;
+        }
+        .export-btn {
+            min-width: 120px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar (igual que en recommendations.html) -->
+<!-- ————————— AGREGADO: Sidebar panel con menú de navegación ————————— -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand d-flex align-items-center justify-content-center">
+            <i class="fas fa-leaf sidebar-icon fa-lg"></i>
+            <span class="sidebar-brand-text ms-2 fs-5 fw-bold">MILPA</span>
+        </div>
+        <ul class="sidebar-nav mt-3">
+            <li class="sidebar-nav-item">
+                <a href="dashboard.html" class="sidebar-nav-link active">
+                    <i class="fas fa-home sidebar-icon"></i>
+                    <span class="sidebar-text">Inicio</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="recomendaciones.html" class="sidebar-nav-link">
+                    <i class="fas fa-lightbulb sidebar-icon"></i>
+                    <span class="sidebar-text">Recomendaciones</span>
+                    <span class="badge bg-danger alert-badge">3</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="datos.html" class="sidebar-nav-link">
+                    <i class="fas fa-chart-line sidebar-icon"></i>
+                    <span class="sidebar-text">Datos</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="tiempo-real.html" class="sidebar-nav-link">
+                    <i class="fas fa-clock sidebar-icon"></i>
+                    <span class="sidebar-text">Monitoreo</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="calendario.html" class="sidebar-nav-link">
+                    <i class="fas fa-calendar-alt sidebar-icon"></i>
+                    <span class="sidebar-text">Calendario</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="base.html" class="sidebar-nav-link">
+                    <i class="fas fa-book sidebar-icon"></i>
+                    <span class="sidebar-text">Conocimiento</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item mt-4">
+                <a href="configuracion.html" class="sidebar-nav-link">
+                    <i class="fas fa-cog sidebar-icon"></i>
+                    <span class="sidebar-text">Configuración</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- ————————— AGREGADO: inicio del contenedor principal que empuja el contenido al lado del sidebar ————————— -->
+    <div class="main-content" id="mainContent">
+
+
+    
+    <!-- Main Content (igual que en recommendations.html) -->
+
+    <!-- Page Content -->
+    <div class="container-fluid px-4 py-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="fw-bold">Visualización de Datos</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="dashboard.html">Inicio</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Datos</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Estadísticas rápidas -->
+        <div class="row mb-4">
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card data-card bg-light border-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="text-muted mb-2">Humedad suelo</h6>
+                                <h3 class="mb-0">64%</h3>
+                                <small class="text-success"><i class="fas fa-caret-up me-1"></i> 2% vs ayer</small>
+                            </div>
+                            <div class="stat-icon text-primary">
+                                <i class="fas fa-tint"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card data-card bg-light border-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="text-muted mb-2">Temperatura</h6>
+                                <h3 class="mb-0">26°C</h3>
+                                <small class="text-danger"><i class="fas fa-caret-down me-1"></i> 3°C vs ayer</small>
+                            </div>
+                            <div class="stat-icon text-warning">
+                                <i class="fas fa-temperature-high"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card data-card bg-light border-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="text-muted mb-2">Salud cultivos</h6>
+                                <h3 class="mb-0">82%</h3>
+                                <small class="text-success"><i class="fas fa-caret-up me-1"></i> 5% vs semana pasada</small>
+                            </div>
+                            <div class="stat-icon text-success">
+                                <i class="fas fa-heartbeat"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card data-card bg-light border-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="text-muted mb-2">Precipitación</h6>
+                                <h3 class="mb-0">12mm</h3>
+                                <small class="text-muted">Últimas 24h</small>
+                            </div>
+                            <div class="stat-icon text-info">
+                                <i class="fas fa-cloud-rain"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestañas de visualización -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <ul class="nav nav-tabs mb-4" id="dataTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="soil-tab" data-bs-toggle="tab" data-bs-target="#soil" type="button" role="tab">Suelo</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="water-tab" data-bs-toggle="tab" data-bs-target="#water" type="button" role="tab">Agua</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="climate-tab" data-bs-toggle="tab" data-bs-target="#climate" type="button" role="tab">Clima</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="crops-tab" data-bs-toggle="tab" data-bs-target="#crops" type="button" role="tab">Cultivos</button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="dataTabsContent">
+                    <!-- Pestaña Suelo -->
+                    <div class="tab-pane fade show active" id="soil" role="tabpanel">
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <div class="card border-0 shadow-sm mb-4">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h5 class="mb-0">Humedad del suelo (últimos 30 días)</h5>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="soilDropdown" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-calendar-alt me-1"></i> 30 días
+                                                </button>
+                                                <ul class="dropdown-menu" aria-labelledby="soilDropdown">
+                                                    <li><a class="dropdown-item" href="#">7 días</a></li>
+                                                    <li><a class="dropdown-item" href="#">30 días</a></li>
+                                                    <li><a class="dropdown-item" href="#">90 días</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="chart-container">
+                                            <canvas id="soilMoistureChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="card border-0 shadow-sm mb-4">
+                                    <div class="card-body">
+                                        <h5 class="mb-3">Nutrientes del suelo</h5>
+                                        <div class="chart-container">
+                                            <canvas id="soilNutrientsChart"></canvas>
+                                        </div>
+                                        <div class="mt-3">
+                                            <div class="d-flex justify-content-between small mb-1">
+                                                <span>Nitrógeno</span>
+                                                <span>2.8% (óptimo 3-4%)</span>
+                                            </div>
+                                            <div class="progress mb-2" style="height: 6px;">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: 70%"></div>
+                                            </div>
+                                            
+                                            <div class="d-flex justify-content-between small mb-1">
+                                                <span>Fósforo</span>
+                                                <span>1.5% (óptimo 2-3%)</span>
+                                            </div>
+                                            <div class="progress mb-2" style="height: 6px;">
+                                                <div class="progress-bar bg-warning" role="progressbar" style="width: 50%"></div>
+                                            </div>
+                                            
+                                            <div class="d-flex justify-content-between small mb-1">
+                                                <span>Potasio</span>
+                                                <span>3.1% (óptimo 2.5-3.5%)</span>
+                                            </div>
+                                            <div class="progress mb-2" style="height: 6px;">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: 88%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pestaña Agua -->
+                    <div class="tab-pane fade" id="water" role="tabpanel">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="card border-0 shadow-sm mb-4">
+                                    <div class="card-body">
+                                        <h5 class="mb-3">Consumo de agua (litros/día)</h5>
+                                        <div class="chart-container">
+                                            <canvas id="waterConsumptionChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg 6">
+<div class="card border-0 shadow-sm mb-4">
+<div class="card-body">
+<h5 class="mb-3">Eficiencia de riego</h5>
+<div class="chart-container">
+<canvas id="irrigationEfficiencyChart"></canvas>
+</div>
+<div class="mt-3">
+<div class="row">
+<div class="col-6">
+<div class="text-center">
+<h3 class="text-primary">78%</h3>
+<small class="text-muted">Eficiencia actual</small>
+</div>
+</div>
+<div class="col-6">
+<div class="text-center">
+<h3 class="text-success">+12%</h3>
+<small class="text-muted">Mejora posible</small>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+                <!-- Pestaña Clima -->
+                <div class="tab-pane fade" id="climate" role="tabpanel">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="mb-0">Condiciones climáticas</h5>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-forest-green export-btn me-2">
+                                                <i class="fas fa-download me-1"></i> Exportar
+                                            </button>
+                                            <button class="btn btn-sm btn-forest-green">
+                                                <i class="fas fa-sync-alt me-1"></i> Actualizar
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="chart-container" style="height: 400px;">
+                                        <canvas id="climateChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pestaña Cultivos -->
+                <div class="tab-pane fade" id="crops" role="tabpanel">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-body">
+                                    <h5 class="mb-3">Distribución de cultivos</h5>
+                                    <div class="chart-container">
+                                        <canvas id="cropsDistributionChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-body">
+                                    <h5 class="mb-3">Progreso de crecimiento</h5>
+                                    <div class="chart-container">
+                                        <canvas id="growthProgressChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap Bundle con Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- JS personalizado -->
+<script>
+    // Gráfico de humedad del suelo
+    const soilCtx = document.getElementById('soilMoistureChart').getContext('2d');
+    const soilMoistureChart = new Chart(soilCtx, {
+        type: 'line',
+        data: {
+            labels: Array.from({length: 30}, (_, i) => `${i+1} Jun`),
+            datasets: [{
+                label: 'Humedad (%)',
+                data: [65, 64, 66, 62, 60, 58, 55, 57, 60, 62, 64, 63, 65, 67, 65, 63, 61, 62, 64, 66, 68, 67, 65, 63, 61, 62, 63, 64, 65, 64],
+                borderColor: '#2E7D32',
+                backgroundColor: 'rgba(46, 125, 50, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 50,
+                    max: 70
+                }
+            }
+        }
+    });
+
+    // Gráfico de nutrientes del suelo
+    const nutrientsCtx = document.getElementById('soilNutrientsChart').getContext('2d');
+    const soilNutrientsChart = new Chart(nutrientsCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Nitrógreno', 'Fósforo', 'Potasio', 'Otros'],
+            datasets: [{
+                data: [2.8, 1.5, 3.1, 2.6],
+                backgroundColor: [
+                    '#28a745',
+                    '#ffc107',
+                    '#fd7e14',
+                    '#6c757d'
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            cutout: '70%'
+        }
+    });
+
+    // Gráfico de consumo de agua
+    const waterCtx = document.getElementById('waterConsumptionChart').getContext('2d');
+    const waterConsumptionChart = new Chart(waterCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Maíz', 'Frijol', 'Calabaza', 'Chile', 'Tomate'],
+            datasets: [{
+                label: 'Consumo diario (L)',
+                data: [45, 32, 28, 38, 40],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(255, 159, 64, 0.7)',
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(153, 102, 255, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(153, 102, 255, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // Gráfico de eficiencia de riego
+    const irrigationCtx = document.getElementById('irrigationEfficiencyChart').getContext('2d');
+    const irrigationEfficiencyChart = new Chart(irrigationCtx, {
+        type: 'radar',
+        data: {
+            labels: ['Distribución', 'Tiempo', 'Cantidad', 'Frecuencia', 'Absorción'],
+            datasets: [{
+                label: 'Actual',
+                data: [75, 80, 70, 85, 80],
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(54, 162, 235, 1)'
+            }, {
+                label: 'Óptimo',
+                data: [90, 85, 95, 90, 95],
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(75, 192, 192, 1)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    angleLines: {
+                        display: true
+                    },
+                    suggestedMin: 50,
+                    suggestedMax: 100
+                }
+            }
+        }
+    });
+
+    // Gráfico de clima
+    const climateCtx = document.getElementById('climateChart').getContext('2d');
+    const climateChart = new Chart(climateCtx, {
+        type: 'line',
+        data: {
+            labels: ['6am', '9am', '12pm', '3pm', '6pm', '9pm', '12am', '3am'],
+            datasets: [{
+                label: 'Temperatura (°C)',
+                data: [18, 22, 26, 28, 25, 22, 20, 19],
+                borderColor: '#dc3545',
+                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                borderWidth: 2,
+                yAxisID: 'y',
+                tension: 0.4
+            }, {
+                label: 'Humedad (%)',
+                data: [85, 70, 60, 55, 65, 75, 80, 83],
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                borderWidth: 2,
+                yAxisID: 'y1',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            plugins: {
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Temperatura (°C)'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    grid: {
+                        drawOnChartArea: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Humedad (%)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Gráfico de distribución de cultivos
+    const cropsCtx = document.getElementById('cropsDistributionChart').getContext('2d');
+    const cropsDistributionChart = new Chart(cropsCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Maíz', 'Frijol', 'Calabaza', 'Chile', 'Tomate'],
+            datasets: [{
+                data: [35, 25, 20, 12, 8],
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF'
+                ],
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+
+    // Gráfico de progreso de crecimiento
+    const growthCtx = document.getElementById('growthProgressChart').getContext('2d');
+    const growthProgressChart = new Chart(growthCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Maíz', 'Frijol', 'Calabaza', 'Chile', 'Tomate'],
+            datasets: [{
+                label: 'Progreso (%)',
+                data: [65, 45, 30, 20, 55],
+                backgroundColor: [
+                    'rgba(46, 125, 50, 0.7)',
+                    'rgba(141, 110, 99, 0.7)',
+                    'rgba(255, 193, 7, 0.7)',
+                    'rgba(220, 53, 69, 0.7)',
+                    'rgba(23, 162, 184, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(46, 125, 50, 1)',
+                    'rgba(141, 110, 99, 1)',
+                    'rgba(255, 193, 7, 1)',
+                    'rgba(220, 53, 69, 1)',
+                    'rgba(23, 162, 184, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // Toggle para la sidebar
+    document.getElementById('sidebarToggle').addEventListener('click', function() {
+        document.getElementById('sidebar').classList.toggle('sidebar-collapsed');
+        document.getElementById('mainContent').classList.toggle('main-content-expanded');
+    });
+</script>
+</body> </html>

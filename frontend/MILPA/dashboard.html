@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel - Sistema MILPA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/animations.css">
+
+<style>
+    body {
+        overflow-x: hidden;
+        background-color: #f4f6f9; /* Un fondo general más suave */
+    }
+
+    /* Sidebar */
+    .sidebar {
+        background-color: #2E7D32; /* Verde Milpa */
+        color: white;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 250px;
+        transition: width 0.3s ease-in-out;
+        z-index: 1000;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    }
+    .sidebar-collapsed {
+        width: 80px;
+    }
+    .sidebar-collapsed .sidebar-text,
+    .sidebar-collapsed .sidebar-brand-text {
+        display: none;
+    }
+    .sidebar-collapsed .sidebar-icon {
+        margin-right: 0;
+    }
+    .sidebar-brand {
+        padding: 1.5rem 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .sidebar-nav {
+        padding: 0;
+        list-style: none;
+        margin-top: 1rem;
+    }
+    .sidebar-nav-item {
+        margin-bottom: 5px;
+    }
+    .sidebar-nav-link {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px;
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: background-color 0.3s, color 0.3s, border-left-color 0.3s;
+        border-left: 3px solid transparent;
+    }
+    .sidebar-nav-link:hover,
+    .sidebar-nav-link.active {
+        background-color: rgba(255, 255, 255, 0.15);
+        color: white;
+        border-left-color: #81c784; /* Un verde más claro para el indicador activo/hover */
+    }
+    .sidebar-icon {
+        margin-right: 10px;
+        font-size: 1.2rem;
+        width: 20px; /* Ancho fijo para alineación cuando está colapsado */
+        text-align: center;
+    }
+
+    /* Main Content Area */
+    .main-content {
+        margin-left: 250px;
+        padding-top: 80px; /* Espacio para el navbar fijo + un poco de margen */
+        transition: margin-left 0.3s ease-in-out;
+        min-height: 100vh;
+    }
+    .main-content-expanded { /* Cuando el sidebar está colapsado */
+        margin-left: 80px;
+    }
+
+    /* Navbar Fija Superior */
+    .navbar {
+        position: fixed;
+        top: 0;
+        /* left es gestionado por JS para sincronizar con el sidebar */
+        /* width es gestionado por JS */
+        z-index: 999; /* Debajo del sidebar */
+        background-color: #ffffff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.075);
+        transition: width 0.3s ease-in-out, left 0.3s ease-in-out; /* Transición suave */
+    }
+    /* No es necesario .main-content-expanded .navbar si JS maneja el width/left directamente */
+
+    /* Componentes Reutilizables y Estilos Generales de Tarjetas */
+    .profile-img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border: 3px solid #e9ecef; /* Borde más suave */
+    }
+    .alert-badge { /* Para notificaciones en el sidebar */
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        font-size: 0.65rem;
+        padding: 0.2em 0.4em;
+    }
+    .progress { height: 8px; } /* Barra de progreso más delgada */
+
+    .card {
+        border: none; /* Quitar bordes por defecto de Bootstrap para un look más limpio */
+        box-shadow: 0 0 15px rgba(0,0,0,0.05); /* Sombra suave general para tarjetas */
+        border-radius: 0.5rem; /* Bordes redondeados consistentes */
+    }
+    .crop-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    .crop-img {
+        height: 120px;
+        object-fit: cover;
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+    }
+    .status-healthy { color: #28a745; }
+    .status-warning { color: #ffc107; }
+    .status-danger { color: #dc3545; }
+
+    /* Estilos para el Mapa */
+    .map-card-display .card-body {
+        padding: 0; /* Quitar padding del card-body para que el contenedor del mapa ocupe todo */
+    }
+    .map-container-custom {
+        height: 400px; /* Altura ajustada para el mapa */
+        position: relative;
+        border-radius: 0.5rem; /* Heredar el radius de la tarjeta */
+        overflow: hidden; /* Asegurar que el iframe no se desborde */
+        background-color: #e9ecef; /* Color de fondo mientras carga el mapa */
+    }
+    #static-container,
+    #interactive-container {
+        width: 100%;
+        height: 100%;
+        transition: opacity 0.4s ease-in-out;
+    }
+    #interactive-container iframe {
+        border: none; /* Quitar borde del iframe */
+    }
+    .map-toggle-buttons {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        z-index: 10; /* Por encima del contenido del mapa */
+    }
+    .map-toggle-buttons .btn {
+        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    }
+
+    /* Estilos para el Chat */
+    .chat-card-display .card-header {
+        background-color: #388e3c; /* Verde más oscuro para cabecera del chat */
+        color: white;
+        border-bottom: none;
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+    }
+    .chat-card-display .card-header h5 {
+        color: white;
+    }
+    .chat-card-display .btn-outline-light:hover {
+        background-color: rgba(255,255,255,0.2);
+        color: white;
+    }
+    #chat {
+        height: 320px; /* Altura ajustada */
+        overflow-y: auto;
+        padding: 1rem;
+        background-color: #f8f9fa; /* Fondo ligeramente diferente para el área de mensajes */
+    }
+    .message {
+        background: #ffffff;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        margin: 0.5rem 0;
+        max-width: 78%; /* Un poco menos para más espacio */
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08); /* Sombra más sutil */
+        /* Animación de entrada (opacity/transform) será manejada por JS si client.js lo hace, o por CSS si se añade .visible */
+    }
+    .message.own {
+        background: #d1e7dd; /* Verde claro Bootstrap (success-bg-subtle) */
+        color: #0a3622; /* (success-text-emphasis) */
+        margin-left: auto;
+    }
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8rem; /* Más pequeño */
+        margin-bottom: 0.25rem;
+        color: #6c757d; /* Gris para la hora */
+    }
+    .message-header .user { /* Asumiendo que client.js envuelve el nombre de usuario en un span con clase user */
+        font-weight: 600; /* Semibold para el nombre */
+        color: #495057; /* Color de texto principal para el nombre */
+    }
+    .message.own .message-header .user {
+        color: #0a3622;
+    }
+    .message-body {
+        word-wrap: break-word;
+        line-height: 1.45;
+        color: #212529; /* Color de texto principal */
+    }
+
+    /* Scrollbars (Unificado) */
+    #chat::-webkit-scrollbar { width: 6px; } /* Más delgado */
+    #chat::-webkit-scrollbar-track { background: transparent; border-radius: 3px; }
+    #chat::-webkit-scrollbar-thumb { background: #ced4da; border-radius: 3px; }
+    #chat::-webkit-scrollbar-thumb:hover { background: #adb5bd; }
+
+    /* Animaciones */
+    @keyframes fadeInSmooth {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animated-fade-in {
+        animation: fadeInSmooth 0.5s ease-out forwards;
+        opacity: 0; /* Inicia oculto para la animación */
+    }
+    /* Retrasos para escalonar la animación de entrada */
+    .profile-summary-card.animated-fade-in { animation-delay: 0.1s; }
+    .map-card-display.animated-fade-in { animation-delay: 0.2s; }
+    .chat-card-display.animated-fade-in { animation-delay: 0.3s; }
+    .alert.animated-fade-in { animation-delay: 0s; } /* Alerta visible inmediatamente */
+
+
+    /* Media Queries (Unificado) */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 80px;
+        }
+        .sidebar-text, .sidebar-brand-text {
+            display: none;
+        }
+        .sidebar-icon {
+            margin-right: 0; /* Icono centrado cuando está colapsado */
+        }
+        .main-content {
+            margin-left: 80px;
+            padding-top: 70px; /* Un poco menos padding para pantallas pequeñas */
+        }
+        /* El JS maneja el 'left' del navbar, no el 'width' directamente en esta media query */
+        
+        .profile-summary-card, .map-card-display, .chat-card-display {
+            margin-bottom: 1.5rem; /* Mejor espaciado vertical en móvil */
+        }
+        .map-container-custom { height: 300px; } /* Mapa más pequeño en móvil */
+        #chat { height: 250px; } /* Chat más pequeño en móvil */
+    }
+</style>
+</head>
+<body>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1150;">
+      <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+          <strong id="toastTitle" class="me-auto"></strong>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+        </div>
+        <div id="toastMessage" class="toast-body"></div>
+      </div>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <i class="fas fa-leaf sidebar-icon fa-lg"></i>
+            <span class="sidebar-brand-text ms-2 fs-5 fw-bold">MILPA</span>
+        </div>
+        <ul class="sidebar-nav">
+            <li class="sidebar-nav-item">
+                <a href="dashboard.html" class="sidebar-nav-link active">
+                    <i class="fas fa-home sidebar-icon"></i><span class="sidebar-text">Inicio</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="recomendaciones.html" class="sidebar-nav-link">
+                    <i class="fas fa-lightbulb sidebar-icon"></i><span class="sidebar-text">Recomendaciones</span>
+                    <span class="badge bg-danger alert-badge">3</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="datos.html" class="sidebar-nav-link">
+                    <i class="fas fa-chart-line sidebar-icon"></i><span class="sidebar-text">Datos</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="tiempo-real.html" class="sidebar-nav-link">
+                    <i class="fas fa-clock sidebar-icon"></i><span class="sidebar-text">Monitoreo</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="calendario.html" class="sidebar-nav-link">
+                    <i class="fas fa-calendar-alt sidebar-icon"></i><span class="sidebar-text">Calendario</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="base.html" class="sidebar-nav-link">
+                    <i class="fas fa-book sidebar-icon"></i><span class="sidebar-text">Conocimiento</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item mt-auto mb-3"> <a href="configuracion.html" class="sidebar-nav-link">
+                    <i class="fas fa-cog sidebar-icon"></i><span class="sidebar-text">Configuración</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <div class="container-fluid">
+                <button class="btn btn-link text-secondary" id="sidebarToggle" aria-label="Toggle sidebar">
+                    <i class="fas fa-bars fs-5"></i>
+                </button>
+                <div class="d-flex align-items-center ms-auto">
+                    <div class="dropdown me-3">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell fs-5 text-success"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                2
+                                <span class="visually-hidden">notificaciones no leídas</span>
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="notificationsDropdown">
+                            <li><h6 class="dropdown-header">Notificaciones</h6></li>
+                            <li><a class="dropdown-item" href="#">Nueva recomendación disponible</a></li>
+                            <li><a class="dropdown-item" href="#">Alerta de clima: posible sequía</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-primary" href="#">Ver todas</a></li>
+                        </ul>
+                    </div>
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="elementos/Campesinos.jpg" alt="Usuario" class="rounded-circle me-2" width="32" height="32">
+                            <span id="userDisplayName" class="d-none d-md-inline text-dark">Usuario</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="#">Perfil</a></li>
+                            <li><a class="dropdown-item" href="#">Configuración</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn">Cerrar sesión</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container-fluid px-md-4 px-3 py-4">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="alert alert-danger d-flex align-items-center animated-fade-in" role="alert">
+                        <i class="fas fa-exclamation-triangle me-3 fs-4"></i>
+                        <div>
+                            <h5 class="alert-heading mb-1">¡Alerta importante!</h5>
+                            <p class="mb-0">Se pronostica sequía para los próximos 3 días. Considera ajustar el riego.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-lg-4 mb-4 mb-lg-0 profile-summary-card animated-fade-in">
+                    <div class="card h-100">
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <img src="elementos/Campesinos.jpg" alt="Perfil" class="profile-img rounded-circle mb-3 mx-auto">
+                            <h4 id="profileName" class="mb-1">Usuario</h4>
+                            <p class="text-muted small mb-3">Agricultor MILPA</p>
+                            <div class="d-flex justify-content-around mb-3">
+                                <div class="text-center">
+                                    <h5 class="mb-0">12</h5><small class="text-muted">Cultivos</small>
+                                </div>
+                                <div class="text-center">
+                                    <h5 class="mb-0">5</h5><small class="text-muted">Alertas</small>
+                                </div>
+                                <div class="text-center">
+                                    <h5 class="mb-0">8</h5><small class="text-muted">Recomend.</small>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline-success btn-sm mt-auto">Editar perfil</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8 map-card-display animated-fade-in">
+                    <div class="card h-100">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                                <h5 class="card-title mb-0">Ubicación de tu milpa</h5>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="mapDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-layer-group me-1"></i> Capas
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="mapDropdown">
+                                        <li><a class="dropdown-item" href="#">Suelo</a></li>
+                                        <li><a class="dropdown-item" href="#">Clima</a></li>
+                                        <li><a class="dropdown-item" href="#">Cultivos</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="map-container-custom flex-grow-1">
+                                <div id="static-container">
+                                    <img src="https://static-maps.yandex.ru/1.x/?ll=-96.936838,19.653445&z=14&size=600,400&l=map&pt=-96.936838,19.653445,pm2rdl"
+                                         class="img-fluid w-100 h-100" style="object-fit: cover;" alt="Mapa Estático Yandex">
+                                </div>
+                                <div id="interactive-container">
+                                    <iframe
+                                        src="https://www.openstreetmap.org/export/embed.html?bbox=-96.9512%2C19.6478%2C-96.9225%2C19.6591&amp;layer=mapnik"
+                                        style="width:100%; height:100%;"
+                                        title="Mapa Interactivo OpenStreetMap"></iframe>
+                                </div>
+                                <div class="map-toggle-buttons">
+                                    <button class="btn btn-sm btn-light me-1" onclick="showStatic()" title="Ver mapa estático"><i class="fas fa-image"></i></button>
+                                    <button class="btn btn-sm btn-success" onclick="showInteractive()" title="Ver mapa interactivo"><i class="fas fa-map-marked-alt"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-12 chat-card-display animated-fade-in">
+                     <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Chat en Vivo</h5>
+                            <button class="btn btn-sm btn-outline-light" id="btnLimpiarChat">
+                                <i class="fas fa-eraser me-1"></i> Limpiar
+                            </button>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="chat"></div>
+                            <div class="input-group p-3 border-top">
+                                <input type="text" id="inputMensaje" class="form-control" placeholder="Escribe tu mensaje..." aria-label="Escribe tu mensaje">
+                                <button id="btnEnviar" class="btn btn-success">
+                                    <i class="fas fa-paper-plane"></i> Enviar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title mb-0">Cultivos activos</h5>
+                                <a href="#" class="btn btn-sm btn-outline-success">Ver todos</a>
+                            </div>
+                            <div class="row g-4">
+                                <div class="col-md-6 col-lg-4 col-xl-3">
+                                    <div class="card crop-card h-100">
+                                        <img src="elementos/maiz.jpg" class="card-img-top crop-img" alt="Maíz">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h6 class="mb-0">Maíz Criollo</h6>
+                                                <span class="badge bg-success">Saludable</span>
+                                            </div>
+                                            <p class="text-muted small mb-3">Sembrado: 15/02/2025</p>
+                                            <div class="mb-3">
+                                                <div class="d-flex justify-content-between small mb-1">
+                                                    <span>Progreso</span><span>65%</span>
+                                                </div>
+                                                <div class="progress"><div class="progress-bar bg-success" role="progressbar" style="width: 65%;"></div></div>
+                                            </div>
+                                            <div class="d-flex justify-content-between small">
+                                                <div><i class="fas fa-tint text-primary me-1"></i><span>Riego: 2 días</span></div>
+                                                <div><i class="fas fa-bug text-success me-1"></i><span>Sin plagas</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-4 col-xl-3">
+                                    <div class="card crop-card h-100">
+                                        <img src="elementos/frijol.jpg" class="card-img-top crop-img" alt="Frijol">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h6 class="mb-0">Frijol Negro</h6>
+                                                <span class="badge bg-warning text-dark">Vigilancia</span>
+                                            </div>
+                                            <p class="text-muted small mb-3">Sembrado: 22/05/2025</p>
+                                            <div class="mb-3">
+                                                <div class="d-flex justify-content-between small mb-1">
+                                                    <span>Progreso</span><span>45%</span>
+                                                </div>
+                                                <div class="progress"><div class="progress-bar bg-warning" role="progressbar" style="width: 45%;"></div></div>
+                                            </div>
+                                            <div class="d-flex justify-content-between small">
+                                                <div><i class="fas fa-tint text-primary me-1"></i><span>Riego: 1 día</span></div>
+                                                <div><i class="fas fa-bug text-danger me-1"></i><span>Plaga detectada</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-4 col-xl-3">
+                                    <div class="card crop-card h-100">
+                                        <img src="elementos/calabaza.jpg" class="card-img-top crop-img" alt="Calabaza">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h6 class="mb-0">Calabaza</h6>
+                                                <span class="badge bg-success">Saludable</span>
+                                            </div>
+                                            <p class="text-muted small mb-3">Sembrado: 10/06/2025</p>
+                                            <div class="mb-3">
+                                                <div class="d-flex justify-content-between small mb-1">
+                                                    <span>Progreso</span><span>30%</span>
+                                                </div>
+                                                <div class="progress"><div class="progress-bar bg-success" role="progressbar" style="width: 30%;"></div></div>
+                                            </div>
+                                            <div class="d-flex justify-content-between small">
+                                                <div><i class="fas fa-tint text-primary me-1"></i><span>Riego: 3 días</span></div>
+                                                <div><i class="fas fa-bug text-success me-1"></i><span>Sin plagas</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-4 col-xl-3">
+                                    <div class="card crop-card h-100">
+                                        <img src="elementos/chile.jpg" class="card-img-top crop-img" alt="Chile">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h6 class="mb-0">Chile Serrano</h6>
+                                                <span class="badge bg-danger">Crítico</span>
+                                            </div>
+                                            <p class="text-muted small mb-3">Sembrado: 05/06/2025</p>
+                                            <div class="mb-3">
+                                                <div class="d-flex justify-content-between small mb-1">
+                                                    <span>Progreso</span><span>20%</span>
+                                                </div>
+                                                <div class="progress"><div class="progress-bar bg-danger" role="progressbar" style="width: 20%;"></div></div>
+                                            </div>
+                                            <div class="d-flex justify-content-between small">
+                                                <div><i class="fas fa-tint text-primary me-1"></i><span>Riego urgente</span></div>
+                                                <div><i class="fas fa-bug text-danger me-1"></i><span>Plagas presentes</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-4 col-xl-3">
+                                    <div class="card crop-card h-100">
+                                        <img src="elementos/tomate.jpg" class="card-img-top crop-img" alt="Tomate">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h6 class="mb-0">Tomate</h6>
+                                                <span class="badge bg-info">En crecimiento</span>
+                                            </div>
+                                            <p class="text-muted small mb-3">Sembrado: 12/06/2023</p>
+                                            <div class="mb-3">
+                                                <div class="d-flex justify-content-between small mb-1">
+                                                    <span>Progreso</span><span>55%</span>
+                                                </div>
+                                                <div class="progress"><div class="progress-bar bg-info" role="progressbar" style="width: 55%;"></div></div>
+                                            </div>
+                                            <div class="d-flex justify-content-between small">
+                                                <div><i class="fas fa-tint text-primary me-1"></i><span>Riego: Mañana</span></div>
+                                                <div><i class="fas fa-bug text-warning me-1"></i><span>Posible plaga</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const mainContent = document.getElementById('mainContent');
+    const topNavbar = document.querySelector('.navbar'); // Usamos .navbar ya que es el único navbar principal
+
+    const applyLayoutStates = () => {
+        if (!sidebar || !mainContent || !topNavbar) {
+            console.warn('Dashboard UI: Faltan elementos del DOM para el layout (sidebar, mainContent, o topNavbar).');
+            return;
+        }
+
+        const isSmallScreen = window.innerWidth <= 768;
+        const isSidebarCollapsed = sidebar.classList.contains('sidebar-collapsed');
+
+        if (isSmallScreen) {
+            sidebar.classList.add('sidebar-collapsed'); // Forzar colapso en pequeño
+            mainContent.classList.add('main-content-expanded');
+            topNavbar.style.left = '80px';
+            topNavbar.style.width = 'calc(100% - 80px)';
+        } else {
+            // En pantallas grandes, el estado depende del clic del usuario
+            if (isSidebarCollapsed) {
+                mainContent.classList.add('main-content-expanded');
+                topNavbar.style.left = '80px';
+                topNavbar.style.width = 'calc(100% - 80px)';
+            } else {
+                sidebar.classList.remove('sidebar-collapsed'); // Asegurar expansión
+                mainContent.classList.remove('main-content-expanded');
+                topNavbar.style.left = '250px';
+                topNavbar.style.width = 'calc(100% - 250px)';
+            }
+        }
+    };
+
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', () => {
+            if (sidebar) {
+                sidebar.classList.toggle('sidebar-collapsed');
+                applyLayoutStates(); // Actualizar todo el layout después del toggle
+            }
+        });
+    }
+    
+    applyLayoutStates(); // Aplicar al cargar
+    window.addEventListener('resize', applyLayoutStates); // Aplicar al redimensionar
+
+    // Lógica para mostrar mapa interactivo por defecto (las funciones showInteractive/showStatic están abajo)
+    // Se llama aquí para asegurar que el DOM está listo, incluyendo los contenedores del mapa.
+    showInteractive(); 
+});
+
+// Funciones globales para el mapa (se mantienen globales si son llamadas por onclick="")
+function showInteractive() {
+    const staticMapContainer = document.getElementById('static-container');
+    const interactiveMapContainer = document.getElementById('interactive-container');
+    if (staticMapContainer) staticMapContainer.style.display = 'none';
+    if (interactiveMapContainer) interactiveMapContainer.style.display = 'block';
+}
+
+function showStatic() {
+    const staticMapContainer = document.getElementById('static-container');
+    const interactiveMapContainer = document.getElementById('interactive-container');
+    if (interactiveMapContainer) interactiveMapContainer.style.display = 'none';
+    if (staticMapContainer) staticMapContainer.style.display = 'block';
+}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script src="js/client.js"></script> </body>
+</html>

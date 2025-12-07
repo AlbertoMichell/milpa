@@ -1,0 +1,10 @@
+{"fragment_id":"f1","doc_id":"doc_maiz_1","text_es":"Se recomienda fertilización con N en maiz durante macollaje en Puebla.","labels":["RECOMENDACION"],"entities":[{"type":"CULTIVO","value":"maiz"},{"type":"NUTRIENTE","value":"N"},{"type":"FENOFASE","value":"macollaje"},{"type":"LUGAR","value":"puebla"}]}
+{"fragment_id":"f2","doc_id":"doc_maiz_1","text_es":"Para maiz con presencia de gusano cogollero, aplicar control integrado.","labels":["RECOMENDACION"],"entities":[{"type":"CULTIVO","value":"maiz"},{"type":"PLAGA","value":"gusano cogollero"}]}
+{"fragment_id":"f3","doc_id":"doc_maiz_1","text_es":"Datos de rendimiento promedio en maiz bajo riego, tabla 2.","labels":["DATO"],"entities":[{"type":"CULTIVO","value":"maiz"}]}
+{"fragment_id":"f4","doc_id":"doc_trigo_1","text_es":"La roya afecta al trigo en floracion; monitorear síntomas.","labels":["RESULTADO","DATO"],"entities":[{"type":"PLAGA","value":"roya"},{"type":"CULTIVO","value":"trigo"},{"type":"FENOFASE","value":"floracion"}]}
+{"fragment_id":"f5","doc_id":"doc_trigo_1","text_es":"Se recomienda manejo de N y P en trigo para maximizar rendimiento.","labels":["RECOMENDACION"],"entities":[{"type":"NUTRIENTE","value":"N"},{"type":"NUTRIENTE","value":"P"},{"type":"CULTIVO","value":"trigo"}]}
+{"fragment_id":"f6","doc_id":"doc_mix_1","text_es":"Promedio regional en Oaxaca para maiz de temporal.","labels":["DATO"],"entities":[{"type":"LUGAR","value":"oaxaca"},{"type":"CULTIVO","value":"maiz"}]}
+{"fragment_id":"f7","doc_id":"doc_mix_1","text_es":"El minador se detectó en ensayos con tomate; comparar con maiz.","labels":["RESULTADO"],"entities":[{"type":"PLAGA","value":"minador"}]}
+{"fragment_id":"f8","doc_id":"doc_mix_1","text_es":"La fertilización foliar puede apoyar en etapas tempranas.","labels":[],"entities":[]}
+{"fragment_id":"f9","doc_id":"doc_mix_1","text_es":"Muestreo de suelo recomendado antes de la siembra.","labels":["RECOMENDACION"],"entities":[]}
+{"fragment_id":"f10","doc_id":"doc_mix_1","text_es":"Valores de P y K en suelos franco-arcillosos.","labels":["DATO"],"entities":[{"type":"NUTRIENTE","value":"P"},{"type":"NUTRIENTE","value":"K"}]}

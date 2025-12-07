@@ -1,0 +1,63 @@
+# Prometheus configuration for MILPA observability stack
+# Scrapes metrics from AI backend, Presenter, and other services
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'milpa-local'
+    environment: 'development'
+
+# Alertmanager configuration (opcional - agregar si se implementan alertas)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets: ['alertmanager:9093']
+
+# Reglas de alerta (se cargan desde archivos externos)
+# rule_files:
+#   - "alerts/*.yml"
+
+scrape_configs:
+  # ────────────────────────────────────────────────────────────────
+  # AI Backend (FastAPI con prometheus-fastapi-instrumentator)
+  # ────────────────────────────────────────────────────────────────
+  - job_name: 'milpa-ai-backend'
+    static_configs:
+      - targets: ['ai:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'ai-backend'
+
+  # ────────────────────────────────────────────────────────────────
+  # Presenter (Fastify con custom metrics)
+  # ────────────────────────────────────────────────────────────────
+  - job_name: 'milpa-presenter'
+    static_configs:
+      - targets: ['presenter:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'presenter'
+
+  # ────────────────────────────────────────────────────────────────
+  # Prometheus self-monitoring
+  # ────────────────────────────────────────────────────────────────
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 30s
+
+  # ────────────────────────────────────────────────────────────────
+  # ClamAV monitoring (si expone métricas - opcional)
+  # ────────────────────────────────────────────────────────────────
+  # - job_name: 'clamav'
+  #   static_configs:
+  #     - targets: ['clamav:9000']  # Si usas clamav_exporter

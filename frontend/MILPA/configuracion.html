@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración - Sistema MILPA</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <style>
+
+ /* ————————— MODIFICADO: añadidos estilos para el sidebar ————————— */
+        .sidebar {
+            background-color: #2E7D32; /* Verde MILPA */
+            color: white;
+            height: 100vh;
+            position: fixed;
+            width: 250px;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        .sidebar-collapsed {
+            width: 80px;
+        }
+        .sidebar-collapsed .sidebar-text,
+        .sidebar-collapsed .sidebar-brand-text {
+            display: none;
+        }
+        .sidebar-collapsed .sidebar-icon {
+            margin-right: 0;
+        }
+
+        /* ————————— MODIFICADO: estilos para desplazar contenido al lado del sidebar ————————— */
+        .main-content {
+            margin-left: 250px;
+            transition: all 0.3s;
+        }
+        .main-content-expanded {
+            margin-left: 80px;
+        }
+
+
+
+        /* ———————– ESTILOS DE NAVEGACIÓN DEL SIDEBAR ———————– */
+.sidebar-nav {
+    padding: 0;
+    list-style: none;
+    margin-top: 1rem;        /* ya tenías mt-3, pero si lo quieres inline */
+}
+.sidebar-nav-item {
+    margin-bottom: 5px;
+    position: relative;
+}
+.sidebar-nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: all 0.3s;
+    border-left: 3px solid transparent;
+}
+.sidebar-nav-link:hover,
+.sidebar-nav-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-left: 3px solid #fff;
+}
+.sidebar-icon {
+    margin-right: 10px;
+    font-size: 1.2rem;
+}
+/* texto de los enlaces, para esconderlo al colapsar */
+.sidebar-text { white-space: nowrap; } 
+
+/* Style para la marca del sidebar */
+.sidebar-brand {
+    padding: 1.5rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.sidebar-brand-text {
+    margin-left: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+/* Badge de alertas sobre el icono */
+.alert-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 0.7rem;
+}
+
+
+
+
+
+
+        .settings-card {
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        .settings-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .nav-pills .nav-link {
+            color: #495057;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        .nav-pills .nav-link.active {
+            background-color: #2E7D32;
+            color: white;
+        }
+        .nav-pills .nav-link i {
+            margin-right: 8px;
+            width: 20px;
+            text-align: center;
+        }
+        .form-switch .form-check-input {
+            width: 3em;
+            height: 1.5em;
+        }
+        .profile-pic {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border: 5px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .upload-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        .upload-btn input[type="file"] {
+            position: absolute;
+            top: 0;
+            right: 0;
+            min-width: 100%;
+            min-height: 100%;
+            font-size: 100px;
+            text-align: right;
+            filter: alpha(opacity=0);
+            opacity: 0;
+            outline: none;
+            background: white;
+            cursor: inherit;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar (igual que en recommendations.html) -->
+
+ <!-- ————————— AGREGADO: Sidebar panel con menú de navegación ————————— -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand d-flex align-items-center justify-content-center">
+            <i class="fas fa-leaf sidebar-icon fa-lg"></i>
+            <span class="sidebar-brand-text ms-2 fs-5 fw-bold">MILPA</span>
+        </div>
+        <ul class="sidebar-nav mt-3">
+            <li class="sidebar-nav-item">
+                <a href="dashboard.html" class="sidebar-nav-link active">
+                    <i class="fas fa-home sidebar-icon"></i>
+                    <span class="sidebar-text">Inicio</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="recomendaciones.html" class="sidebar-nav-link">
+                    <i class="fas fa-lightbulb sidebar-icon"></i>
+                    <span class="sidebar-text">Recomendaciones</span>
+                    <span class="badge bg-danger alert-badge">3</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="datos.html" class="sidebar-nav-link">
+                    <i class="fas fa-chart-line sidebar-icon"></i>
+                    <span class="sidebar-text">Datos</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="tiempo-real.html" class="sidebar-nav-link">
+                    <i class="fas fa-clock sidebar-icon"></i>
+                    <span class="sidebar-text">Monitoreo</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="calendario.html" class="sidebar-nav-link">
+                    <i class="fas fa-calendar-alt sidebar-icon"></i>
+                    <span class="sidebar-text">Calendario</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="base.html" class="sidebar-nav-link">
+                    <i class="fas fa-book sidebar-icon"></i>
+                    <span class="sidebar-text">Conocimiento</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item mt-4">
+                <a href="configuracion.html" class="sidebar-nav-link">
+                    <i class="fas fa-cog sidebar-icon"></i>
+                    <span class="sidebar-text">Configuración</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- ————————— AGREGADO: inicio del contenedor principal que empuja el contenido al lado del sidebar ————————— -->
+    <div class="main-content" id="mainContent">
+
+
+    
+    <!-- Main Content (igual que en recommendations.html) -->
+
+    <!-- Page Content -->
+    <div class="container-fluid px-4 py-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="fw-bold">Configuración del Sistema</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="dashboard.html">Inicio</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Configuración</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-3 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="nav flex-column nav-pills" id="settingsTabs" role="tablist">
+                            <button class="nav-link active" id="profile-tab" data-bs-toggle="pill" data-bs-target="#profile" type="button" role="tab">
+                                <i class="fas fa-user"></i> Perfil
+                            </button>
+                            <button class="nav-link" id="account-tab" data-bs-toggle="pill" data-bs-target="#account" type="button" role="tab">
+                                <i class="fas fa-cog"></i> Cuenta
+                            </button>
+                            <button class="nav-link" id="notifications-tab" data-bs-toggle="pill" data-bs-target="#notifications" type="button" role="tab">
+                                <i class="fas fa-bell"></i> Notificaciones
+                            </button>
+                            <button class="nav-link" id="sensors-tab" data-bs-toggle="pill" data-bs-target="#sensors" type="button" role="tab">
+                                <i class="fas fa-microchip"></i> Sensores
+                            </button>
+                            <button class="nav-link" id="alerts-tab" data-bs-toggle="pill" data-bs-target="#alerts" type="button" role="tab">
+                                <i class="fas fa-exclamation-triangle"></i> Alertas
+                            </button>
+                            <button class="nav-link" id="privacy-tab" data-bs-toggle="pill" data-bs-target="#privacy" type="button" role="tab">
+                                <i class="fas fa-lock"></i> Privacidad
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-9 mb-4">
+                <div class="tab-content" id="settingsTabsContent">
+                    <!-- Pestaña Perfil -->
+                    <div class="tab-pane fade show active" id="profile" role="tabpanel">
+                        <div class="card border-0 shadow-sm settings-card">
+                            <div class="card-body">
+                                <h4 class="mb-4">Perfil de usuario</h4>
+                                <form>
+                                    <div class="row mb-4">
+                                        <div class="col-md-4 text-center">
+                                            <img src="images/farmer-avatar.jpg" alt="Foto de perfil" class="profile-pic rounded-circle mb-3">
+                                            <div class="d-grid gap-2">
+                                                <button type="button" class="btn btn-outline-forest-green upload-btn">
+                                                    <i class="fas fa-camera me-2"></i> Cambiar foto
+                                                    <input type="file" accept="image/*">
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label for="firstName" class="form-label">Nombre</label>
+                                                    <input type="text" class="form-control" id="firstName" value="Juan">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="lastName" class="form-label">Apellido</label>
+                                                    <input type="text" class="form-control" id="lastName" value="Pérez">
+                                                </div>
+                                                <div class="col-12">
+                                                    <label for="bio" class="form-label">Biografía</label>
+                                                    <textarea class="form-control" id="bio" rows="3">Agricultor tradicional con 15 años de experiencia en el sistema MILPA.</textarea>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="location" class="form-label">Ubicación</label>
+                                                    <input type="text" class="form-control" id="location" value="Coatepec,Veracruz">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="experience" class="form-label">Experiencia</label>
+                                                    <select class="form-select" id="experience">
+                                                        <option>Menos de 5 años</option>
+                                                        <option selected>5-15 años</option>
+                                                        <option>Más de 15 años</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <button type="button" class="btn btn-secondary me-2">Cancelar</button>
+                                        <button type="submit" class="btn btn-forest-green">Guardar cambios</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pestaña Cuenta -->
+                    <div class="tab-pane fade" id="account" role="tabpanel">
+                        <div class="card border-0 shadow-sm settings-card">
+                            <div class="card-body">
+                                <h4 class="mb-4">Configuración de la cuenta</h4>
+                                <form>
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-6">
+                                            <label for="email" class="form-label">Correo electrónico</label>
+                                            <input type="email" class="form-control" id="email" value="juan.perez@example.com">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="phone" class="form-label">Teléfono</label>
+                                            <input type="tel" class="form-control" id="phone" value="+52 241 123 4567">
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="language" class="form-label">Idioma</label>
+                                            <select class="form-select" id="language">
+                                                <option selected>Español</option>
+                                                <option>English</option>
+                                                <option>Náhuatl</option>
+                                                <option>Maya</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <h5 class="mb-3">Cambiar contraseña</h5>
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-md-4">
+                                            <label for="currentPassword" class="form-label">Contraseña actual</label>
+                                            <input type="password" class="form-control" id="currentPassword">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="newPassword" class="form-label">Nueva contraseña</label>
+                                            <input type="password" class="form-control" id="newPassword">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="confirmPassword" class="form-label">Confirmar contraseña</label>
+                                            <input type="password" class="form-control" id="confirmPassword">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="text-end">
+                                        <button type="button" class="btn btn-secondary me-2">Cancelar</button>
+                                        <button type="submit" class="btn btn-forest-green">Guardar cambios</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pestaña Notificaciones -->
+                    <div class="tab-pane fade" id="notifications" role="tabpanel">
+                        <div class="card border-0 shadow-sm settings-card">
+                            <div class="card-body">
+                                <h4 class="mb-4">Preferencias de notificaciones</h4>
+                                <form>
+                                    <h5 class="mb-3">Alertas por correo electrónico</h5>
+                                    <div class="mb-4">
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" id="emailAlerts" checked>
+                                            <label class="form-check-label" for="emailAlerts">Recibir alertas por correo</label>
+                                        </div>
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" id="dailySummary" checked>
+                                            <label class="form-check-label" for="dailySummary">Resumen diario</label>
+                                        </div>
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" id="weeklyReport">
+                                            <label class="form-check-label" for="weeklyReport">Reporte semanal</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <h5 class="mb-3">Notificaciones push</h5>
+                                    <div class="mb-4">
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" id="pushAlerts" checked>
+                                            <label class="form-check-label" for="pushAlerts">Alertas importantes</label>
+                                        </div>
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" id="pushRecommendations" checked>
+                                            <label class="form-check-label" for="pushRecommendations">Recomendaciones</label>
+                                        </div>
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" id="pushReminders">
+                                            <label class="form-check-label" for="pushReminders">Recordatorios</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <h5 class="mb-3">Frecuencia de notificaciones</h5>
+                                    <div class="mb-4">
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="radio" name="frequency" id="frequencyImmediate" checked>
+                                            <label class="form-check-label" for="frequencyImmediate">Inmediatas (tan pronto como se detecte)</label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="radio" name="frequency" id="frequencyDaily">
+                                            <label class="form-check-label" for="frequencyDaily">Resumen diario (todas las alertas juntas)</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="frequency" id="frequencyCustom">
+                                            <label class="form-check-label" for="frequencyCustom">Personalizado</label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="text-end">
+                                        <button type="button" class="btn btn-secondary me-2">Cancelar</button>
+                                        <button type="submit" class="btn btn-forest-green">Guardar cambios</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pestaña Sensores -->
+                    <div class="tab-pane fade" id="sensors" role="tabpanel">
+                        <div class="card border-0 shadow-sm settings-card">
+                            <div class="card-body">
+                                <h4 class="mb-4">Configuración de sensores</h4>
+                                <div class="table-responsive mb-4">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Sensor</th>
+                                                <th>Ubicación</th>
+                                                <th>Estado</th>
+                                                <th>Frecuencia</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Humedad suelo</td>
+                                                <td>Sector Norte</td>
+                                                <td><span class="badge bg-success">Activo</span></td>
+                                                <td>15 min</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-secondary">Editar</button>
+
+                                                                                                </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Temperatura aire</td>
+                                            <td>Sector Centro</td>
+                                            <td><span class="badge bg-success">Activo</span></td>
+                                            <td>30 min</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-secondary">Editar</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Luz solar</td>
+                                            <td>Sector Sur</td>
+                                            <td><span class="badge bg-warning text-dark">Inestable</span></td>
+                                            <td>1 hora</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-secondary">Editar</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Humedad aire</td>
+                                            <td>Sector Este</td>
+                                            <td><span class="badge bg-danger">Inactivo</span></td>
+                                            <td>N/A</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-secondary">Editar</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="text-end">
+                                <button class="btn btn-forest-green">
+                                    <i class="fas fa-plus me-2"></i> Agregar sensor
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pestaña Alertas -->
+                <div class="tab-pane fade" id="alerts" role="tabpanel">
+                    <div class="card border-0 shadow-sm settings-card">
+                        <div class="card-body">
+                            <h4 class="mb-4">Umbrales de alerta</h4>
+                            <form>
+                                <div class="row g-3 mb-4">
+                                    <div class="col-md-6">
+                                        <label for="minSoilMoisture" class="form-label">Humedad mínima del suelo (%)</label>
+                                        <input type="range" class="form-range" min="20" max="80" step="5" id="minSoilMoisture" value="40">
+                                        <div class="d-flex justify-content-between">
+                                            <small>20%</small>
+                                            <small>40%</small>
+                                            <small>60%</small>
+                                            <small>80%</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="maxTemperature" class="form-label">Temperatura máxima del aire (°C)</label>
+                                        <input type="range" class="form-range" min="20" max="45" step="1" id="maxTemperature" value="35">
+                                        <div class="d-flex justify-content-between">
+                                            <small>20°C</small>
+                                            <small>30°C</small>
+                                            <small>40°C</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="minAirHumidity" class="form-label">Humedad mínima del aire (%)</label>
+                                        <input type="range" class="form-range" min="10" max="90" step="5" id="minAirHumidity" value="50">
+                                        <div class="d-flex justify-content-between">
+                                            <small>10%</small>
+                                            <small>50%</small>
+                                            <small>90%</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="pestThreshold" class="form-label">Umbral de detección de plagas</label>
+                                        <input type="range" class="form-range" min="1" max="5" step="1" id="pestThreshold" value="3">
+                                        <div class="d-flex justify-content-between">
+                                            <small>Bajo</small>
+                                            <small>Medio</small>
+                                            <small>Alto</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <h5 class="mb-3">Tipos de alertas</h5>
+                                <div class="mb-4">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="alertWater" checked>
+                                        <label class="form-check-label" for="alertWater">Riego</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="alertTemp" checked>
+                                        <label class="form-check-label" for="alertTemp">Temperatura</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="alertPests" checked>
+                                        <label class="form-check-label" for="alertPests">Plagas</label>
+                                    </div>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="alertGrowth">
+                                        <label class="form-check-label" for="alertGrowth">Crecimiento</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="alertWeather" checked>
+                                        <label class="form-check-label" for="alertWeather">Clima</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-end">
+                                    <button type="button" class="btn btn-secondary me-2">Restablecer</button>
+                                    <button type="submit" class="btn btn-forest-green">Guardar cambios</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pestaña Privacidad -->
+                <div class="tab-pane fade" id="privacy" role="tabpanel">
+                    <div class="card border-0 shadow-sm settings-card">
+                        <div class="card-body">
+                            <h4 class="mb-4">Privacidad y datos</h4>
+                            <form>
+                                <div class="mb-4">
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="dataCollection" checked>
+                                        <label class="form-check-label" for="dataCollection">Compartir datos anónimos para mejorar el sistema</label>
+                                    </div>
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="researchParticipation">
+                                        <label class="form-check-label" for="researchParticipation">Participar en investigaciones agrícolas</label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="locationSharing" checked>
+                                        <label class="form-check-label" for="locationSharing">Compartir ubicación para recomendaciones precisas</label>
+                                    </div>
+                                </div>
+                                
+                                <h5 class="mb-3">Exportar datos</h5>
+                                <div class="mb-4">
+                                    <p class="text-muted">Descarga todos tus datos en formato estándar para respaldo o análisis externo.</p>
+                                    <button type="button" class="btn btn-outline-forest-green me-2">
+                                        <i class="fas fa-file-excel me-2"></i> Exportar a Excel
+                                    </button>
+                                    <button type="button" class="btn btn-outline-forest-green">
+                                        <i class="fas fa-file-pdf me-2"></i> Exportar a PDF
+                                    </button>
+                                </div>
+                                
+                                <h5 class="mb-3">Eliminar cuenta</h5>
+                                <div class="mb-4">
+                                    <p class="text-muted">Al eliminar tu cuenta, todos tus datos serán borrados permanentemente.</p>
+                                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                                        <i class="fas fa-trash-alt me-2"></i> Eliminar cuenta
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para eliminar cuenta -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteAccountModalLabel">¿Eliminar cuenta?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Esta acción eliminará permanentemente tu cuenta y todos los datos asociados. ¿Estás seguro de que deseas continuar?</p>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="confirmDelete">
+                    <label class="form-check-label" for="confirmDelete">Sí, quiero eliminar mi cuenta permanentemente</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="deleteAccountBtn" disabled>Eliminar cuenta</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap Bundle con Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- JS personalizado -->
+<script>
+    // Habilitar botón de eliminar cuenta cuando se marca el checkbox
+    document.getElementById('confirmDelete').addEventListener('change', function() {
+        document.getElementById('deleteAccountBtn').disabled = !this.checked;
+    });
+
+    // Mostrar alerta al hacer clic en eliminar cuenta
+    document.getElementById('deleteAccountBtn').addEventListener('click', function() {
+        alert('Cuenta eliminada (esto es una simulación)');
+        const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteAccountModal'));
+        deleteModal.hide();
+    });
+
+    // Toggle para la sidebar
+    document.getElementById('sidebarToggle').addEventListener('click', function() {
+        document.getElementById('sidebar').classList.toggle('sidebar-collapsed');
+        document.getElementById('mainContent').classList.toggle('main-content-expanded');
+    });
+</script>
+
+</body> </html>

@@ -1,0 +1,2 @@
+{"query": "fertilizacion maiz macollaje", "gold_ids": ["f1", "f2"], "query_entities": ["maiz", "n"]}
+{"query": "control gusano cogollero", "gold_ids": ["f3"], "query_entities": ["plaga:gusano_cogollero"]}

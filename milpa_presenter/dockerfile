@@ -1,0 +1,31 @@
+# milpa_presenter/Dockerfile
+# Node Alpine, usuario no-root, build TypeScript y runtime minimal con lockfile.
+
+FROM node:20-alpine AS base
+WORKDIR /app
+# Crear usuario no-root para ejecutar en runtime
+RUN adduser -D -H -u 10001 nodeuser
+
+# Etapa de dependencias (con lockfile para reproducibilidad)
+FROM base AS deps
+# Copiamos lo mínimo necesario para resolver dependencias con npm ci
+# (package.json + package-lock.json + tsconfig para el build)
+COPY milpa_presenter/package.json milpa_presenter/package-lock.json milpa_presenter/tsconfig.json /app/
+# Instala EXACTAMENTE lo que define el lockfile (rápido y reproducible)
+RUN npm ci --no-audit --no-fund
+
+# Etapa de build (transpila TypeScript → dist)
+FROM deps AS build
+COPY milpa_presenter/src /app/src
+RUN npm run build
+
+# Etapa de runtime (solo lo necesario para ejecutar)
+FROM base AS runtime
+ENV NODE_ENV=production
+# Reutilizamos node_modules instalados en deps (conforme al lockfile)
+COPY --from=deps /app/node_modules /app/node_modules
+# Copiamos el artefacto compilado
+COPY --from=build /app/dist /app/dist
+USER nodeuser
+EXPOSE 8080
+CMD ["node", "dist/server.js"]
