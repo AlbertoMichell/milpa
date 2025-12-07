@@ -1,0 +1,27 @@
+﻿================================================================================
+RESUMEN DEL ANÁLISIS FACTORIAL 2^4
+Optimización de Agua Disponible (AWC)
+================================================================================
+
+MODELO DE REGRESIÓN:
+AWC = 54.2237 + 1.8127·Arcilla + -1.5181·MO + 1.0300·DA + 23.2210·Prof
+
+BONDAD DE AJUSTE:
+R² = 0.7240
+RMSE = 13.6178 mm/m
+MAE = 10.7276 mm/m
+
+EFECTOS PRINCIPALES:
+Arcilla   :    0.49 mm/m  (NS)
+MO        :   -9.32 mm/m  (***)
+DA        :   -2.43 mm/m  (NS)
+Prof      :   46.52 mm/m  (***)
+
+CONDICIONES ÓPTIMAS:
+Arcilla   : Alto (+1)
+MO        : Bajo (-1)
+DA        : Alto (+1)
+Prof      : Alto (+1)
+
+AWC PREDICHO EN ÓPTIMO: 81.81 mm/m
+MEJORA VS MEDIA ACTUAL: 19.79 mm/m (31.9%)

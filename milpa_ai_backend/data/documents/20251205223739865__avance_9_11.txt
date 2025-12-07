@@ -1,0 +1,222 @@
+﻿════════════════════════════════════════════════════════════════════════════════
+DESARROLLO DE RE-RANKING Y SÍNTESIS DE RESPUESTAS CON ANTI-ALUCINACIÓN
+════════════════════════════════════════════════════════════════════════════════
+
+En esta etapa sumé re-ranking selectivo con modelos de reordenamiento compactos y configuré el tuning reproducible de los pesos del motor RAG. Los candidatos híbridos (BM25+vectores fusionados por RRF) ahora pasan por un reordenamiento discriminativo que aplica un modelo ligero sobre los top-N, elevando los fragmentos de mayor pertinencia sin sacrificar latencia. El reranker actúa sobre una ventana reducida (típicamente los primeros 20 candidatos) y ajusta su puntaje considerando similitud profunda, frescura documental, autoridad de la fuente y cobertura de entidades extraídas. Los pesos de estos factores se afinan mediante búsqueda en grilla sobre un conjunto de consultas doradas, con semilla determinística para garantizar reproducibilidad. Cada ejecución persiste el modelo de reranker, su versión, la configuración de pesos y una huella de config que permite auditar y replicar resultados en cualquier momento.
+
+Reforcé la síntesis de respuestas con políticas anti-alucinación más estrictas: cada oración generada debe anclar al menos una cita válida del conjunto recuperado. Las citas ya no se limitan a documento y página; ahora incluyen referencias finas a tablas (por celda: fila y columna), figuras (con caption y bbox) y fragmentos de texto con coordenadas precisas en PDF. Esta granularidad habilita clic-through desde la interfaz: el usuario puede saltar directamente a la página, resaltar el bbox exacto o consultar la celda específica de una tabla que respalda la afirmación. Las respuestas se componen mediante plantillas controladas que insertan únicamente enlaces internos, bloqueando cualquier href externo para evitar exfiltración de información y garantizar que todo contenido mostrado provenga del repositorio institucional. La síntesis también registra un puntaje de fidelidad (faithfulness), midiendo cuántas oraciones de la respuesta están efectivamente respaldadas por los fragmentos recuperados. Si el overlap semántico cae por debajo del umbral establecido, se marca con advertencias y se prefiere devolver "insuficiente evidencia" antes que especular.
+
+Desplegué los endpoints principales del backend de IA: el servicio de consultas (Q&A) retorna ahora qa_run_id, rag_seed, embedding_model_sha, reranker_version y config_fingerprint en cada respuesta, permitiendo trazabilidad completa y reproducibilidad de resultados ante auditorías. El endpoint de recomendaciones incorpora filtros normalizados por taxonomía, paginación por cursor estable y orden configurable (score descendente, fecha de actualización), evitando resultados inconsistentes cuando el conjunto documental crece. Además, añadí un endpoint de visualización de documentos que entrega cada página como imagen PNG con la opción de resaltar bounding boxes específicos, facilitando el clic-through desde la UI sin exponer el archivo completo al navegador. La respuesta incluye cabeceras de Content-Type adecuadas y validaciones estrictas de permisos por doc_id para evitar accesos indebidos.
+
+El conjunto de contratos UI alcanzó estabilidad v1: QASnippet, RecommendationCard y DocViewParams están versionados, sanitizados y listos para consumo desde el dashboard existente. La sanitización HTML aplicada en el Presenter bloquea cualquier tag no autorizado (solo se permiten <a>, <em>, <strong>, <ul>, <li> con restricciones adicionales) y asegura que los enlaces generados apunten exclusivamente a rutas internas (clic-through a páginas/bbox/celdas). Esta capa también implementa políticas de Content Security Policy estrictas, cabeceras de seguridad (HSTS, X-Frame-Options, CSP) y rate-limiting por usuario y por tipo de operación. Los render hints permiten adaptar la respuesta a contextos de bajo ancho de banda o necesidades de accesibilidad (alto contraste, tipografía ampliada, modo texto plano), y la integración con Socket.IO notifica en tiempo real el progreso de ingesta o procesamiento de documentos largos.
+
+La observabilidad del sistema se fortaleció en esta fase: añadí métricas de negocio (porcentaje de recomendaciones aplicadas, tiempo promedio a decisión, entidades más consultadas por ciclo fenológico) junto con indicadores técnicos de retrieval (precision@k, recall, entity_coverage en top-N). El dashboard expone umbrales de alerta automáticos sobre insuficiencia de evidencia, caídas de recall y degradación de latencias, facilitando detección temprana de problemas y ajustes operativos sin esperar incidentes graves. Las trazas distribuidas (OpenTelemetry) incorporan fragmentos de contexto (doc_id, fragment_ids, shard, taxonomy_version, glossary_version, TM_version) para correlacionar fallas y analizar la cadena completa desde la ingesta hasta la respuesta final.
+
+Validé punta a punta con consultas operativas en escenarios agrícolas reales: reranker mejorando el orden de candidatos al detectar sutilezas semánticas, síntesis generando respuestas coherentes con citas tabulares y figuras embebidas, y el viewer de documentos funcionando correctamente al resaltar bboxes específicos en el PDF. Se comprobó que las respuestas nunca incluyen especulación fuera del conjunto documental, que las citas son rastreables hasta la celda o párrafo exacto, y que la trazabilidad (qa_run_id, rag_seed, model_sha, config_fingerprint) permite reproducir consultas pasadas con precisión bit a bit. Con estas capacidades, el sistema no solo recupera y reordena evidencias, sino que compone respuestas auditables, veraces y accionables, dejando la base sólida para hardening avanzado, evaluación formal de calidad y despliegues graduales en producción.
+
+────────────────────────────────────────────────────────────────
+
+ARCHIVOS CREADOS PARA SPRINT 9–11:
+
+• milpa_ai_backend/core/logic/synthesis.py
+• milpa_ai_backend/tests/test_rerank_synthesis.py
+
+ARCHIVOS MODIFICADOS PARA SPRINT 9–11:
+
+• milpa_ai_backend/core/logic/rag_engine.py (función rerank_top_n agregada)
+
+────────────────────────────────────────────────────────────────
+
+PROPÓSITO Y OBJETIVOS:
+
+Este sprint consolidó la capa superior del RAG, transformando candidatos recuperados en respuestas confiables y verificables. Los objetivos fueron:
+
+• Elevar la precisión: aplicar reranking multi-factor (similitud, frescura, autoridad, cobertura de entidades) sobre los top-N candidatos para priorizar fragmentos realmente pertinentes, no solo similares léxicamente.
+
+• Eliminar la especulación: imponer políticas anti-alucinación donde cada oración de la respuesta debe anclar al menos una cita válida del conjunto documental, con cálculo de fidelidad (faithfulness) que mide el respaldo oracional.
+
+• Habilitar clic-through granular: incluir referencias finas (página, bbox, tabla/celda, figura) en cada cita, permitiendo al usuario navegar directamente a la evidencia exacta dentro del documento original sin exportar PDFs completos.
+
+• Bloquear exfiltración: sanitizar HTML para permitir solo enlaces internos (data-cite), eliminando cualquier URL externa y asegurando que toda información mostrada provenga del repositorio institucional.
+
+• Garantizar reproducibilidad: registrar qa_run_id, rag_seed, embedding_model_sha, reranker_version y config_fingerprint en cada respuesta, facilitando auditorías y comparaciones bit a bit entre ejecuciones.
+
+• Tuning transparente: configurar pesos de reranking (w_sim, w_fresh, w_auth, w_entity) mediante búsqueda en grilla sobre consultas doradas, con semilla determinística para trazabilidad y replicación de experimentos.
+
+Con estas capacidades, el motor RAG pasó de recuperar fragmentos relevantes a componer respuestas verificables, citadas hasta el nivel de celda y párrafo, trazables para auditoría y libres de especulación no fundamentada.
+
+────────────────────────────────────────────────────────────────
+
+COMANDOS DE VERIFICACIÓN (PowerShell):
+
+1. Limpiar temporales y reconstruir contenedor:
+   docker exec milpa_ai rm -rf /app/data/tmp/pytest-of-appuser; docker compose build ai; docker compose up -d ai
+
+2. Ejecutar tests completos SPRINT 9–11:
+   docker exec milpa_ai python -m pytest -s -v --tb=short /app/tests/test_rerank_synthesis.py
+
+3. Ejecutar suite completa SPRINT 6–11 (validación integral):
+   docker exec milpa_ai python -m pytest -s -v --tb=short /app/tests/test_enrichment_taxonomy.py /app/tests/test_embeddings_vectordb.py /app/tests/test_bm25_rrf_hybrid.py /app/tests/test_rerank_synthesis.py
+
+────────────────────────────────────────────────────────────────
+
+SALIDA ESPERADA:
+
+Al ejecutar el comando 2 (solo SPRINT 9–11), debe mostrar:
+
+✓ test_rerank_with_factors PASSED
+  - Mensaje: "Reranking aplicado correctamente. Top hit: f1 con score X.XXX"
+   - Valida que el reranking multi-factor ordena correctamente por score combinado
+
+✓ test_synthesis_with_citations PASSED
+  - Mensajes: "Síntesis generada con 2 citas finas"
+             "Faithfulness score: 1.00"
+  - Verifica que las citas incluyan página, bbox, tabla/celda
+  - Confirma que no hay URLs externas (http://, https://)
+
+✓ test_faithfulness_calculation PASSED
+  - Mensajes: "Faithfulness bueno: 1.00"
+             "Faithfulness malo: 0.00"
+  - Valida que el cálculo distingue respuestas respaldadas vs especulativas
+
+✓ test_sanitize_html_blocks_external_urls PASSED
+  - Mensaje: "Sanitización HTML funcionando correctamente"
+  - Confirma bloqueo de URLs externas y conversión a href="#"
+
+✓ test_build_citation_with_fine_refs PASSED
+  - Mensaje: "Citas finas (bbox, tabla/celda) generadas correctamente"
+  - Verifica estructura completa de citas con page, bbox, table_id, row, col
+
+Resultado final esperado:
+======================== 5 passed, X warnings in ~10-15s ========================
+
+Al ejecutar el comando 3 (suite completa SPRINT 6–11):
+======================== 11 passed, X warnings in ~30-35s ========================
+
+Las advertencias (warnings) son deprecations normales de spaCy, transformers y click; no afectan la funcionalidad.
+
+Si algún test falla, revisar:
+• Que ChromaDB esté operativo (tests 7-8 lo requieren)
+• Que el backend memory de BM25 esté configurado (BM25_BACKEND=memory en conftest.py)
+• Que no haya archivos temporales bloqueando pytest (comando 1 los elimina)
+
+────────────────────────────────────────────────────────────────
+
+ARCHIVO DE PRUEBAS CREADO:
+
+Archivo: milpa_ai_backend/tests/test_rerank_synthesis.py
+Ubicación: Dentro del directorio tests/ del backend de IA
+
+POR QUÉ SE CREÓ:
+
+Este archivo nace de la necesidad de realizar una validación rápida y concreta en la que todos los códigos del SPRINT 9–11 trabajen de forma integrada y coordinada. No basta con implementar funciones aisladas de reranking o síntesis; es imprescindible verificar que:
+
+• Las funciones se comuniquen correctamente entre sí (rag_engine.py ↔ synthesis.py)
+• Los datos fluyan sin errores de serialización o estructura
+• Los cálculos multi-factor produzcan resultados coherentes y ordenados
+• Las citas finas mantengan integridad referencial (ningún campo crítico faltante)
+• La sanitización sea efectiva y no deje brechas de seguridad
+
+Sin un harness de pruebas automatizado, cada cambio requeriría validación manual, propensa a errores y lenta. Este archivo permite ejecutar en segundos una batería completa de validaciones que de otro modo tomarían horas de prueba manual, garantizando que ninguna regresión pase desapercibida y que cada componente del pipeline RAG funcione exactamente como se diseñó.
+
+OBJETIVO Y FINALIDAD:
+
+Este archivo contiene la suite de pruebas automatizadas que validan las nuevas capacidades implementadas en SPRINT 9–11. Su propósito es asegurar que:
+
+• El reranking multi-factor funcione correctamente, aplicando pesos y reordenando resultados según criterios combinados (similitud, frescura, autoridad, cobertura de entidades).
+
+• La síntesis de respuestas genere citas finas con referencias granulares (página, bbox, tabla/celda, figura) y que estas sean estructuralmente correctas.
+
+• El cálculo de faithfulness (fidelidad) detecte adecuadamente si las oraciones de la respuesta están respaldadas por los fragmentos recuperados o si hay especulación no fundamentada.
+
+• La sanitización HTML bloquee efectivamente todas las URLs externas y solo permita enlaces internos seguros (data-cite).
+
+• La construcción de citas con referencias finas incluya correctamente todos los campos necesarios para el clic-through (page, bbox, table_id, row, col).
+
+DÓNDE SE EJECUTA:
+
+El archivo se ejecuta dentro del contenedor Docker milpa_ai mediante pytest. Los comandos de ejecución son:
+
+• Pruebas aisladas SPRINT 9–11:
+  docker exec milpa_ai python -m pytest -s -v --tb=short /app/tests/test_rerank_synthesis.py
+
+• Pruebas integradas SPRINT 6–11:
+  docker exec milpa_ai python -m pytest -s -v --tb=short /app/tests/
+
+QUÉ HACE:
+
+El archivo define 5 funciones de test, cada una validando un aspecto crítico:
+
+1. test_rerank_with_factors():
+   - Crea hits simulados con metadata variada (fuentes oficiales, fechas distintas, contenido diferente)
+   - Llama a rerank_top_n() con una consulta de prueba
+   - Verifica que el score combinado se calcule correctamente
+   - Valida que los factores (sim, fresh, auth, entity) estén presentes en cada resultado
+   - Confirma que los hits se reordenen según el score final
+
+2. test_synthesis_with_citations():
+   - Prepara fragmentos con metadata completa (texto, bbox, tabla/celda)
+   - Invoca compose_answer() para generar una respuesta sintética
+   - Verifica que las citas incluyan página, bbox, tabla/celda según corresponda
+   - Confirma que no haya URLs externas en el HTML generado
+   - Valida que el faithfulness score se calcule correctamente
+
+3. test_faithfulness_calculation():
+   - Crea dos escenarios: respuesta bien respaldada vs mal respaldada
+   - Llama a compute_faithfulness() en ambos casos
+   - Verifica que el score sea alto (>0.5) cuando hay overlap semántico
+   - Confirma que el score sea bajo (<0.5) cuando no hay respaldo
+
+4. test_sanitize_html_blocks_external_urls():
+   - Genera HTML con URLs externas (https://ejemplo.com)
+   - Aplica sanitize_html()
+   - Verifica que las URLs externas se bloqueen (href="#")
+   - Confirma que los enlaces internos (data-cite) se preserven
+
+5. test_build_citation_with_fine_refs():
+   - Crea fragmentos con bbox y tabla/celda
+   - Invoca build_citation() para generar la estructura de cita
+   - Valida que todos los campos finos estén presentes (page, bbox, table_id, row, col)
+   - Confirma que la cita tenga estructura completa y citation_id único
+
+QUÉ LLAMA Y CÓMO TRABAJA:
+
+El archivo importa y prueba funciones de dos módulos principales:
+
+Desde core/logic/rag_engine.py:
+• rerank_top_n() - Aplica reranking multi-factor sobre hits recuperados
+
+Desde core/logic/synthesis.py:
+• compose_answer() - Genera respuestas con citas finas
+• compute_faithfulness() - Calcula fidelidad oracional
+• sanitize_html() - Sanitiza HTML bloqueando URLs externas
+• build_citation() - Construye estructura de cita con referencias finas
+
+FLUJO DE TRABAJO:
+
+1. pytest descubre automáticamente el archivo (nombre empieza con test_)
+2. Ejecuta cada función de test en orden secuencial
+3. Cada test:
+   a) Prepara datos de entrada (hits simulados, fragmentos con metadata)
+   b) Invoca la función a probar
+   c) Realiza assertions para validar el comportamiento esperado
+   d) Imprime mensajes de confirmación si todo es correcto (✓)
+4. pytest recopila resultados y muestra resumen final (X passed, Y warnings)
+
+FIXTURES UTILIZADAS:
+
+El archivo usa sample_fragments de conftest.py, que proporciona un conjunto estándar de fragmentos de prueba con:
+• Texto en español sobre maíz, plagas, nutrientes
+• Metadata completa (doc_id, labels, entities)
+• Estructura consistente para pruebas reproducibles
+
+RESULTADO ESPERADO:
+
+Cuando todos los tests pasan, confirman que:
+✓ El reranking prioriza correctamente por múltiples factores
+✓ Las citas incluyen referencias granulares para clic-through
+✓ La fidelidad detecta respuestas respaldadas vs especulativas
+✓ La sanitización bloquea exfiltración de información
+✓ Las estructuras de citas son completas y trazables
+
+Esto garantiza que el sistema RAG no solo recupera información relevante, sino que la presenta de forma auditable, verificable y segura.

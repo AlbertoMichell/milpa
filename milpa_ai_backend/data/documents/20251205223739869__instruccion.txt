@@ -1,0 +1,1682 @@
+﻿Panorama general
+El propósito central es transformar conocimiento tácito y explícito contenido en documentos técnicos (PDF/DOCX/TXT) en recomendaciones agronómicas y respuestas verificables, trazables y operables desde una interfaz web existente, sin acoplar el frontend a la lógica de IA. Para ello se propone una arquitectura de dos capas: (1) un backend de IA en Python que ingiere, normaliza, enriquece y vectoriza el conjunto documental, habilitando búsqueda semántica (RAG) y generación de respuestas con citas; y (2) un Filtro/Presenter en Node/TypeScript que versiona contratos, orquesta peticiones y entrega DTOs UI estables. El objetivo es maximizar confiabilidad, trazabilidad y escalabilidad organizativa manteniendo la sobriedad tecnológica (on‑prem/local, sin dependencias críticas de nubes externas) y garantizando privacidad de los datos.
+Concretamente, la solución habilita: (i) ingestión y traducción local (Transformers) para consolidar el conjunto documental en español; (ii) enriquecimiento semántico mediante NER especializado y taxonomías agronómicas canónicas; (iii) indexación vectorial con embeddings multilingües; (iv) un motor RAG que compone respuestas basadas exclusivamente en evidencias citables; y (v) una capa Presenter que abstrae la complejidad interna mediante contratos versionados consumidos por el Dashboard MILPA sin incorporar reglas de negocio en el frontend.
+
+1. Propósito y objetivos estratégicos
+Propósito: convertir documentos agronómicos heterogéneos en un sistema de consulta y recomendación con soporte de evidencia, operable por técnicos y tomadores de decisión, que preserve la propiedad y privacidad del conocimiento institucional.
+Objetivos estratégicos: 
+Operativizar conocimiento: transformar publicaciones, manuales y reportes en un repositorio consultable con respuestas citadas, consistentes y auditablemente correctas.
+Separación de preocupaciones: desacoplar IA y UI mediante un Presenter que ofrece contratos estables, reduciendo riesgo de regresiones en el frontend.
+Privacidad y control: ejecutar localmente (on‑prem) el pipeline completo, sin exfiltración de datos; asegurar respaldos y trazabilidad. 
+Evolución sostenible: permitir cambios de modelos, bases y reglas sin impactar a consumidores a través de versionado de contratos y rutas de migración sin reescritura.
+
+2. Justificación técnico‑organizativa
+2.1 Confiabilidad y verificabilidad
+Se adopta el principio evidencia primero: ninguna respuesta se devuelve sin citas (autor, título y localización/página). Esto reduce alucinaciones y facilita auditorías. El motor RAG compone únicamente con fragmentos recuperados del conjunto documental institucional; cuando la cobertura es insuficiente, retorna explícitamente “insuficiente evidencia”.
+2.2 Trazabilidad end‑to‑end
+Cada documento mantiene metadatos (hash, autoría, fechas). Los fragmentos heredan trazabilidad (doc_id, secciones, páginas, versión de embedding). Las consultas generan un qa_run_id con huella de los fragmentos usados. Esta trazabilidad soporta cumplimiento, auditoría y reproducibilidad de resultados.
+2.3 Escalabilidad organizativa
+La capa Presenter actúa como contrato anti‑fragilidad: el frontend sólo “pinta” DTOs; cambios en el ranking, embeddings, taxonomías o formatos internos no rompen a la UI. Se habilita A/B de reglas y despliegue gradual de nuevas versiones de contratos (/ui/v1, /ui/v2) con convivencia.
+2.4 Sobriedad tecnológica y soberanía de datos
+La plataforma prioriza el uso de componentes locales y autocontenidos como principio rector:
+•	Metadatos: SQLite para simplicidad operativa en MVP, con ruta de migración hacia Postgres en escenarios de mayor escala.
+•	Vectores: ChromaDB para almacenamiento vectorial local y ligero, con posibilidad de escalar a Qdrant/pgvector.
+•	Modelos de IA: Hugging Face (HF) descargados y ejecutados on-premise, sin dependencias de APIs externas.
+Este enfoque tiene beneficios claros:
+•	Reducción de costos recurrentes: evita suscripciones a servicios externos de IA.
+•	Estabilidad de latencia: elimina dependencias de red hacia nubes públicas.
+•	Confidencialidad y soberanía: los datos se procesan dentro de la infraestructura del cliente, garantizando que el conocimiento institucional no salga del entorno controlado.
+•	Cumplimiento organizativo: favorece la alineación con marcos normativos de protección de datos personales, licenciamiento de publicaciones y políticas de resguardo interno.
+3. Alcance funcional del MVP
+•	Ingesta de documentos (PDF/DOCX/TXT): extracción robusta de texto con preservación de estructura, normalización tipográfica y semántica.
+•	OCR opcional: integración de un fallback OCR (Tesseract/docTR) para PDFs escaneados o documentos sin capa de texto; el resultado se etiqueta con nivel de calidad para trazabilidad.
+•	Traducción local: consolidación del conjunto documental en español cuando el idioma detectado sea distinto de ES, utilizando modelos de Transformers locales y listas de términos excluidos (nombres científicos, unidades, abreviaturas técnicas).
+•	Enriquecimiento semántico: aplicación de NER especializado en agricultura (cultivos, plagas, nutrientes, lugares, fases fenológicas), con clasificación de fragmentos en categorías operativas (Recomendación, Dato, Resultado).
+•	Evaluación automatizada de NER/taxonomías: incorporación de un módulo de validación periódica que mida precisión, recall y F1 sobre datasets anotados y conjunto documental sintético con sinónimos y ruido. Esto garantiza que la calidad del etiquetado se mantenga en el tiempo y no dependa solo de revisiones manuales.
+•	Indexación vectorial y persistencia de metadatos: almacenamiento en SQLite y ChromaDB, con rutas de migración preparadas hacia pgvector/Qdrant para escenarios de escalabilidad distribuida.
+•	Q&A semántico (RAG): recuperación top-k, re-ranking, composición de respuestas con citas múltiples y puntajes de relevancia. Si no hay suficiente evidencia, respuesta explícita de “insuficiente evidencia”.
+•	Listado de recomendaciones: filtrable por estado (Aplicada/Pospuesta), con persistencia en el backend de IA y versionado de estados en el Presenter.
+•	Contratos UI estables y versionados: todos los datos viajan como DTOs inmutables, con rutas /ui/v{n} que garantizan compatibilidad hacia adelante.
+•	Observabilidad integrada: métricas de latencia, cobertura de citas, precision@k (P@K), éxito de ingestión, métricas de calidad NER y tasa de éxito en OCR.
+Criterios de éxito:
+•	≥95% de ingestión correcta.
+•	≥90% de respuestas con ≥2 citas.
+•	P50 < 800 ms en Q&A sobre un conjunto documental de ~5k fragmentos.
+•	Cero lógica de negocio en frontend.
+•	Métricas de NER: precisión ≥ 85%, recall ≥ 80%, F1 ≥ 82% sobre conjunto documental de prueba anotado.
+•	OCR: ≥90% de extracción aceptable en PDFs escaneados evaluados con muestreo manual.
+•	Escalabilidad: garantizar respuesta aceptable en conjuntos documentales mayores (50k–100k fragmentos) mediante sharding y optimización.
+
+4. Principios de diseño 
+1.	Desacoplamiento fuerte: la comunicación UI↔IA se realiza únicamente a través del Presenter
+Beneficio: la UI permanece estable incluso si cambian los modelos o el almacenamiento de datos.
+2.	Contratos versionados: los DTOs UI viajan bajo rutas inmutables (/ui/v1/...).
+Beneficio: cambios rompederos se encapsulan en nuevas versiones, permitiendo migraciones controladas y seguras.
+3.	Evidencia primero y anti-alucinación: toda respuesta debe derivar de fragmentos citados del conjunto documental.
+Beneficio: se reduce la alucinación y se garantiza trazabilidad; si no hay suficiente cobertura, se responde “insuficiente evidencia”.
+4.	Taxonomías canónicas: diccionarios y sinónimos normalizan entradas (ej. maíz/maiz/zea mays → maiz).
+Beneficio: evita ambigüedad en consultas y asegura consistencia en filtros y recomendaciones.
+5.	Privacidad local: todos los datos, embeddings y vectores se alojan en la infraestructura del cliente.
+Beneficio: preserva soberanía del conocimiento y evita riesgos de exfiltración.
+6.	Observabilidad nativa: logs estructurados, métricas y trazas distribuidas desde el día uno.
+Beneficio: dashboards de desempeño y calidad, con métricas comparables entre versiones.
+7.	Evolución sin reescritura: rutas de migración preparadas a Postgres/pgvector/Qdrant y reemplazo de modelos con feature flags.
+Beneficio: el sistema evoluciona sin romper contratos UI ni requerir reescritura del frontend.
+8.	Idempotencia y reproducibilidad: ingestión y consultas son repetibles; uso de seeds deterministas y versionado de modelos.
+Beneficio: permite auditorías y comparación de resultados entre versiones.
+9.	Seguridad por diseño: autenticación vía JWT, CORS estricto, sanitización de HTML y validación de payloads.
+Beneficio: protección contra inyecciones y accesos indebidos.
+10.	Resiliencia operativa: backups automatizados, restauraciones ensayadas, límites de recursos configurados (tamaño de archivos, tiempo de ejecución, colas).
+Beneficio: recuperación rápida ante incidentes y prevención de caídas por sobrecarga.
+11.	Gobernanza de conocimiento: las taxonomías y catálogos agronómicos se integran como primera clase en el diseño.
+Beneficio: asegura que las recomendaciones estén alineadas con fuentes oficiales y con la validación de expertos de dominio.
+
+
+5. Arquitectura lógica y de despliegue
+                            
+Despliegue base (MVP)
+•	Docker Compose: servicios aislados en networks internas con volúmenes persistentes (data/documents/, vector_db/, milpa_knowledge.db).
+•	Observabilidad: Prometheus + exporters para métricas; OpenTelemetry Collector para trazas distribuidas.
+•	Seguridad de red: solo el Presenter expone endpoints hacia la UI; la IA y bases internas permanecen en red privada.
+•	Backups: snapshots programados de SQLite y del directorio de vectores.
+Escalabilidad progresiva
+Desde el inicio, la arquitectura contempla migración hacia entornos distribuidos:
+•	Kubernetes/Swarm: los contenedores (Presenter, IA, DBs) pueden desplegarse como pods/replicasets, habilitando autoescalado horizontal.
+•	Sharding lógico: conjunto documental particionado por dominio (ej. cultivos/plagas) o por idioma; cada shard con su propio índice vectorial.
+•	Alta disponibilidad: réplica primaria/secundaria de metadatos (SQLite → Postgres) y réplicas de vectores (ChromaDB → Qdrant/pgvector).
+•	Balanceo de carga: API Gateway/Nginx Ingress para distribuir queries entre múltiples instancias del backend IA.
+
+6. Flujo de datos de extremo a extremo (detallado)
+6.1 Ingestión
+1.	Carga: el usuario sube un archivo vía Dashboard → Presenter (/ui/v1/documents/upload) → IA (/api/documents/upload).
+2.	Persistencia de original: se escribe en data/documents/ con nombre canonizado y hash SHA-256 para deduplicación.
+3.	Extracción:
+•	PDF (PyMuPDF): extrae texto + layout (bloques, líneas, spans, bbox, orden de lectura y columnas) y coordenadas por fragmento; detección de tablas (opcional Camelot/Tabula) y cálculo de DSI% (Document Structure Integrity) por página/documento.
+•	DOCX (python-docx): preserva encabezados H1–H3, listas y tablas; normaliza estilos y mapea a marcas estructurales internas.
+•	TXT: lectura robusta en UTF-8 (auto-detección y fallback a utf-8-sig/latin-1 si aplica); normaliza saltos de línea y elimina BOM.
+•	OCR automático (fallback/heurístico): se activa si no hay capa de texto o si text_coverage < umbral (p.ej., 15%) o si DSI% < 85.
+o	Motor: Tesseract (--oem 1 --psm 6, lang=spa+eng) con pre-procesado (binarización, deskew, denoise).
+o	Complejos: docTR para maquetaciones con múltiples columnas/tablas.
+
+o	Trazabilidad por página: registra OCR_QUALITY_SCORE (0–1), CER/WER, DSI%, rotación aplicada y bbox de líneas.
+o	La salida se marca con source="ocr" y se conservan coordenadas para referencias finas.
+•	Post-proceso: fusión de bloques, orden lógico de lectura, de-hyphenation, eliminación de encabezados/pies repetidos y estandarización de unidades (°C, kg/ha) y diacríticos.
+•	Auditoría: persiste extractor_name, extractor_version, ocr_engine_version y ocr_args en metadatos.
+4.	Metadatos: título, autor, fecha, fuente, hash, mimetype y tamaño de archivo.
+5.	Detección de idioma: langdetect/fastText; se guarda confidence.
+6.	Traducción (si idioma ≠ ES): Transformers locales (opus-mt, M2M100, NLLB) con listas de no-traducción (nombres científicos, unidades, abreviaturas). Se conservan texto original y texto normalizado en español.
+7.	Segmentación (chunking):
+o	Tamaño: CHUNK_SIZE = 800–1200 tokens.
+o	Solapamiento: CHUNK_OVERLAP = 15–20%.
+o	Hard breaks: en encabezados H1/H2, para preservar coherencia temática.
+o	Se etiquetan section_id, page_start, page_end en cada fragmento.
+8.	Enriquecimiento (NER + taxonomía): spaCy (modelo ES) + diccionarios agronómicos; etiquetas: cultivo, plaga, nutriente, lugar, fase fenológica.
+9.	Clasificación de fragmentos: reglas auditables (regex + features) en MVP; opción de SVM/LogReg en fases posteriores.
+10.	Embeddings: sentence-transformers multilingües; se registran embedding_model, model_version, vector_dim.
+11.	Almacenamiento:
+•	Fragmentos y metadatos → SQLite.
+•	Vectores → ChromaDB, con metadatos mínimos (fragment_id, doc_id, etiquetas).
+Los metadatos en ChromaDB incluirán {fragment_id, doc_id, labels[]} generados a partir de fragment_labels en tiempo de indexación.
+12.	Auditoría: registro completo de who/when/what en la ingestión, incluyendo OCR_QUALITY_SCORE y taxonomía usada (taxonomy_version).
+
+6.2 Consulta Q&A (RAG)
+1.	UI → Presenter /ui/v1/qa?query=... con JWT.
+2.	Presenter normaliza la consulta (sinónimos, idioma) y llama a IA /api/query.
+3.	IA vectoriza la pregunta; recuperación k=5–10 en ChromaDB.
+4.	Re-ranking: al resultado fusionado se aplica (similitud × w1) + (frescura × w2) + (autoridad × w3) + (cobertura_entidades × w4).
+5.	Síntesis: composición con plantillas que insertan citas (autor, obra, año, sección/página). Reglas anti‑alucinación.
+6.	Respuesta: IA → Presenter (texto/HTML controlado + fragmentos + scores + confianza + advertencias).
+7.	Presenter empaqueta como QASnippet.v1 y retorna a la UI.
+8.	Recuperación híbrida: se ejecutan en paralelo BM25 y vectores; fusión por RRF con filtro inicial por labels (p. ej., RECOMENDACION). Fallback: solo vectores si BM25 no está disponible. (ver configuración canónica en 11: Recuperación híbrida default)
+6.3 Recomendaciones
+1.	UI → Presenter /ui/v1/recommendations?cultivo=...&tipo=...&estado=....
+2.	Presenter normaliza filtros (sinónimos→canónicos) y envía a IA /api/recommendations.
+3.	IA consulta SQLite por fragmentos etiquetados RECOMENDACION y aplica scoring base.
+4.	Presenter aplica priorización auditable (severidad, urgencia, confianza, costo) y arma RecommendationCard.v1 con KPIs.
+5.	Acciones de estado (Aplicada/Pospuesta) se persisten en IA/SQLite y se reflejan en la UI.
+
+7. Tecnologías y racionales de elección 
+•	API IA: FastAPI (Python) → alto rendimiento con uvicorn, tipado Pydantic, middlewares maduros, integración fluida con spaCy/Transformers/ChromaDB.
+•	NLP: spaCy (es-core-news-md) + diccionarios agronómicos; extensible con phrase matchers, patrones y EntityRuler.
+•	Traducción: Transformers locales (opus-mt, M2M100, NLLB); beam search configurable; listas de términos excluidos (nombres científicos, unidades).
+•	Embeddings: sentence-transformers multilingües (distiluse-base-multilingual-cased-v2 o MiniLM); balance calidad/latencia. Feature flag EMBEDDING_MODEL para probar bge-m3 en caso de baja en recall.
+•	Vector DB: ChromaDB en MVP (API simple, persistencia local). Migración futura a Qdrant/pgvector con sharding y escalabilidad distribuida.
+•	Recuperación híbrida (BM25 + vectores): default en H1. BM25 (Whoosh/Lucene/Elasticsearch o TF-IDF) en paralelo a vectores; fusión RRF por defecto (RRF_K y BM25_TOPK configurables, con filtro inicial por labels, p. ej. RECOMENDACION). Fallback: solo vectores. Alternativa de fusión: z-score.
+•	Metadatos: SQLite (MVP) → Postgres (escala), con scripts de migración (DDL/DML) y réplicas configurables.
+•	Presenter: Node/TypeScript (Express/Fastify) → compatibilidad con stack MILPA, middlewares de seguridad (CORS, rate-limit), logging pino/winston.
+•	Mensajería: Socket.IO (ya existente), reutilizable para notificaciones push y progreso de ingestión.
+•	Observabilidad: OpenTelemetry + Prometheus → métricas estándar de latencia, ingestión, P@K, OCR success. Alertas en p95 > 3s o ingest failures > 5%.
+•	Seguridad: JWT validado en Presenter; sanitización de payloads y HTML (solo <a> <em> <strong> <ul> <li>). Rate-limit: 60 req/min por usuario, 10 req/min en uploads. Guardas de tamaño: 25 MB, 300 páginas OCR.
+•	Infraestructura: Docker Compose para dev/staging; Kubernetes preparado para producción (autoscaling, ingress, tolerancia a fallos). Secrets en .env + opción de Vault/KMS on-prem.
+•	Cachés:
+o	Query cache en Presenter (LRU con TTL 10–30 min).
+o	Doc embedding cache por doc_hash + model_version.
+o	Render cache para QASnippet.v1 (idempotencia por normalized_query+filters).
+
+8 Estructura del proyecto 
+8.1 IA Python (milpa_ai_backend/)
+El backend de IA está construido en torno a FastAPI, aprovechando sus ventajas de alto rendimiento, tipado fuerte y fácil integración con librerías de NLP y almacenamiento vectorial. La estructura de carpetas busca separar claramente la API pública de la lógica interna y los recursos de datos.
+Estructura y descripción:
+Milpa: 
+docker-compose.yml
+milpa_ai_backend/
+├─ Dockerfile
+├─ api/
+│  ├─ endpoints.py
+│  └─ server.py
+├─ core/
+│  ├─ config.py
+│  ├─ security/
+│  │  └─ av.py              
+│  └─ logic/
+│     ├─ db.py              
+│     ├─ migrations/        
+│     │  └─ 0001_init.sql
+│     ├─ ingestion.py
+│     ├─ translation.py
+│     ├─ chunking.py
+│     ├─ enrichment.py
+│     ├─ embeddings.py
+│     ├─ vectordb.py
+│     ├─ metadata_store.py  
+│     ├─ rag_engine.py
+│     └─ synthesis.py
+├─ data/
+│  ├─ documents/
+│  ├─ vector_db/
+│  └─ milpa_knowledge.db
+├─ models/
+├─ main.py
+├─ requirements.txt
+└─ README.md
+Detalles y funciones clave:
+•	docker-compose.yml: orquesta los contenedores (clamav, ai, presenter), red/volúmenes compartidos, dependencias/healthchecks y variables (CORS, AV), para levantar todo en orden.
+•	Dockerfile: construye la imagen FastAPI; instala dependencias, usa usuario no-root y tini, expone 8000 y declara /app/data como volumen.
+•	api/
+o	endpoints.py: define las rutas expuestas (/api/query, /api/documents/upload, /api/recommendations). Incluye validación de parámetros, serialización de respuestas y conexión con la lógica interna.
+o	server.py: inicializa la aplicación FastAPI, configura middlewares (CORS, logging, validación de JWT), y expone la API mediante Uvicorn.
+•	core/
+o	config.py: centraliza configuraciones (rutas de almacenamiento, umbrales de relevancia, modelos Hugging Face, claves). Favorece la reproducibilidad y despliegue multiplataforma.
+o	logic/: agrupa la lógica modular de todo el pipeline:
+	ingestion.py: lectura de documentos (PDF con PyMuPDF, DOCX con python-docx, TXT nativos) y detección de idioma.
+	translation.py: invoca modelos de Transformers (locales) para traducir texto no español a conjunto documental canonizado en ES.
+	chunking.py: segmenta texto en fragmentos coherentes, respetando encabezados y ventanas deslizantes.
+	enrichment.py: aplica NER con spaCy + taxonomías propias; clasifica fragmentos (Recomendación, Dato, Resultado).
+	embeddings.py: genera representaciones vectoriales usando sentence-transformers, registrando modelo y versión.
+	vectordb.py: gestiona la persistencia en ChromaDB (inserciones, búsquedas, actualizaciones).
+	metadata_store.py: maneja operaciones CRUD en SQLite (fragmentos, metadatos, estados UI).
+	rag_engine.py: implementa el motor de Recuperación Aumentada por Generación, integrando embeddings, re-ranking y selección de citas.
+	synthesis.py: controla la composición de respuestas con plantillas seguras y evidencia citada.
+	db.py: fábrica de conexiones SQLite (WAL/synchronous ajustados) y ejecución idempotente de migraciones con yoyo.
+	migrations/ 0001_init.sql: DDL inicial (tablas docs, fragments, tables, table_cells, figures, licenses + índices) para metadatos, fragmentos, tablas y licencias.
+o	security/: 
+	av.py: cliente ClamAV; implementa escaneo estricto (SCAN + INSTREAM) y la excepción AntivirusError, configurable por host/puerto y AV_OPTIONAL.
+•	data/
+o	documents/: almacena los archivos originales (con hash para deduplicación).
+o	vector_db/: contiene los índices de ChromaDB persistidos.
+o	milpa_knowledge.db: base SQLite con metadatos, entidades y estados.
+•	models/
+Espacio para clasificadores entrenados opcionales, por ejemplo modelos específicos para fases fenológicas o plagas locales.
+•	main.py
+Script para tareas offline: reindexación, mantenimiento de DBs, migraciones.
+•	requirements.txt
+Lista dependencias exactas (FastAPI, spaCy, sentence-transformers, PyMuPDF, etc.), garantizando replicabilidad.
+•	README.md
+Documentación rápida de arranque, configuración y uso del backend IA.
+8.2 Filtro/Presenter (milpa_presenter/)
+El Presenter es un microservicio independiente en Node.js/TypeScript. Su rol es actuar como intermediario entre UI e IA, asegurando contratos estables, normalizando queries, versionando endpoints y encapsulando reglas de negocio.
+
+Estructura y descripción:
+milpa_presenter/
+├─ Dockerfile    
+├─ src/
+│  ├─ server.ts
+│  ├─ config.ts
+│  ├─ adapters/
+│  │  └─ iaClient.ts
+│  ├─ services/
+│  │  ├─ uiComposer.ts
+│  │  ├─ taxonomy.ts
+│  │  ├─ ranking.ts
+│  │  └─ stateStore.ts
+│  ├─ dto/
+│  │  ├─ RecommendationCard.v1.ts
+│  │  ├─ QASnippet.v1.ts
+│  │  └─ FiltersPayload.v1.ts
+│  ├─ telemetry/
+│  │  ├─ logger.ts
+│  │  └─ metrics.ts
+│  └─ security/
+│     └─ headers.ts 
+├─ package.json  
+└─ README.md 
+
+
+Detalles y funciones clave:
+•	Dockerfile: Construye multi-stage con Node 20-alpine; instala deps con npm ci, compila dist, copia sólo lo necesario al runtime, corre como usuario no-root y expone PORT (8080 por defecto).
+•	src/
+o	server.ts: punto de entrada del servicio; configura Express/Fastify, middlewares de seguridad (CORS, validación JWT), rutas /ui/v1/....
+o	config.ts: centraliza endpoints de IA, claves de acceso, taxonomías y parámetros de normalización.
+o	adapters/iaClient.ts: cliente HTTP para comunicarse con el backend IA; incluye retry policies y manejo de errores.
+o	services/: capa de negocio propia del Presenter:
+	uiComposer.ts: ensambla DTOs para la UI (tarjetas de recomendación, snippets Q&A, filtros).
+	taxonomy.ts: aplica normalización de cultivos/plagas/nutrientes; garantiza coherencia entre filtros UI e IA.
+	ranking.ts: implementa reglas de priorización (urgencia, severidad, confianza, costo) y define niveles (alta, media, baja).
+	stateStore.ts: mantiene sincronización de estados de recomendaciones (pendiente, aplicada, pospuesta) persistidos en SQLite vía IA.
+o	dto/
+	RecommendationCard.v1.ts: contrato de datos para recomendaciones; incluye títulos, resumen, KPIs, estado y citas.
+	QASnippet.v1.ts: contrato para respuestas Q&A, con texto enriquecido, confianza, advertencias y citas.
+	FiltersPayload.v1.ts: contrato para filtros de UI (cultivo, tipo, estado).
+o	telemetry/
+	logger.ts: configuración de logging estructurado (winston/pino).
+	metrics.ts: colección y exportación de métricas hacia Prometheus/OpenTelemetry.
+o	security/
+	headers.ts: middleware centralizado de seguridad; aplica CORS según ALLOWED_ORIGINS y fija cabeceras como Content-Security-Policy, Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options, Referrer-Policy y Cross-Origin-Resource-Policy.
+•	package.json
+Maneja dependencias (Express/Fastify, TypeScript, Winston, JWT libs) y scripts de despliegue/test.
+•	README.md
+Documentación de endpoints expuestos, ejemplos de consumo desde UI y pautas de contribución.
+
+9. Contratos de API (documentación ampliada)
+9.1 Presenter → Frontend
+9.1.1 GET /ui/v1/recommendations
+Parámetros: cultivo, tipo, estado. Valores canónicos y opción all. Validaciones: rechazo de valores fuera de catálogo; defaults razonables. Respuesta: version, kpis, filters, items[] (DTO RecommendationCard.v1). Errores: 400 (validación), 401/403 (auth), 500 (interno). Cuerpo de error estructurado.
+9.1.2 POST /ui/v1/recommendations/{id}/state
+Cuerpo: {estado} dentro del catálogo. Efecto: persiste en IA/SQLite; retorna item actualizado.
+9.1.3 GET /ui/v1/qa?query=...
+Respuesta: QASnippet.v1 con respuesta_html sanitizada, fragmentos con score y cita completa, confianza, advertencias.
+9.2 Presenter / IA
+•	POST /api/documents/upload: guarda original, detecta idioma, traduce si aplica, retorna doc_id, pages, lang_detected, translated_to.
+•	GET /api/recommendations: filtros → fragmentos etiquetados RECOMENDACION.
+•	GET /api/query: texto → respuesta + citas + scores.
+•	POST /api/recommendations/{id}/state: persiste estados UI (fuente de verdad en IA/SQLite).
+
+10. Modelado de datos y taxonomías
+10.1 Esquema de metadatos (SQLite)
+El esquema de SQLite en el MVP asegura simplicidad y velocidad en consultas, pero ya contempla índices y rutas de migración hacia Postgres/pgvector.
+Tablas principales
+•	docs
+(doc_id, title, author, year, source, hash, lang_original, created_at) → Representa cada documento original con metadatos básicos y trazabilidad.
+•	fragments
+(fragment_id, doc_id, section_id, page_start, page_end, text, created_at) → Contiene fragmentos de texto segmentados, con ubicación y fecha de creación. Las etiquetas se gestionan en la tabla puente fragment_labels.
+•	fragment_labels
+(fragment_id, label) → Relación 1:N (un fragmento puede tener múltiples etiquetas). Fuente única de verdad para RECOMENDACION, DATO, RESULTADO, etc.
+•	entities
+(fragment_id, type, value, offset_start, offset_end) → Entidades reconocidas por NER (cultivo, plaga, nutriente, lugar, fase fenológica).
+•	states
+(fragment_id, state, updated_by, updated_at) → Estado de la recomendación asociada al fragmento (RECOMENDACION). state ∈ {Aplicada, Pospuesta}. FOREIGN KEY (fragment_id) REFERENCES fragments(fragment_id).
+•	runs
+(qa_run_id, query_normalized, embedding_model, model_version, model_sha, reranker_version, rag_seed, K_RETRIEVE, K_RERANK, taxonomy_version, glossary_version, translation_memory_version, created_at)
+Descripción de campos adicionales en runs:
+taxonomy_version, glossary_version, translation_memory_version: versiones efectivas usadas al momento de la consulta para trazabilidad semántica y de traducción.
+CREATE INDEX IF NOT EXISTS idx_runs_created     ON runs(created_at);
+CREATE INDEX IF NOT EXISTS idx_runs_querynorm   ON runs(query_normalized);
+
+•	Historial detallado de consultas Q&A, incluyendo:
+o	query normalizada,
+o	modelo de embeddings usado,
+o	versión y hash del modelo (model_sha),
+o	versión del reranker activo,
+o	parámetros de recuperación (K_RETRIEVE, K_RERANK),
+o	semilla determinística del motor RAG (rag_seed) para garantizar reproducibilidad,
+o	fecha de ejecución.
+
+Índices explícitos (SQLite)
+Para garantizar eficiencia en recuperación, se definen índices mínimos:
+-- Tabla puente para etiquetas
+CREATE TABLE IF NOT EXISTS fragment_labels (
+  fragment_id TEXT NOT NULL,   -- mismo tipo que fragments.fragment_id
+  label       TEXT NOT NULL,
+  PRIMARY KEY (fragment_id, label),
+  FOREIGN KEY (fragment_id) REFERENCES fragments(fragment_id) ON DELETE CASCADE);
+-- Índices (SQLite)
+CREATE INDEX IF NOT EXISTS idx_frag_doc       ON fragments(doc_id);
+CREATE INDEX IF NOT EXISTS idx_docs_created   ON docs(created_at);
+CREATE INDEX IF NOT EXISTS idx_entities       ON entities(fragment_id, type, value);
+CREATE INDEX IF NOT EXISTS idx_frag_labels        ON fragment_labels(label);
+CREATE INDEX IF NOT EXISTS idx_frag_labels_frag   ON fragment_labels(fragment_id);
+•	idx_frag_doc: acelera búsquedas de fragmentos por documento.
+•	idx_docs_created: útil para orden cronológico en dashboards o auditorías.
+•	idx_entities: optimiza consultas de Q&A y filtros por entidades.
+•	idx_frag_labels: recupera rápido fragmentos por etiqueta (RECOMENDACION, DATO, RESULTADO).
+•	idx_frag_labels_frag: acelera joins fragment_labels → fragments y paginación por fragmento.
+Estrategias de indexación en Chroma/Qdrant
+En bases vectoriales se requiere partición lógica y filtros de metadatos para escalar:
+•	Partición por shard lógico: conjunto documental segmentado por dominio (ej. cultivo/plaga/idioma).
+•	Filtros de metadatos en recuperación: ejemplo → labels IN ['RECOMENDACION'] para acelerar Q&A o generación de tarjetas de recomendación.
+•	Índices secundarios (Qdrant/pgvector): definidos por doc_id y taxonomy_version para consultas consistentes en evoluciones de taxonomías.
+
+10.2 Taxonomías canónicas
+Las taxonomías son el corazón semántico del sistema, garantizando que consultas y recomendaciones se basen en terminología validada, consistente y trazable.
+Ejes principales de las taxonomías:
+•	Cultivos: catálogo basado en listados oficiales de FAO, INIFAP y CIMMYT, extendido con cultivos regionales (ej. maíz, frijol, calabaza, chile, tomate).
+•	Plagas: catálogos regionales (ej. SAGARPA, SENASICA) con normalización de sinónimos locales (ej. royita → roya).
+•	Nutrientes: N, P, K y microelementos esenciales, normalizados con nomenclaturas internacionales.
+•	Fases fenológicas: germinación, macollaje, floración, llenado, cosecha (alineado a FAO Crop Calendar).
+•	Regiones/Lugares: normalización a códigos internos y catálogos oficiales (ej. INEGI en México).
+•	Glosario canónico y memoria de traducción (TM): archivo versionado (glossary.csv y translation_memory.jsonl) que mapea términos origen ↔ español, incluyendo campos: term_src | term_es | domain | do_not_translate | version.
+Métricas de calidad asociadas:
+•	Coverage Rate: % de fragmentos clasificados con taxonomías canónicas.
+•	Consistency Score: % de coincidencia entre traducción automática y glosario.
+•	Synonym Drift: tasa de aparición de términos no mapeados por semana.
+Actualización y mantenimiento:
+•	Pipeline semiautomático: ingestión de fuentes oficiales (FAO, INIFAP, SAGARPA, SENASICA), con validación manual.
+•	Repositorio versionado: cambios documentados en histórico de taxonomías y glosarios (con taxonomy_version).
+•	Comité técnico agronómico: revisa adiciones/cambios antes de su integración.
+•	Retroalimentación de campo: técnicos pueden reportar sinónimos locales y términos no contemplados; las propuestas pasan a validación.
+•	Ciclo de actualización: propuesta → validación → integración → despliegue → changelog.
+
+10.3 Normalización de sinónimos
+Tablas de mapping (synonyms) y phrase matcher en Presenter y IA para coherencia bidireccional. El Presenter reinyecta acentos para la UI.
+
+11. Motor RAG y políticas de evidencia
+El motor de Recuperación Aumentada por Generación (RAG) constituye el núcleo del sistema, asegurando que toda respuesta entregada a la UI esté respaldada por evidencia verificable. Su diseño combina estrategias de recuperación híbrida, re-ranking configurable y síntesis controlada, con el objetivo de maximizar recall, precisión y trazabilidad.
+Recuperación primaria
+•	Consulta → embeddings generados por el modelo definido en EMBEDDING_MODEL.
+•	Búsqueda top-k en ChromaDB (o backend equivalente) utilizando similitud coseno.
+•	Configuración inicial: k=5–10.
+Recuperación híbrida default
+•	Paralelamente se ejecuta un motor BM25/tf-idf (ej. Whoosh o Elastic/Lucene).
+•	Los resultados de vectores y BM25 se fusionan mediante técnicas de Reciprocal Rank Fusion (RRF), z-score weighted o, si la latencia lo permite, ColBERT-lite.
+•	Beneficio: mejora el recall en consultas con términos exactos, sinónimos locales o documentos con redacción menos estructurada.
+•	Filtro inicial por etiquetas (ej. labels=RECOMENDACION) para priorizar fragmentos operativos frente a datos de contexto.
+Parámetros por defecto (H1):
+o	RAG_MODE = hybrid
+o	BM25_TOPK = 100
+o	K_RETRIEVE = 5–10
+o	RRF_K = 60
+o	Fusión principal: Reciprocal Rank Fusion (RRF); alternativa: z-score
+o	Filtro inicial por etiquetas (p. ej., labels=RECOMENDACION)
+o	Fallback: solo vectores si BM25 no está disponible
+Política de chunking
+•	Tamaño estándar de chunk: 800–1200 tokens.
+•	Solapamiento: 15–20% para preservar continuidad.
+•	Hard breaks en encabezados H1/H2 para mantener coherencia semántica.
+•	KPI de sanity: context hit-rate ≥ 95%, es decir, cada respuesta debe incluir al menos un fragmento con entidades relevantes.
+Re-ranking
+•	Score final = (similitud × w1) + (frescura × w2) + (autoridad × w3) + (cobertura_entidades × w4).
+•	Los pesos son ajustables por feature flags (RERANKER).
+•	Opción de incorporar monoT5 o bge-reranker si la latencia lo permite.
+Síntesis
+•	Composición de la respuesta mediante plantillas controladas y segmentadas.
+•	No se inventan valores ausentes; todas las afirmaciones se respaldan con citas explícitas.
+•	Las citas incluyen: autor, obra, año y sección/página.
+Política de insuficiente evidencia
+•	Umbrales explícitos:
+o	k_min = 5.
+o	Diversidad mínima: ≥ 2 fuentes distintas.
+o	Cobertura de entidades relevantes ≥ 60–70%.
+•	Si se incumple algún criterio:
+o	Retornar mensaje estándar: “Insuficiente evidencia en el conjunto documental actual”.
+o	Sugerir acción operativa: “Suba documento oficial de SAGARPA” o “Agregue calendario fenológico de la región Y”.
+Auditoría y trazabilidad
+Cada ejecución de QA genera un qa_run_id. Se registran:
+•	Fragmentos usados (ids y texto).
+•	Modelo de embeddings (embedding_model, versión y model_sha).
+•	Parámetros de recuperación (K_RETRIEVE, K_RERANK).
+•	Reranker activo (reranker_version).
+•	Seed determinístico (rag_seed) del motor para reproducibilidad.
+•	OCR_QUALITY_SCORE por página si aplicó OCR.
+Esta trazabilidad permite reproducir resultados y cumplir con auditorías internas y externas.
+
+12. Priorización auditable para tarjetas de recomendación
+Score = 0.4*Severidad + 0.35*Urgencia + 0.2*Confianza − 0.15*Costo → buckets alta|media|baja con umbrales configurables. Se adjunta justificación en el DTO (factores ponderados, citas clave) para transparencia.
+
+13. Observabilidad, métricas y calidad
+La observabilidad es un pilar del sistema, asegurando no solo monitoreo técnico, sino también trazabilidad de la calidad de la información entregada a usuarios finales.
+Métricas operativas (Prometheus/OpenTelemetry):
+•	Latencias: P50, P95 y P99 por endpoint (UI→Presenter, Presenter→IA, ingestión, Q&A).
+•	Ingestión: tasa de éxito por tipo de archivo (PDF, DOCX, TXT, OCR).
+•	OCR:
+o	Porcentaje de éxito medido por OCR_QUALITY_SCORE promedio y dispersión.
+o	ocr_cer_mean y ocr_wer_mean: (Character/Word Error Rate) por documento y página para cuantificar exactitud en reconocimiento de texto.
+o	dsi_percent (Document Structure Integrity): preservación de tablas, figuras y layouts en PDFs complejos.
+•	NER: precisión, recall y F1 agregados; evolución rolling 7 días.
+•	RAG/Q&A: 
+o	precision@k (P@K) en recuperación.
+o	citation_coverage@answer: % de oraciones de la respuesta con ≥1 cita válida (meta ≥95%).
+o	faithfulness_score: puntaje 0–1 que mide si cada oración está respaldada por fragmentos recuperados (meta ≥0.85).
+o	% de respuestas con “insuficiente evidencia”.
+•	Cache hit-rate: Presenter query cache y render cache.
+Trazas distribuidas (OpenTelemetry):
+•	Spans completos UI → Presenter → IA → DBs.
+•	Identificación única vía trace_id, correlacionando consultas con ingestiones y respuestas.
+•	Inclusión de metadatos clave: usuario (anonimizado/pseudonimizado), modelo de embeddings usado, versión de taxonomía.
+Logs estructurados (JSON):
+•	Nivel de severidad (INFO, WARN, ERROR).
+•	request_id y trace_id para correlación.
+•	Contexto del error (endpoint, payload reducido, usuario pseudonimizado).
+•	Eventos de cambios de estado (aplicada/pospuesta) en recomendaciones → con user_id, timestamp y motivo opcional.
+Dashboard (Prometheus/Grafana mínimo):
+•	Ingest success rate.
+•	OCR success rate.
+•	CER/WER promedio y dispersión.
+•	DSI% por documento/página.
+•	NER F1 score.
+•	Precision@K (P@K).
+•	% de respuestas con ≥2 citas.
+•	Latencias P50/P95 por endpoint.
+•	Cache hit-rate en Presenter.
+Alarmas (thresholds iniciales):
+•	p95 QA > 3s mantenido por 5 minutos → alerta de latencia.
+•	Ingest failures > 5% en ventana de 15 minutos → alerta de ingestión.
+•	NER F1 ↓ 5 pts respecto a baseline, rolling 7 días → alerta de degradación de calidad.
+•	Cache hit-rate < 50% en Presenter → alerta de configuración o uso subóptimo.
+•	CER > 10% o DSI < 85% en promedio → alerta de degradación en extracción OCR.
+•	citation_coverage@answer < 95% sostenido 15 min → alerta de cobertura de citas.
+•	faithfulness_score < 0.85 (promedio 15 min) → alerta de fidelidad.
+Beneficios:
+•	Permite detectar rápidamente degradaciones en OCR, NER o tiempos de respuesta.
+•	Facilita decisiones basadas en métricas comparables entre versiones y modelos.
+•	Soporta auditoría técnica y mejora continua en operación.
+
+14. Seguridad y cumplimiento
+La arquitectura de seguridad se diseña bajo el principio de mínimos privilegios, con foco en cumplimiento legal/normativo y resiliencia operativa.
+Autenticación y autorización
+•	JWT: emitido por backend MILPA; validación en Presenter; propagación selectiva hacia IA solo cuando sea necesario.
+•	Scopes por endpoint: control de accesos diferenciados (ej. admin, técnico de campo, auditor).
+Controles de entrada y uso
+•	Rate-limit: por JWT e IP → 60 req/min desde UI; 10 req/min en uploads.
+•	Size guards: máximo 25 MB por archivo PDF, 300 páginas OCR. Para documentos >150 páginas, procesamiento en cola asíncrona (workers dedicados con notificación vía Socket.IO).
+•	Tipos MIME autorizados: se valida tipo de archivo contra lista blanca (PDF, DOCX, TXT).
+•	CORS: orígenes explícitos y preflight obligatorio para prevenir accesos indebidos.
+•	Sanitización HTML: respuestas filtradas para permitir solo <a>, <em>, <strong>, <ul>, <li>.
+•	Prompt injection vía documentos: sanitizar antes de indexar (HTML → texto plano con whitelist).
+Protección de secretos y configuración
+•	Secrets: almacenados en archivos .env fuera del repo; rotación trimestral.
+•	Integración opcional con Vault/KMS on-prem: permite gestión centralizada y segura de credenciales.
+Registro y trazabilidad
+•	Audit log WORM (Write Once, Read Many): cambios de estado (aplicada/pospuesta) quedan registrados con user_id, timestamp y, opcionalmente, motivo. Evita modificaciones retroactivas y asegura trazabilidad para auditorías.
+Red y almacenamiento
+•	Networks internas: comunicación entre servicios aislada de la red pública.
+•	Volúmenes persistentes con permisos mínimos.
+•	Rotación de claves de entorno periódica.
+Backups y recuperación de desastres (DR)
+•	Copias programadas: snapshots de bases y vectores con verificación de integridad.
+•	Runbooks detallados: procedimientos claros para restauración tras fallos.
+•	Ensayos periódicos de recuperación para validar tiempos RPO/RTO.
+14.1 Marco legal y normativo
+•	Protección de datos personales: cumplimiento con LFPDPPP (LEY FEDERAL DE PROTECCIÓN DE DATOS PERSONALES EN POSESIÓN DE LOS PARTICULARES) en México y equivalentes internacionales (ej. GDPR).
+•	Derechos de autor y licencias: ingestión limitada a documentos institucionales, de dominio público o con autorización expresa; fuente y licencia registradas en metadatos.
+•	Propiedad institucional del conocimiento: todo documento procesado y vectorizado pertenece a la institución operadora, sin transferencia a terceros.
+•	Cumplimiento organizativo: todas las operaciones (ingestión, almacenamiento, consulta, cambios de estado) se registran para soportar auditorías internas y externas.
+Clasificación de documentos (atributo obligatorio en metadatos):
+•	Público → documentos abiertos sin restricción.
+•	Interno → documentos de uso exclusivo dentro de la institución.
+•	Restringido → documentos confidenciales o con datos sensibles.
+Política de retención (configurable):
+•	Público: permanencia indefinida salvo decisión administrativa.
+•	Interno: retención estándar de 36 meses.
+•	Restringido: retención máxima de 12 meses salvo renovación de autorización.
+Procedimiento de takedown y derecho a eliminación (“right to remove”)
+•	Ante solicitud válida de eliminación, el sistema debe borrar:
+1.	Vectores relacionados en ChromaDB/Qdrant.
+2.	Metadatos en SQLite/Postgres.
+3.	Reindexación automática para reflejar la eliminación en consultas y recomendaciones.
+•	Se mantiene registro de la solicitud y del responsable que la ejecutó (para auditoría).
+
+15. Testing y validación 
+•	Unitario (IA): extracción de texto, traducción, chunking, NER, normalización, embeddings, recuperación y síntesis.
+•	Unitario (Presenter): normalización de filtros, DTOs, ranking, sanitización.
+•	Integración: ingestión end-to-end; flujo QA; cambios de estado de recomendaciones.
+•	E2E: simulación de escenarios reales de usuario (aplicar filtros, consultar detalle, marcar recomendación como aplicada) con fixtures agronómicos realistas.
+•	Datos sintéticos: conjunto documental diseñado con trampas (sinónimos, ruido, ambigüedades, fases fenológicas atípicas) para validar robustez del NER y de las taxonomías.
+•	Evaluación cuantitativa de NER/taxonomías: uso de datasets anotados para medir precisión, recall y F1; comparación periódica contra thresholds mínimos establecidos; generación de reportes automáticos de evolución de calidad.
+•	Performance: pruebas de carga sobre conjunto documental creciente (hasta decenas de miles de fragmentos); comparación warm cache vs cold; estrés en consultas simultáneas.
+•	Regresión: snapshot tests de contratos y “golden answers” con tolerancias controladas.
+
+
+
+16. Metodología y gobernanza de cambios
+El sistema evoluciona bajo principios ágiles y trazables, asegurando calidad, continuidad y mínima disrupción.
+Metodología ágil:
+•	Scrum/Kanban: sprints de 2 semanas, demos periódicas y backlog vivo de tareas priorizadas.
+•	Definition of Done (DoD): todo incremento debe pasar tests unitarios/integración, métricas en dashboards actualizadas, contratos documentados y rollbacks definidos.
+Control de versiones:
+•	Versionado explícito de modelos (embedding_model@version, reranker_version).
+•	Esquemas de contratos expuestos como /ui/v{n} con changelogs.
+•	Persistencia de taxonomy_version, glossary_version y translation_memory_version en runs para trazabilidad completa.
+Feature flags:
+•	Permiten activar o desactivar modelos, reglas de re-ranking, pipelines de NER y taxonomías sin redistribuir contratos.
+•	Ejemplo: EMBEDDING_MODEL, RERANKER, TAXONOMY_VERSION.
+Gobernanza de taxonomías y terminología:
+•	Fuentes: catálogos oficiales (FAO, INIFAP, CIMMYT, SAGARPA/SENASICA).
+•	Roles:
+o	Comité de expertos agronómicos valida términos y sinónimos.
+o	Equipo técnico integra cambios en taxonomías/glosarios.
+o	Técnicos de campo retroalimentan con observaciones prácticas (ej. nombres locales de plagas).
+•	Proceso: pipeline semiautomático de ingestión + revisión manual + despliegue.
+•	Auditoría: todas las modificaciones se registran en changelog versionado con fecha, responsable y justificación.
+Ciclo de cambios:
+1.	Propuesta (campo, comité o pipeline automático).
+2.	Validación (comité técnico agronómico).
+3.	Integración (equipo técnico en repositorio).
+4.	Despliegue (nuevo taxonomy_version y reindexación incremental).
+5.	Documentación (changelog público y métricas de cobertura/consistencia).
+17. Roadmap por hitos
+•	H1 — MVP conectable:
+Ingestión de documentos, traducción local, chunking, NER básico, embeddings, RAG con citas. Endpoints Presenter expuestos (/ui/v1/qa, /ui/v1/recommendations, /ui/v1/recommendations/{id}/state).
+•	H2 — Calidad y confianza:
+Taxonomías robustas, priorización auditable de recomendaciones, plantillas de síntesis enriquecidas, panel simple de administración para técnicos.
+•	H3 — Escalabilidad y hardening:
+Reindexación incremental, colas para ingestión masiva, cachés de consultas, dashboards de observabilidad ampliados, backups automáticos, migración a Postgres/pgvector/Qdrant.
+•	H4 — Distribución y alta disponibilidad:
+•	Despliegue en Kubernetes con auto-scaling de servicios IA/Presenter.
+•	Sharding de índices vectoriales por dominio/idioma.
+•	Replicación activa-pasiva de Postgres y Qdrant.
+•	Integración de ingress controllers y balanceadores de carga.
+•	Ensayos de tolerancia a fallos y recuperación de desastres.
+18. Riesgos y mitigaciones
+•	OCR de baja calidad en PDFs escaneados: aun con Tesseract/docTR, algunos documentos pueden producir texto incompleto o con errores. Mitigación: flag de calidad en ingestión, validación manual de casos críticos, y posibilidad de integrar modelos avanzados (LayoutLMv3, docTR) en fases posteriores.
+•	NER insuficiente: riesgo de etiquetas pobres o ambiguas; mitigación mediante ampliación de diccionarios, reglas de patrón (pattern rules), validación periódica con datasets anotados y estrategias de active learning.
+•	Crecimiento del conjunto documental: riesgo de pérdida de performance en recuperación; mitigación con sharding lógico por dominio/idioma y migración planeada hacia backends distribuidos (pgvector/Qdrant).
+•	Escalabilidad distribuida: riesgo de cuello de botella al centralizar en un único nodo Docker Compose; mitigación preparando configuración de despliegue en Kubernetes, definición de réplicas de servicios y hooks para partición de índices vectoriales.
+•	Acoplamiento accidental UI–IA: mitigación con auditorías de contratos, linters de esquemas y contract tests en CI/CD.
+•	Latencia excesiva: mitigación con caching de consultas frecuentes, reducción de top-k, re-ranking más rápido y batching de embeddings.
+
+19. KPIs y SLAs propuestos
+
+Disponibilidad Presenter/IA: ≥ 99.5% en horario laboral.
+Latencias:
+•	UI → Presenter: P50 < 200 ms.
+•	Presenter → IA: P50 < 600 ms.
+•	IA Q&A (end-to-end):
+o	Conjunto documental de 5k fragmentos → P50 < 800 ms.
+o	Conjunto documental de 50k fragmentos → P50 < 1.5 s.
+o	Conjunto documental de 100k+ fragmentos (con sharding activo) → P50 < 2–2.5 s.
+Cobertura de citas: ≥ 90% de respuestas con ≥ 2 citas. Además, mantener citation_coverage@answer ≥ 95% (meta operativa en Punto 13).
+Éxito de ingestión: ≥ 95% por tipo de archivo, incluyendo OCR en PDFs escaneados.
+Métricas NER: precisión ≥ 85%, recall ≥ 80%, F1 ≥ 82%.
+OCR:
+•	≥ 90% de éxito en extracción aceptable (validado con muestreo manual).
+•	CER < 10% (Character Error Rate).
+•	DSI ≥ 85% en preservación de estructura (tablas/figuras).
+Context hit-rate: ≥ 95% (toda respuesta debe incluir al menos un chunk con entidades objetivo de la consulta).
+Insuficiente evidencia: < 10% en conjunto documental maduro con cobertura documental adecuada.
+20. Operación y despliegue
+La operación y despliegue del sistema MILPA se basa en principios de estabilidad, trazabilidad y simplicidad progresiva, con preparación para escalar hacia entornos distribuidos cuando sea necesario.
+Ambientes definidos:
+•	Dev: recarga en caliente (hot-reload), dataset reducido, logging verboso.
+•	Staging: dataset de prueba con documentos reales anonimizados; métricas y trazas completas para validar releases antes de pasar a producción.
+•	Prod: volúmenes persistentes para datos/documentos/, vector_db/ y milpa_knowledge.db; observabilidad y seguridad completas.
+Gestión de secretos y configuración:
+•	Variables en .env por servicio (IA y Presenter).
+•	Rotación trimestral de claves y tokens.
+•	Prohibido el commit de secretos en repositorios; opción de integración con Vault/KMS on-prem en fases posteriores.
+Backups y recuperación (DR):
+•	Tareas programadas (cron) para snapshots de SQLite y ChromaDB.
+•	Verificación de integridad automática de copias.
+•	RPO (Recovery Point Objective) y RTO (Recovery Time Objective) definidos y documentados en runbooks.
+•	Ensayos regulares de restauración para validar efectividad.
+Runbooks operativos:
+•	Ingestión fallida (retry + validación manual si persiste).
+•	Picos de latencia (diagnóstico → caché, sharding, re-ranking).
+•	Caídas de Chroma/SQLite (fallback, restauración desde snapshot).
+•	Rollbacks de versiones (contratos, embeddings, taxonomías).
+Plan de colas y trabajos largos:
+•	Workers dedicados: procesos asíncronos con RQ/Celery/Arq + Redis/SQLite queue para tareas de ingestión y OCR.
+•	Notificación de progreso: el Presenter expone webhooks y Socket.IO (ya contemplado en MILPA) para informar avance de OCR y procesamientos largos a la UI.
+•	Políticas de cola:
+o	Documentos ≤150 páginas: procesados en línea.
+o	Documentos >150 páginas o >25 MB: enviados a cola asíncrona.
+o	Reintentos automáticos con backoff exponencial (máx. 3) y dedupe_key = doc_hash+model_version para evitar reprocesos duplicados.
+•	Monitoreo de workers: métricas de cola (jobs pendientes, fallidos, tiempos promedio) visibles en Prometheus/Grafana.
+•	SLO de colas: 95% de jobs de más de 150 páginas completados en menos de 2 horas.
+Estandarización operativa:
+•	Playbooks de incidentes con pasos claros:
+o	Síntomas → diagnóstico rápido.
+o	Causa probable → acciones inmediatas.
+o	Escalamiento → responsables definidos.
+•	Ciclo de mejora continua: toda incidencia registrada se retroalimenta al backlog de operación.
+Beneficios esperados:
+•	Estabilidad en producción al aislar cargas pesadas en workers.
+•	Reducción de latencias en UI al descargar OCR y procesamientos largos.
+•	Facilidad de recuperación frente a fallos gracias a backups probados y runbooks estandarizados.
+•	Transparencia operativa con dashboards y notificaciones en tiempo real.
+
+21. Documentación
+Se estructura en varios niveles, con el objetivo de facilitar la comprensión, operación y evolución de la plataforma:
+README por repositorio
+•	Instrucciones de arranque (instalación, dependencias, setup inicial).
+•	Variables de entorno (.env) necesarias para cada servicio.
+•	Endpoints principales con ejemplos de uso (curl, HTTPie, Postman).
+•	Problemas comunes y soluciones rápidas (FAQ técnico).
+Guía operativa
+•	Procesos clave: ingestión de documentos, traducción, chunking, enriquecimiento semántico y consultas Q&A.
+•	Monitoreo: cómo interpretar dashboards de métricas (latencias, ingest success, P@K).
+•	Escalamiento: pasos a seguir en caso de fallas críticas (OCR, colas, bases de datos).
+•	Ejemplos de flujos end-to-end desde carga de documento hasta obtención de recomendación.
+Catálogo de contratos (API Contracts Catalog)
+•	Listado completo de DTOs UI (QASnippet.v1, RecommendationCard.v1, FiltersPayload.v1).
+•	Changelogs versionados (compatibilidad hacia adelante y hacia atrás).
+•	Reglas de compatibilidad de contratos (qué cambios son breaking vs safe).
+•	Samples JSON congelados para referencia estable: 
+{
+  "schema_version": "1.0",
+  "qa_run_id": "run_2025_001",
+  "respuesta_html": "<p>El maíz requiere <strong>fertilización con N</strong> en la fase de macollaje.</p>",
+  "confianza": 0.87,
+  "citas": [
+    {
+      "doc_id": "doc123",
+      "autor": "INIFAP",
+      "titulo": "Manejo de Nutrientes en Maíz",
+      "pagina": 14,
+      "score": 0.92
+    }
+  ],
+  "advertencias": []
+}
+Playbook de incidencias
+•	Guía estructurada de respuesta a incidentes:
+o	Síntomas: qué observar (ej. latencia alta, ingest fallida, métricas fuera de umbral).
+o	Causas probables: errores OCR, configuración de taxonomías, cuellos de botella en vectores.
+o	Pasos de resolución: acciones inmediatas, herramientas a usar, responsables de ejecución.
+o	Checklist post-mortem: registrar causa raíz, acciones correctivas y aprendizajes.
+Beneficios de esta estrategia documental:
+•	Trazabilidad completa de contratos y evolución de API.
+•	Reducción de la curva de aprendizaje para nuevos técnicos.
+•	Base sólida para auditorías internas y externas.
+•	Referencias prácticas (samples JSON) que eliminan ambigüedad en la integración UI ↔ Presenter.
+
+22. Gobernanza del conocimiento
+El sistema MILPA no solo debe sostenerse en bases técnicas, sino también en una estrategia clara de administración del conocimiento que garantice calidad, pertinencia y actualización continua. Para ello se establecen los siguientes lineamientos:
+Alimentación del conjunto documental
+•	Los administradores técnicos y áreas de documentación son responsables de cargar manuales, reportes, publicaciones internas y fuentes autorizadas al sistema.
+•	Se prohíbe la ingestión de documentos sin validación de origen o sin licencia clara. Cada archivo debe acompañarse de metadatos de fuente, autoría y fecha de publicación.
+Validación de taxonomías
+•	La base de taxonomías canónicas (cultivos, plagas, nutrientes, fases fenológicas, regiones) se alimenta principalmente de fuentes oficiales: FAO, INIFAP, CIMMYT, SAGARPA/SENASICA, catálogos locales.
+•	Un comité técnico agronómico revisa cualquier actualización antes de su integración en el sistema.
+•	Los cambios se registran en un changelog versionado, garantizando trazabilidad y reproducibilidad.
+Retroalimentación desde campo
+•	Los técnicos agrónomos en campo pueden marcar recomendaciones como aplicadas, pospuestas, útiles o incompletas.
+•	Esta retroalimentación alimenta un módulo de métricas que permite evaluar la calidad práctica de las recomendaciones.
+•	Se contempla un canal de comunicación formal (ej. panel de feedback en Dashboard MILPA) para reportar sinónimos locales, nombres de plagas o cultivos no contemplados en taxonomías oficiales.
+Ciclo de mejora continua
+1.	Feedback de campo → los técnicos reportan ajustes o vacíos terminológicos.
+2.	Revisión técnica → el comité valida y decide incorporación.
+3.	Actualización de taxonomías/NER → se integran nuevas entradas y se reentrenan los clasificadores si aplica.
+4.	Reindexación → los documentos se re-procesan con las taxonomías actualizadas.
+5.	Auditoría y documentación → se genera un registro del cambio y su justificación.
+Beneficios organizativos
+•	Garantiza que el conocimiento esté alineado con la realidad de campo y no solo con fuentes bibliográficas.
+•	Permite mantener un equilibrio entre estandarización global (FAO, CIMMYT) y usos locales (nombres comunes, prácticas regionales).
+•	Refuerza la trazabilidad institucional, asegurando que cada cambio tenga responsable, fuente y fecha.
+
+
+
+•	Alimentación del conjunto documental → documentos cargados por admins.
+•	Validación taxonomías (comité técnico) → control de calidad antes de integrar cambios.
+•	Integración en sistema → documentos y taxonomías actualizados.
+•	Retroalimentación de técnicos de campo → aportan observaciones prácticas y sinónimos locales.
+•	Mejora continua (reindexación + documentación) → ajustes registrados, se reinicia el ciclo.
+
+23. Parámetros y feature flags operativos (H1)
+Embeddings (flag EMBEDDING_MODEL)
+•	MVP: distiluse-base-multilingual-cased-v2 o paraphrase-multilingual-MiniLM-L12-v2 (balance entre latencia y recall).
+•	Fallback si baja el recall: probar bge-m3 (mejor en benchmarks MTEB, aunque más pesado).
+•	Control: todos los cambios se activan vía feature flag EMBEDDING_MODEL.
+Recuperación híbrida (flag RAG_MODE)
+•	Default: híbrido (BM25 + vectores) con fusión RRF.
+•	Parámetros iniciales:
+•	RRF_K = 60
+•	BM25_TOPK = 100
+•	Filtro inicial por etiquetas (ej. labels=RECOMENDACION) para priorización.
+Re-ranking (flag RERANKER)
+•	MVP: similitud coseno + boosts (frescura, autoridad, cobertura de entidades).
+•	Opcional (si la latencia lo permite): monoT5 o bge-reranker, activables con flag.
+OCR (flags OCR_ENABLED, OCR_ENGINE_ARGS)
+•	Motor: Tesseract con parámetros --oem 1 --psm 6, más preprocesado (binarización y deskew).
+•	Registro: cada página obtiene un OCR_QUALITY_SCORE (0–1) para trazabilidad de extracción.
+NER (flags NER_PIPELINE, TAXONOMY_VERSION)
+•	Base: spaCy ES + PhraseMatcher con catálogos versionados (FAO, INIFAP, SENASICA).
+•	Fallback: si falla en casos críticos, se agrega un EntityRuler antes de considerar entrenar nuevos modelos.
+•	Control: versionado explícito de taxonomías para trazabilidad.
+Chunking & Retrieval (configuración dura)
+•	Parámetros: CHUNK_SIZE, CHUNK_OVERLAP, K_RETRIEVE, K_RERANK, THRESHOLD_INSUFFICIENT_EVIDENCE.
+•	Política: ventanas de 800–1200 tokens, con 15–20% de solapamiento y cortes “duros” en encabezados H1/H2.
+•	KPI de sanity: context hit-rate ≥ 95% (la respuesta debe referenciar al menos un chunk con entidades objetivo).
+Cachés y TTLs
+1.	Query cache (Presenter): LRU con TTL 10–30 minutos por combinación normalized_query + filters.
+2.	Doc embedding cache: clave doc_hash + model_version, para evitar recalcular embeddings de documentos ya procesados.
+3.	Render cache QASnippet.v1: idempotencia garantizada por normalized_query + filters.
+4.	invalidación por taxonomy_version, glossary_version, translation_memory_version y doc_hash en re-ingestas.
+Seguridad de entrada
+•	Rate-limit: 60 req/min por JWT en UI y 10 req/min para uploads grandes.
+•	Size guards: máx. 25 MB por PDF; OCR limitado a 300 páginas; para >150 páginas, ingreso en cola asíncrona.
+•	CORS: estricto, orígenes explícitos.
+•	Sanitización HTML: solo se permiten etiquetas <a> <em> <strong> <ul> <li>.
+DTOs y contratos
+•	Todos los DTOs incluyen schema_version y render_hints (ej. destacar severidad/urgencia).
+•	RecommendationCard siempre incluye explicación del puntaje (“por qué es alta/media/baja”), reforzando transparencia.
+Checklist “Listo para H1”
+•	Parámetros definidos (CHUNK_SIZE, CHUNK_OVERLAP, K_RETRIEVE, K_RERANK, umbral de insuficiente evidencia).
+•	Índices creados y verificados con EXPLAIN/ANALYZE (SQLite y Chroma).
+•	Caché en Presenter activa (TTL y evicción por versión).
+•	Rate-limit, CORS, límites de upload y MIME habilitados.
+•	Métricas y alertas mínimas activadas (latencia, ingestión, NER F1).
+•	Golden answers (10–20 Q&A) documentados para regresión.
+•	Dos ejemplos reales de contratos (QASnippet.v1, RecommendationCard.v1) publicados en el Catálogo de contratos.
+Riesgos aún sensibles & amortiguadores
+•	Imbalance por dominio (ej. maíz domina, chile escaso): solución → sharding por cultivo + boosts por shard.
+•	Sinónimos locales que reducen recall: panel de feedback en UI + actualización semanal de synonyms + reindexación incremental.
+•	Latencia en conjunto documental grandes (100k+): activar sharding + retrieval híbrido (BM25 + vectores) + auto-tuning de k en Presenter según P95.
+
+24. Conclusiones
+El diseño propuesto materializa un ecosistema de IA trazable, auditable y privado para MILPA. La combinación de un backend de IA especializado y una capa Presenter versionada permite que el sistema evolucione sin comprometer la estabilidad del frontend ni la integridad del conocimiento institucional. La estrategia de evidencia primero, taxonomías canónicas y observabilidad desde el origen establece un estándar de calidad y confianza alineado con las necesidades de operación en campo y de toma de decisiones informada. Este documento sienta las bases para implementar un MVP sólido y escalable, con rutas claras de endurecimiento y crecimiento a medio plazo sin reescrituras disruptivas.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+MILPA — Documento Técnico Tipo “Tesis”
+SPRINT 6–8 (NER/Taxonomías, Embeddings+Chroma, BM25+RRF Default)
+Versión: 1.0 • Estado: En Ejecución • Área: IA aplicada a AgroTech
+
+
+Resumen Ejecutivo
+
+
+Este documento consolida la justificación, el diseño y la ejecución del SPRINT 6–8 del proyecto MILPA, orientado a mejorar la comprensión semántica de documentos técnicos agrícolas y a elevar la precisión del sistema de Recuperación Aumentada por Generación (RAG). En particular, se introducen:
+
+
+- Reconocimiento de Entidades (NER) gobernado por taxonomías canónicas (cultivo, plaga, nutriente, fenología, ubicación, práctica), con normalización y versionado.
+- Embeddings densos y almacenamiento vectorial persistente (Chroma) para búsqueda semántica, con estimaciones de capacidad y prácticas de operación.
+- BM25 + RRF por defecto (híbrido léxico+denso) como estrategia de recuperación base, con umbrales de “insuficiente evidencia” y degradación controlada.
+
+
+El resultado es una búsqueda híbrida, auditable, reproducible y trazable, conectada con los sprints previos (extracción/OCR, chunking por tokens, glosario/TM) y preparada para los sprints siguientes (reranking, evaluación formal, seguridad y cumplimiento, observabilidad, canary releases).
+
+
+Propósito
+
+
+Asegurar que las respuestas del sistema MILPA estén fundamentadas en evidencia documental precisa y granular (citas finas), maximizando recall y precision en un dominio agrícola multilingüe, con terminología estandarizada y controles de calidad a nivel taxonómico.
+
+
+Objetivos
+
+
+Objetivo General
+Consolidar la capa de recuperación híbrida (léxica + semántica) y su gobernanza semántica mediante NER/taxonomías versionadas, de forma que las respuestas tengan cobertura temática y trazabilidad por entidad y por referencia fina (página/bbox/celda).
+
+
+Objetivos Específicos (SMART)
+
+
+1. NER gobernado: alcanzar ≥0.80 F1 macro en entidades clave (cultivo, plaga, nutriente, práctica) en un set anotado de referencia; versionar taxonomías y sinónimos.
+2. Vector Store operativo: indexar ≥50k fragments (384d) con latencias P95 < 80 ms en búsquedas densas locales, y plan de backup/restore probado.
+3. Híbrido por defecto: desplegar BM25+RRF con K_RRF=60, BM25_TOPK=100, K_RETRIEVE=8, y tasa de insuficiente evidencia <10% en queries conocidas (golden set).
+4. Trazabilidad: registrar model_sha, rag_seed, versiones de taxonomía/glosario/TM y config_fingerprint en cada ejecución.
+
+
+Alcance
+
+
+Incluye: NER + taxonomías; embeddings y vector DB persistente; BM25 y fusión RRF; umbrales de evidencia; métricas de retrieval; gobernanza y versionado semántico; procedimientos de verificación.
+Excluye (cubierto en sprints futuros): reranker de aprendizaje a orden (SPRINT 9), síntesis anti-alucinación avanzada (SPRINT 10), endpoints de visualización granular (SPRINT 11), harness de evaluación integral (SPRINT 12), y hardening legal/operativo avanzado (SPRINT 14–16).
+
+
+Marco Conceptual
+
+
+- Taxonomía: conjunto canónico y versionado de conceptos del dominio (cultivos, plagas, nutrientes, prácticas, ubicaciones), con sinónimos, alias y mapeo a vocabularios oficiales (FAO/INIFAP/SENASICA).
+- NER: etiquetado de entidades en texto (p. ej., maíz, N, roya, V6–V8), usado para filtrado, priorización y trazabilidad.
+- Embeddings: representaciones vectoriales densas (p. ej., 384 dimensiones) para medir similitud semántica entre consulta y fragmentos.
+- BM25: modelo léxico clásico para ranking por términos; muy eficiente en consultas con palabras clave exactas.
+- RRF (Reciprocal Rank Fusion): mecanismo simple y eficaz para fusionar resultados de múltiples recuperadores, robusto frente a variaciones.
+
+
+Arquitectura de Referencia (Resumen)
+
+
+- Ingesta/Extracción (SPRINT 3–5): extracción por spans con bbox, OCR bajo demanda, tablas/figuras y chunking token-aware con protección de ecuaciones y normalización de unidades.
+- Enriquecimiento (SPRINT 6): NER + normalización a la taxonomía canónica; etiquetado de fragmentos con labels (RECOMENDACIÓN/DATO/RESULTADO).
+- Indexación (SPRINT 7–8):
+• VectorDB (Chroma): embeddings densos + metadatos (doc_id, labels, entidades normalizadas).
+• BM25 (Tantivy/Whoosh/mem): índice léxico eficiente y robusto.
+• Fusión RRF con parámetros por defecto y umbrales de evidencia.
+- Presentación: contratos limpios v1, sanitización, clic-through (página/bbox/celda), métricas y trazas.
+
+
+Sprints Previos (Contexto)
+
+
+1. SPRINT 0–2: scaffold endurecido; DDL versionable; upload con AV/ClamAV; licencias y clasificación; no-root, CORS estricto, métricas básicas.
+2. SPRINT 3–5: extracción avanzada; OCR selectivo; chunking por tokens reales; glosario/TM versionados; consistencia terminológica; referencias finas para clic-through.
+
+
+SPRINT 6 — NER + Taxonomías Canónicas
+
+
+Diseño
+
+
+- Esquema de entidades:
+CULTIVO, PLAGA, ENFERMEDAD, NUTRIENTE, FENOFASE, UBICACION, PRACTICA, DOSIS (expresiones con unidades), VARIEDAD.
+Cada mención se normaliza a un ID canónico (ej., maíz → CULTIVO:zea_mays).
+- Normalización y sinónimos:
+Archivo de sinónimos versionado (p. ej., maiz/maíz/corn → zea_mays).
+Estatus de cada sinónimo: proposed, reviewed, approved (gobernanza).
+- Reglas y Modelo:
+EntityRuler y patrones para términos altamente frecuentes/estables.
+spaCy ES (o similar) para entidades contextuales y de superficie variada.
+Detección de DOSIS y UNIDADES con expresiones regulares robustas, en coordinación con el normalizador de unidades del SPRINT 5.
+- Persistencia:
+Guardado de entidades por fragment_id (offsets y forma normalizada).
+Índices para consultas rápidas por tipo y valor canónico.
+- Uso en RAG:
+Filtrado por labels (p. ej., RECOMENDACION) si la intención es operativa.
+Aumento de cobertura semántica al ponderar coincidencias de entidades entre consulta y fragmentos.
+Atajos de precisión: si la consulta menciona un cultivo/plaga, favorecer fragmentos con la misma entidad canónica.
+
+
+Evaluación y Aceptación
+
+
+- Métrica primaria: F1 macro ≥ 0.80 en entidades priorizadas.
+- Análisis de errores por categoría: boundary errors, missed synonyms, false friends.
+- Checks automáticos:
+Coherencia entidad–documento (p. ej., una plaga de sorgo no atribuida a trigo en el mismo doc).
+Coverage de entidades en el top-K recuperado.
+
+
+SPRINT 7 — Embeddings + Chroma (Persistencia Vectorial)
+
+
+Selección de Modelo y Dimensionalidad
+
+
+- Modelo base: MiniLM multilingüe 384d (equilibrio entre calidad y costo).
+- Opción de cuantización/ONNX para entornos de CPU.
+
+
+Esquema de Metadatos (por vector)
+
+
+- fragment_id, doc_id, labels (lista), entities (lista normalizada), taxonomy_version, huellas de glossary/TM, source (nativo/OCR), tokenizer_name.
+
+
+Capacidad y Rendimiento (Estimaciones)
+
+
+- 50k fragments × 384d × 4 bytes ≈ ~77 MB en vectores puros.
+Overhead (índice, metadatos): 0.5–1.5× adicional.
+- P95 consultas densas locales: <80 ms objetivo con caché caliente.
+
+
+Operación
+
+
+- Colecciones separadas por entorno (test, staging, prod).
+- Backup/Restore: snapshot de la carpeta de persistencia y metadatos en SQLite.
+- Limpieza/Reconstrucción: reindex incremental cuando cambie EMBEDDING_MODEL_SHA o taxonomy_version.
+- Validaciones:
+Cohesión de cardinalidades: len(ids) == len(embeddings) == len(metadatas).
+Sin HNSW metadata no soportada por la versión de Chroma en uso.
+- Métricas:
+tamaño colección, latencias de add/query, tasa de errores, aciertos@K en golden set.
+
+
+SPRINT 8 — BM25 por Defecto + Fusión RRF
+
+
+Backend Léxico
+
+
+- Tantivy (python-tantivy) como primera opción, con Whoosh como fallback y BM25 en memoria como último recurso.
+- Esquema en BM25: fragment_id, text, labels, doc_id.
+- Analizadores simples (tokenización, minúsculas) para estabilidad.
+
+
+Fusión RRF (Reciprocal Rank Fusion)
+
+
+- Fórmula:
+score(d) = Σ_r∈{vec,bm25} 1/(K + rank_r(d)), con K = 60 (configurable).
+- Parámetros por defecto:
+BM25_TOPK = 100
+K_RETRIEVE = 8
+RRF_K = 60
+- Umbrales de evidencia:
+k_min = 5 documentos candidatos.
+min_sources = 2 (salvo normativa).
+entity_coverage ≥ 0.65 si la consulta trae entidades.
+mean_score ≥ 0.35 (después de normalización).
+- Degradación Controlada:
+Si VectorDB falla → solo BM25.
+Si latencia > P95 objetivo → reducir K_RETRIEVE y/o omitir reranker (SPRINT 9).
+
+
+Métricas
+
+
+- P@K en golden set (híbrido vs. léxico puro).
+- Insufficient evidence rate (<10% en queries conocidas).
+- Cobertura de entidades en los top-N.
+
+
+Lógica y Algoritmos (Detalle)
+
+
+1. BM25 (memoria/Whoosh/Tantivy)
+BM25(q,d) = Σ_w∈q IDF(w) * ( tf(w,d) * (k1+1) ) / ( tf(w,d) + k1 * (1 - b + b * (|d|/avgdl)) ), con k1=1.5, b=0.75.
+2. Similitud densa
+Distancia coseno → similitud ≈ 1 - dist. Normalización min-max opcional por lote.
+3. RRF
+Fusiona rankings heterogéneos; evita sobre-ajuste y dependencias complejas; facilita tuning reproducible (SPRINT 9).
+4. Cobertura de Entidades
+coverage = (#entidades_consulta presentes en d) / (#entidades_consulta); usado en umbrales de suficiencia.
+
+
+Reproducibilidad y Trazabilidad
+
+
+- model_sha (embeddings) y reranker_version (sig. SPRINT) bloqueados por ejecución.
+- rag_seed por consulta para aleatoriedades controladas (p. ej., desempates).
+- config_fingerprint(): hash del conjunto de flags/paths/modelos/umbrales (sin claves).
+
+
+Seguridad y Cumplimiento (Enlace con SPRINT 14–16)
+
+
+- Threat Model para contenidos ingeridos (prompt-injection, XSS incrustado).
+Mitigación: sanitización pre-índice (HTML→texto), bloqueo de href externos en respuestas.
+- ClamAV en uploads.
+- RBAC con scopes por endpoint; rotación de JWT.
+- PII masking en logs y en citas (regex CURP/RFC/Teléfono).
+- Licencias: obligatorio declarar licencia/origen; denegar ingestiones no conformes.
+
+
+Observabilidad y Alertas (Relación con SPRINT 18–19)
+
+
+- Métricas:
+rag_insufficient_evidence_rate; retrieval_latency_ms (vector/bm25/fusión); retrieval_recall vs. golden set; entity_coverage_topk.
+- Alertas accionables:
+Evidencia insuficiente >10% en 15 minutos; caída significativa de recall o aumento de latencia P95.
+- Trazas (OpenTelemetry): enriquecidas con qa_run_id, fragment_ids, taxonomy_version, shard, etc.
+
+
+Verificaciones Operativas (Checklist)
+
+
+Antes de indexar:
+- Licencia clara y aceptada.
+- Sanitización aplicada.
+- AV limpio (ClamAV “OK”).
+- Extracción por spans y/o OCR según heurística.
+- Consistencia de tabla/figuras (si aplica).
+
+
+Durante NER/Taxonomía:
+- Versiones activas (taxonomy_version, glossary_version, TM_version).
+- Sinónimos aprobados vigentes.
+- F1 ≥ 0.80 en set de control.
+
+
+Indexación:
+- Chroma up y persistente; sin metadatos HNSW no soportados.
+- BM25 creado/abierto (Tantivy primero; fallback Whoosh/mem).
+- Cardinalidades consistentes (ids/embeddings/metadatos).
+
+
+Recuperación:
+- Híbrido activo por defecto (BM25+RRF).
+- Umbrales de evidencia aplicados.
+- Degradación probada (solo-BM25 si VectorDB falla).
+
+
+Trazabilidad:
+- Guardado de qa_run_id, rag_seed, model_sha, config_fingerprint.
+
+
+Procedimiento de Pruebas (de extremo a extremo)
+
+
+1. Reiniciar stack limpio (compose down -v; build; up).
+2. Smoke tests: /health, /metrics.
+3. Pruebas unitarias: NER (precision/recall por tipo), embeddings (dimensiones, batch add), BM25 (búsqueda básica), fusión RRF (orden esperado en casos controlados).
+4. Pruebas de integración:
+Ingesta → extracción → NER → embeddings/Chroma → BM25 → RRF → respuesta.
+Verificación de citas finas (página/bbox/celda) y de entity coverage.
+5. Golden Set:
+Medir P@K, citation precision, attribution rate, insufficient evidence.
+Aceptación si se cumple el umbral pactado (ver “Criterios de Listo”).
+
+
+Requerimientos (Actuales y Futuros)
+
+
+- Infraestructura: CPU con soporte para inferencia ligera (embeddings) y OCR eventual; disco rápido para índices; espacio estimado 0.5–1.5 GB (50k–100k chunks) + documentos.
+- Dependencias: spaCy ES + modelos; transformers/tokenizer; Chroma; Tantivy (opcional); Whoosh (fallback).
+- Seguridad: No-root en contenedores, FS readonly salvo volúmenes; CORS/Rate limit/CSP; AV activo.
+
+
+Pasos a Seguir (Roadmap)
+
+
+Corto plazo:
+- Finalizar dataset anotado para NER y cerrar F1 objetivo.
+- Afinar pesos de RRF y umbrales de evidencia con el golden set.
+- Completar métricas/alertas de retrieval; tablero básico.
+
+
+Mediano plazo (SPRINT 9–12):
+- Reranker top-N (bge-reranker) + tuning documentado (seed y grid).
+- Síntesis anti-alucinación con política de citas por oración (tablas/figuras/celdas).
+- Harness de evaluación (exact-match, precision de cita, attribution, faithfulness, P@K).
+
+
+Largo plazo (SPRINT 13–24):
+- Contratos UI v1 estables + accesibilidad + modo offline.
+- Threat model completo y hardening (mTLS/NetworkPolicy).
+- Cumplimiento (DPIA, ARCO/DSR, retención automática).
+- Colas/backpressure/circuit-breakers + degradación formalizada.
+- Observabilidad avanzada (alertas de negocio).
+- Takedown verificable con evidencia y prueba de ausencia.
+- Blue-green/canary para /ui/v{n} y pinning de dependencias con SBOM.
+
+
+Criterios de Listo (Definition of Done) — SPRINT 6–8
+
+
+1. NER/Taxonomías:
+F1 macro ≥ 0.80 en entidades clave; taxonomía/sinónimos versionados; normalización efectiva en indexación y consulta.
+2. VectorDB/Embeddings:
+Colección persistente operativa; indexación batch validada; P95 de query densa < 80 ms; backup/restore probado.
+3. BM25+RRF por defecto:
+Fusión activa y estable; umbrales de evidencia implementados; degradación a solo-BM25 verificada.
+Insufficient evidence < 10% en golden set operativo.
+4. Trazabilidad y Reproducibilidad:
+qa_run_id, rag_seed, embedding_model_sha, taxonomy_version, config_fingerprint registrados en cada respuesta.
+5. Observabilidad inicial:
+Métricas de retrieval exportadas; primeros umbrales de alerta definidos.
+
+
+Riesgos y Mitigaciones
+
+
+- Ambigüedad léxica / polisemia → combinar NER canónico y embeddings; ajustar RRF.
+- Calidad de OCR → activación selectiva + métricas; reingesta bajo demanda.
+- Desalineación terminológica → glosario/TM versionados; consistencia automática; revisión humana en edge cases.
+- Deriva de rendimiento → monitoreo de latencias/recall; degradación controlada; pinning de versiones y seeds.
+- Cumplimiento → licencias obligatorias; DPIA y flujos ARCO/DSR; takedown automatizado.
+
+
+Conclusión
+
+
+El SPRINT 6–8 establece el núcleo semántico del RAG de MILPA: entiende el dominio (NER gobernado), recupera con robustez (BM25+vectores) y combina señales mediante RRF con controles de evidencia. Esta base se conecta con la extracción/OCR/chunking y habilita los siguientes pasos (reranking, evaluación formal, seguridad y cumplimiento) para evolucionar hacia un sistema confiable, trazable y operativo en escenarios de producción agrícola.
+
+
+Anexos
+
+
+A. Indicadores Clave (KPIs)
+- Retrieval: P@K, recall@K, entity_coverage@K, insufficient_evidence_rate.
+- Calidad NER: F1 macro y por tipo; error breakdown.
+- Rendimiento: latencias P50/P95 por recuperador y fusión.
+- Negocio: % recomendaciones adoptadas; tiempo a decisión; top entidades por ciclo.
+
+
+B. Nomenclatura y Versionado
+- taxonomy_version, glossary_version, TM_version en cada fragmento/vector.
+- EMBEDDING_MODEL_SHA, reranker_version (cuando aplique), config_fingerprint.
+- qa_run_id, rag_seed por consulta.
+
+
+C. Políticas de Degradación
+- Solo-BM25 si VectorDB indisponible.
+- Reducción K_RETRIEVE y omisión de reranker si P95 elevado.
+- Respuestas parciales con banner de evidencia y enlaces internos (clic-through).
+
+
+
+SPRINT 0 — Scaffold endurecido
+0.1 Estructura, health y seguridad mínima
+Entregable: servicios arriba con /health, /metrics, y contenedores no-root, FS read-only (excepto volúmenes), CORS estricto.
+AI (Python)
+•	milpa_ai_backend/main.py
+•	milpa_ai_backend/api/server.py
+•	milpa_ai_backend/api/endpoints.py
+•	milpa_ai_backend/requirements.txt
+•	Dockerfile (usuario no-root, --chown, umask, tini)
+•	openapi.yaml (se genera desde FastAPI pero lo fijamos en CI para Schemathesis)
+# main.py
+from api.server import build_app
+app = build_app()
+# api/server.py
+from fastapi import FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
+from starlette.middleware.cors import CORSMiddleware
+
+def build_app() -> FastAPI:
+    app = FastAPI(title="MILPA AI", version="1.0.0")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["https://dashboard.milpa"],
+        allow_methods=["GET","POST"],
+        allow_headers=["Authorization","Content-Type"],
+    )
+    @app.get("/health")       # liveness
+    def health(): return {"ok": True}
+    Instrumentator().instrument(app).expose(app, endpoint="/metrics")
+    return app
+Presenter (Node/TS)
+•	milpa_presenter/src/server.ts, src/config.ts
+•	package.json, tsconfig.json
+•	Dockerfile (node:18-alpine non-root, --chown, readOnlyRootFilesystem)
+•	src/security/headers.ts (headers CSP para bloquear URLs externas en respuestas)
+// src/server.ts
+import fastify from "fastify";
+import cors from "@fastify/cors";
+import rate from "@fastify/rate-limit";
+import sensible from "@fastify/sensible";
+
+const app = fastify({ trustProxy: true, logger: true });
+app.register(sensible);
+app.register(cors, { origin: ["https://dashboard.milpa"] });
+app.register(rate, { max: 60, timeWindow: "1 minute" });
+
+app.get("/health", async () => ({ ok: true }));
+export async function start(){ await app.listen({ port: 8080, host: "0.0.0.0" }) }
+start();
+Supply chain (ambos repos)
+•	requirements.txt + pip-tools (pin exacto)
+•	package-lock.json/pnpm-lock.yaml
+•	SBOM: syft packages dir -o json > sbom.json
+•	Image scan: trivy image
+•	CI: job que falla si hay vulnerabilidades CRITICAL/HIGH.
+________________________________________
+� SPRINT 1 — Config, DDL versionado y modelos de datos
+1.1 Config centralizada + fingerprint
+AI core/config.py
+Incluye flags, modelos, y fingerprint de config para trazabilidad.
+from pydantic import BaseSettings
+import hashlib, json
+
+class Settings(BaseSettings):
+    DATA_DIR: str = "data/documents"
+    SQLITE_PATH: str = "data/milpa_knowledge.db"
+    CHROMA_DIR: str = "data/vector_db"
+    EMBEDDING_MODEL: str = "paraphrase-multilingual-MiniLM-L12-v2"
+    EMBEDDING_MODEL_SHA: str = ""   # model_sha calculado al cargar
+    RERANKER_MODEL: str = "bge-reranker-base"
+    RERANKER_VERSION: str = "1.0.0"
+    RAG_MODE: str = "hybrid"        # default
+    BM25_TOPK: int = 100
+    K_RETRIEVE: int = 8
+    RRF_K: int = 60
+    CHUNK_SIZE: int = 1000
+    CHUNK_OVERLAP: float = 0.2
+    OCR_MAX_PAGES: int = 300
+    DPIA_ID: str = "dpia-2025-01"
+    TAXONOMY_VERSION: str = "2025.09.10"
+    GLOSSARY_VERSION: str = "2025.09.10"
+    TM_VERSION: str = "2025.09.10"
+    JWT_PUBLIC_KEY: str = ""
+settings = Settings()
+
+def config_fingerprint()->str:
+    s = settings.dict()
+    s.pop("JWT_PUBLIC_KEY", None)
+    return hashlib.sha1(json.dumps(s, sort_keys=True).encode()).hexdigest()
+1.2 DDL con migraciones (SQLite hoy, Postgres mañana)
+AI core/logic/migrations/ con yoyo-migrations (SQLite compatible).
+Tablas extra: tables, figures, glossary_terms, translation_memory, takedowns, licenses, audit_log.
+-- 0001_init.sql (extracto)
+CREATE TABLE IF NOT EXISTS docs(
+  doc_id TEXT PRIMARY KEY, title TEXT, author TEXT, year INT, source TEXT,
+  hash TEXT, license TEXT, lang_original TEXT, classification TEXT, created_at TEXT
+);
+CREATE TABLE IF NOT EXISTS fragments(
+  fragment_id TEXT PRIMARY KEY, doc_id TEXT, fragment_uid TEXT,
+  section_id TEXT, page_start INT, page_end INT,
+  text TEXT, text_es TEXT, source TEXT, created_at TEXT
+);
+CREATE TABLE IF NOT EXISTS fine_refs(
+  fragment_id TEXT, page INT, x1 REAL, y1 REAL, x2 REAL, y2 REAL,  -- bbox PDF coords
+  click_href TEXT, PRIMARY KEY(fragment_id,page,x1,y1,x2,y2)
+);
+CREATE TABLE IF NOT EXISTS tables(
+  table_id TEXT PRIMARY KEY, doc_id TEXT, page INT, bbox TEXT,  -- bbox JSON
+  csv TEXT, schema JSON
+);
+CREATE TABLE IF NOT EXISTS table_cells(
+  table_id TEXT, row INT, col INT, text TEXT, bbox TEXT,
+  PRIMARY KEY(table_id,row,col)
+);
+CREATE TABLE IF NOT EXISTS figures(
+  figure_id TEXT PRIMARY KEY, doc_id TEXT, page INT, bbox TEXT, caption TEXT
+);
+CREATE TABLE IF NOT EXISTS glossary_terms(
+  term_src TEXT, term_es TEXT, domain TEXT, do_not_translate INT, version TEXT,
+  PRIMARY KEY(term_src, version)
+);
+CREATE TABLE IF NOT EXISTS translation_memory(
+  src TEXT, tgt TEXT, context_hash TEXT, version TEXT,
+  PRIMARY KEY(src, context_hash, version)
+);
+CREATE TABLE IF NOT EXISTS takedowns(
+  request_id TEXT PRIMARY KEY, doc_id TEXT, requested_by TEXT, reason TEXT, created_at TEXT, executed_at TEXT
+);
+CREATE TABLE IF NOT EXISTS licenses(
+  doc_id TEXT PRIMARY KEY, license TEXT, url TEXT, checked_by TEXT, checked_at TEXT
+);
+-- índices
+CREATE INDEX IF NOT EXISTS idx_fine_refs_frag ON fine_refs(fragment_id);
+CREATE INDEX IF NOT EXISTS idx_tables_doc ON tables(doc_id);
+CREATE INDEX IF NOT EXISTS idx_glossary_ver ON glossary_terms(version);
+________________________________________
+� SPRINT 2 — Upload endurecido + antivirus + licencias
+AI
+•	api/endpoints.py: /api/documents/upload valida MIME, tamaño, ClamAV (clamd), licencia/metadatos requeridos, clasificación (Público/Interno/Restringido).
+•	core/logic/ingestion.py: persist_original, sha256_file.
+# endpoints.py (fragmento endurecido)
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+from core.logic.ingestion import persist_original, sha256_file
+from core.logic.metadata_store import get_conn
+from core.security.av import scan_file
+router = APIRouter()
+
+@router.post("/api/documents/upload")
+def upload(file: UploadFile = File(...), license: str = "institutional", classification:str="Interno", title:str|None=None, author:str|None=None):
+    if file.content_type not in {"application/pdf","text/plain","application/vnd.openxmlformats-officedocument.wordprocessingml.document"}:
+        raise HTTPException(415, "Tipo no permitido")
+    path, digest = persist_original(file.file, file.filename)
+    scan_file(path)  # ClamAV
+    with get_conn() as c:
+        c.execute("INSERT OR REPLACE INTO docs(doc_id,title,author,source,hash,license,lang_original,classification,created_at) VALUES(?,?,?,?,?,?,?, ?, datetime('now'))",
+                  (digest, title, author, file.filename, digest, license, None, classification))
+    return {"doc_id": digest, "stored_path": path}
+________________________________________
+🧠 SPRINT 3 — Extracción/OCR avanzada (texto, tablas, figuras, refs finas)
+AI
+•	core/logic/extraction.py: PyMuPDF para texto + bbox, media y figures.
+•	core/logic/tables.py: Camelot/Tabula fallback; cita por celda (page+bbox).
+•	core/logic/ocr.py: heurística needs_ocr, Tesseract; docTR en worker.
+# extraction.py (esqueleto)
+import fitz  # PyMuPDF
+from typing import Dict, List
+
+def extract_pdf(path:str)->Dict:
+    doc = fitz.open(path)
+    pages=[]
+    figures=[]
+    for i,p in enumerate(doc):
+        blocks = p.get_text("dict")["blocks"]
+        text, spans_bbox = [], []
+        for b in blocks:
+            if b["type"]==0:
+                for l in b["lines"]:
+                    for s in l["spans"]:
+                        text.append(s["text"])
+                        spans_bbox.append({"page":i+1,"bbox":s["bbox"]})
+            if b["type"]==1:  # image block
+                figures.append({"page":i+1,"bbox":b.get("bbox"),"caption":None})
+        pages.append({"page":i+1,"text":"\n".join(text), "spans":spans_bbox})
+    return {"pages":pages, "figures":figures, "mimetype":"application/pdf"}
+# tables.py (esqueleto)
+def detect_and_parse_tables_pdf(path:str, page:int)->dict:
+    # intenta Camelot/Tabula; si falla, heurística por líneas/bboxes con PyMuPDF
+    # retorna {"tables":[{"page":page,"bbox": [x1,y1,x2,y2],"cells":[{"row":r,"col":c,"text":"...","bbox":[...]}, ...]}]}
+    ...
+# ocr.py (extracto)
+def needs_ocr(coverage: float, dsi: float)->bool:
+    return coverage < 0.15 or dsi < 0.85
+
+def run_tesseract_image(image_bytes:bytes, lang="spa+eng")->dict:
+    # devuelve {"text":"...", "ocr_quality": q, "cer":0.07, "wer":0.11}
+    ...
+Metadatos finos
+•	Guardar en fine_refs coords PDF por span/fragmento para clic-through (Presenter renderiza click_href: /ui/v1/docs/{doc_id}/view?page=N&bbox=x1,y1,x2,y2).
+________________________________________
+� SPRINT 4 — Detección de idioma + Glosario y TM versionados
+AI
+•	core/logic/translation.py: detecta idioma (fastText), aplica glossary (do_not_translate) y TM (memoria) con validación automática de consistencia (Coverage/Consistency Score).
+•	Archivos versionados: models/glossary/{version}/glossary.csv, models/tm/{version}/translation_memory.jsonl.
+# translation.py (esqueleto)
+from collections import namedtuple
+Term = namedtuple("Term","src es domain dnt")
+
+def load_glossary(version:str)->list[Term]: ...
+def load_tm(version:str)->dict: ...  # {(src, context_hash): tgt}
+
+def enforce_do_not_translate(text:str, terms:list[Term])->str:
+    # marca placeholders para dnt antes de traducir, luego restaura
+    ...
+
+def translate_to_es(text:str, glossary:list[Term], tm:dict)->tuple[str,dict]:
+    # 1) detectar frases exactas en TM por context_hash
+    # 2) enmascarar DNT
+    # 3) modelo local (opus-mt/M2M/NLLB)
+    # 4) restaurar DNT
+    # 5) validar Consistency Score ( % de aciertos vs glossary )
+    return translated_text, {"consistency":0.97, "glossary_version": "...", "tm_version":"..."}
+Sinónimos locales (normalización)
+•	models/taxonomy/synonyms.json con workflow de aprobación (status: proposed/reviewed/approved) y versionado.
+•	Presenter aplica normalization bidireccional (UI↔IA).
+________________________________________
+✂ SPRINT 5 — Chunking por tokens reales + ecuaciones/unidades
+AI
+•	core/logic/chunking.py: usa tokenizer del modelo de embeddings (sentence-transformers/HF).
+•	Manejo de ecuaciones: detecta fórmulas (LaTeX/Unicode math) y evita partirlas; unidades normalizadas con pint.
+# chunking.py (esqueleto)
+from transformers import AutoTokenizer
+import regex as re
+from pint import UnitRegistry
+ureg = UnitRegistry()
+tok = AutoTokenizer.from_pretrained("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+
+def split_by_tokens(text:str, target: int=1000, overlap:float=0.2):
+    ids = tok.encode(text, add_special_tokens=False)
+    step = int(target*(1-overlap))
+    windows = []
+    for s in range(0, len(ids), step):
+        win = ids[s:s+target]
+        windows.append(tok.decode(win))
+    return windows
+
+EQN = re.compile(r'(\$[^$]+\$|\\\[[\s\S]+?\\\]|[∑∏√≈≃≤≥±×÷]|[A-Za-z]+\s*=\s*[^;]+)')
+def chunk_pages(pages)->list[dict]:
+    frags=[]
+    for p in pages:
+        text = p["text"]
+        # protege ecuaciones (reemplaza por tokens sentinela)
+        protected = EQN.sub(lambda m: f"⟦EQN:{hash(m.group(0))}⟧", text)
+        for part in split_by_tokens(protected):
+            part = re.sub(r'⟦EQN:(-?\d+)⟧', '<eqn/>', part)  # marcador neutro
+            frags.append({"page_start":p["page"], "page_end":p["page"], "text_es":part})
+    # generar fragment_uid determinista
+    ...
+    return frags
+________________________________________
+� SPRINT 6 — NER + taxonomías canónicas (governance)
+AI
+•	core/logic/enrichment.py: spaCy ES + EntityRuler con catálogos FAO/INIFAP/SENASICA (versionados).
+•	Clasificación RECOMENDACION/DATO/RESULTADO (reglas + SVM opcional).
+________________________________________
+🧭 SPRINT 7 — Embeddings + VectorDB y parámetros de capacidad
+AI
+•	core/logic/embeddings.py: ST en PyTorch + ONNX INT8 opcional.
+•	core/logic/vectordb.py: Chroma (HNSW) con parámetros iniciales y migración a Qdrant/pgvector.
+# vectordb.py (parámetros guía)
+# HNSW (Chroma/Qdrant):
+HNSW_M = 32               # conectividad
+HNSW_EF_CONSTRUCTION = 200
+HNSW_EF_SEARCH = 64
+VECTOR_DIM = 384          # MiniLM
+Sizing orientativo (vectores float32)
+•	50k frags, 384d ≈ 77 MB (solo vectores) → planifica 0.5–1× extra por metadatos.
+•	100k frags, 384d ≈ 154 MB (≈ 1–1.5 GB con overhead total).
+________________________________________
+� SPRINT 8 — BM25 default + fusión RRF y umbrales
+AI
+•	core/logic/bm25.py: pytantivy (Tantivy) recomendado; Whoosh solo si no hay build tools.
+•	core/logic/rag_engine.py: híbrido por defecto (RAG_MODE=hybrid), BM25_TOPK=100, K_RETRIEVE=8, RRF_K=60.
+•	Umbrales de “insuficiente evidencia”:
+o	k_min=5,
+o	min_sources=2 (excepto normativos con docs.license='normative'),
+o	entity_coverage ≥ 0.65,
+o	mean_score ≥ 0.35.
+•	Filtro inicial por labels IN ['RECOMENDACION'] si la intención es operativa.
+# rag_engine.py (esqueleto)
+def reciprocal_rank_fusion(vec_hits, bm25_hits, K=60):
+    # calcula 1/(K+rank) y suma por fragment_id
+    ...
+
+def retrieve_hybrid(query:str, k:int):
+    vec = dense_search(query, k=K_RETRIEVE)
+    lex = bm25_search(query, topk=BM25_TOPK)
+    fused = reciprocal_rank_fusion(vec, lex, K=RRF_K)
+    return fused[:k]
+________________________________________
+🪢 SPRINT 9 — Reranker y tuning reproducible
+AI
+•	RERANKER_MODEL="bge-reranker-base" (CPU-friendly).
+•	Re-rank topN=20 de la fusión.
+•	Tuning reproducible:
+o	rag_seed fijado por consulta,
+o	grid search sobre pesos (w_sim, w_fresh, w_auth, w_entity) en dataset golden,
+o	guardar best_config en runs y config_fingerprint().
+# rag_engine.py (rerank)
+def rerank(chunks, model="bge-reranker-base", topn=20):
+    # aplica reranker sólo sobre topN; añade score_rerank y reordena
+    ...
+________________________________________
+🧩 SPRINT 10 — Síntesis anti-alucinación + citas por celda/figura
+AI core/logic/synthesis.py
+•	Cada oración mapea ≥1 cita; si hay tabla, cita (doc_id, page, table_id, row, col); si figura: (figure_id).
+•	Bloquear rendering de URLs externas en output.
+•	Adjuntar fine_refs (bbox) para clic-through.
+def compose_answer(chunks:list[dict])->dict:
+    # construye HTML seguro con <a data-ref="..."> y SIN href externos
+    # citas incluyen: doc_id, page, bbox/table_cell/figure_id
+    return {
+      "respuesta_html": "...",
+      "citas":[{"doc_id":"...","page":12,"table_id":"t_12a","row":3,"col":2,"bbox":[...], "score":0.91}],
+      "advertencias":[],
+      "faithfulness": 0.88
+    }
+________________________________________
+🧰 SPRINT 11 — Endpoints IA (QA/Recommend/Docs Viewer) + trazabilidad
+AI
+•	/api/query: retorna qa_run_id, rag_seed, embedding_model, EMBEDDING_MODEL_SHA, RERANKER_VERSION, config_fingerprint.
+•	/api/recommendations: filtros + paginación por cursor estable.
+•	Nuevo: /api/docs/{doc_id}/page/{n} → devuelve image/png + opcion bbox para resaltar (soporte al clic-through en UI).
+________________________________________
+ SPRINT 12 — Evaluación (harness) y métricas RAG
+AI eval/
+•	Golden set (eval/golden.jsonl): {query, expected_citations[], intent}
+•	Harness eval/run_eval.py calcula:
+o	Exact-match (si aplica intent factual),
+o	Citation precision/recall,
+o	Attribution rate (% oraciones con ≥1 cita válida),
+o	Faithfulness (overlap oracional con chunks recuperados),
+o	P@K (retrieval).
+•	Reporta a Prometheus (pushgateway) y guarda eval_report.json.
+________________________________________
+🧱 SPRINT 13 — Presenter: contratos, sanitización, clic-through, accesibilidad
+Presenter
+•	DTOs v1: QASnippet.v1.ts, RecommendationCard.v1.ts, DocViewParams.v1.ts.
+•	Sanitización: sanitize-html con CSP (sin http(s):// externos).
+•	Clic-through: /ui/v1/docs/{doc_id}/view?page=N&bbox=x1,y1,x2,y2 (redibuja PNG con highlight).
+•	Accesibilidad & bajo ancho de banda:
+o	render_hints: high_contrast, large_type, text_only.
+o	Accept: text/plain → devuelve texto plano sin HTML.
+o	Service Worker (modo offline básico para últimas respuestas).
+// dto/QASnippet.v1.ts (ampliado)
+export interface QASnippetV1 {
+  schema_version: "1.0";
+  qa_run_id: string;
+  respuesta_html: string;
+  citas: Array<{doc_id:string; page?:number; bbox?:number[]; table_id?:string; row?:number; col?:number; score?:number;}>;
+  config_fingerprint: string;
+  embedding_model: string;
+  embedding_model_sha: string;
+  reranker_version: string;
+  rag_seed: number;
+  advertencias: string[];
+  render_hints?: { high_contrast?: boolean; large_type?: boolean; text_only?: boolean };
+}
+________________________________________
+� SPRINT 14 — Seguridad (Threat model + hardening)
+Threat model (resumen operativo):
+•	Prompt-injection en PDFs/HTML → sanitizar antes de indexar (whitelist de tags → texto plano).
+•	Data poisoning (documentos maliciosos) → licencias/origen verificados + AV + quarantine.
+•	Exfiltración por citas → sin href externos; solo clic-through interno.
+•	Lateral movement → mTLS entre Presenter↔IA; NetworkPolicy en K8s.
+•	PII en logs → mascar RFC/CURP/teléfono (Regex + redact).
+Implementación
+•	Pre-index: core/security/sanitize.py convierte HTML a texto seguro.
+•	mTLS (cuando pases a K8s) + Kubernetes NetworkPolicy (solo namespaces internos).
+•	RBAC por endpoint: scopes admin, tecnico, auditor.
+•	JWT rotation (exp corto, refresh), claves rotadas trimestral.
+•	Logs: PII_REDACTOR middleware.
+________________________________________
+⚖ SPRINT 15 — Cumplimiento (DPIA, ARCO/DSR, retención auto)
+AI/Presenter
+•	DPIA doc referenciado por DPIA_ID.
+•	ARCO/DSR flows:
+o	POST /ui/v1/takedown (Presenter) → crea takedowns y encola job.
+o	Worker borra: vectores, fragments, fine_refs, tables/figures, runs relacionados; escribe audit proof.
+•	Retención automática por classification: job diario purga Restringido > 12 meses, etc.
+•	Licencias: licenses obligatorio al subir; rechaza si desconocida.
+________________________________________
+🧵 SPRINT 16 — Colas, backpressure, circuit breakers y degradación
+AI
+•	Workers (RQ/Celery/Arq) para OCR/docTR, parsing masivo, reindex incremental.
+•	SLO de colas: 95% >150 págs en < 2 h.
+Presenter
+•	Adapter iaClient.ts con reintentos exponenciales, circuit breaker (opossum) y timeouts.
+•	Degradación:
+o	modo solo-BM25 si vector store cae,
+o	reducir K_RETRIEVE y desactivar reranker si p95 > 3s,
+o	responder parcial con citas disponibles + banner.
+________________________________________
+🧪 SPRINT 17 — Tests/CI: contratos, OpenAPI fuzz, golden answers
+•	Schemathesis contra OpenAPI de IA y Presenter (CI).
+•	Contract tests con AJV y snapshot JSON.
+•	Golden answers en CI: si faithfulness < 0.85 o citation_coverage@answer < 95% → falla el build.
+________________________________________
+ SPRINT 18 — Docker Compose (seguro) + Observabilidad
+docker-compose.yml con ai, presenter, chroma, redis, prometheus, grafana, clamav.
+•	Contenedores no-root, readOnlyRootFilesystem: true, CAP_DROP: ALL, seccomp default.
+•	Volúmenes solo para data/ y /tmp específicos.
+________________________________________
+ SPRINT 19 — Observabilidad ampliada + alertas accionables
+Métricas nuevas
+•	rag_insufficient_evidence_rate (alerta si >10% 15 min).
+•	retrieval_recall_drop (P@K baja vs baseline).
+•	queue_depth / job_latency_seconds.
+•	business KPIs: % recomendaciones aplicadas, tiempo a decisión, top cultivos/plagas.
+Trazas (OpenTelemetry)
+•	Sampling 10%, enriquecer spans con: doc_id, fragment_ids, shard, taxonomy_version.
+________________________________________
+ SPRINT 20 — Migraciones/Delivery: blue-green/canary /ui/v{n}
+•	yoyo para DDL con rollback.
+•	Despliegue blue-green del Presenter (/ui/v2 en paralelo) + canary 5–10%.
+•	Feature flags para RERANKER/EMBEDDINGS y RAG_MODE.
+________________________________________
+� SPRINT 21 — Parámetros finales y cálculo de capacidad
+•	Chroma/HNSW: M=32, efConstruction=200, efSearch=64 (CPU).
+•	Qdrant (migración): hnsw_config { m:32, ef_construct:200 }, quantization: scalar/8bit si memoria aprieta.
+•	pgvector: ivfflat lists = sqrt(n/10) aprox; probes ajustable.
+________________________________________
+🧨 SPRINT 22 — Takedown verificable (automatizado)
+•	Endpoint POST /ui/v1/takedown → worker ejecuta:
+1.	borra vectors (where doc_id),
+2.	borra fragments/entities/fine_refs/tables/figures,
+3.	reindex afectado,
+4.	prueba de ausencia: consulta de verificación,
+5.	guarda evidencia en audit_log y marca takedowns.executed_at.
+________________________________________
+� SPRINT 23 — UX/Frontend Hints (para el Dashboard existente)
+•	render_hints + modo texto (Accept: text/plain).
+•	Accesibilidad: alto contraste, tipografía +2, navegación por teclado.
+•	Paginación/cursors estables y orden por score desc, updated_at desc.
+________________________________________
+🧩 SPRINT 24 — Scripts/Utilidades
+•	scripts/model_sha.py (calcula sha del modelo HF: archivos de config.json, pytorch_model.bin → sha combinada).
+•	scripts/reindex_incremental.py por taxonomy_version/glossary_version/TM_version.
+•	scripts/cache_invalidation.py (ver más abajo).
+________________________________________
+� Invalidación de caché por evento
+Eventos que invalidan: re-ingesta (doc_hash cambia), cambio de taxonomy_version, glossary_version, TM_version.
+Dónde:
+•	Presenter: invalida query-cache por normalized_query+filters+versions_fingerprint.
+•	AI: invalida doc embedding cache por doc_hash+EMBEDDING_MODEL_SHA.
+// presenter/src/services/cacheKeys.ts
+export const verKey = (v:{tax:string; glo:string; tm:string}) => `v:${v.tax}|${v.glo}|${v.tm}`;
+export const qaKey  = (q:string, f:string, v:string) => `qa:${q}|f:${f}|${v}`;
+________________________________________
+🧷 Seguridad adicional (resumen práctico)
+•	Sanitizar antes de indexar (HTML→texto, whitelist).
+•	Bloquear href externos en respuestas; solo links internos de viewer.
+•	mTLS interno y NetworkPolicy (cuando migres a K8s).
+•	RBAC fino:
+o	admin: upload, takedown, taxonomías, licencias;
+o	tecnico: QA/recs;
+o	auditor: lectura + métricas.
+•	PII masking en logs/citas: regex CURP/RFC/Tel → ***.
+________________________________________
+🧪 Harness RAG (métricas formales)
+•	Exact-match (para intents cerrados).
+•	Citation precision@1 y @all.
+•	Attribution rate (oración→cita).
+•	Faithfulness (0–1) por overlap oracional-chunk.
+•	P@K en retrieval (BM25/vectores/híbrido).
+•	Reporte a Prometheus + eval_report.json versionado.
+________________________________________
+� Código base (fragmentos clave adicionales)
+AV/Antimalware
+# core/security/av.py
+import clamd, os
+def scan_file(path:str):
+    cd = clamd.ClamdUnixSocket() if os.path.exists("/var/run/clamav/clamd.ctl") else clamd.ClamdNetworkSocket()
+    res = cd.scan(path)
+    if res and any(v[0]!="OK" for v in res.values()):
+        raise RuntimeError("Malware detected")
+Sanitización pre-índice
+# core/security/sanitize.py
+from bs4 import BeautifulSoup
+ALLOWED = set()  # indexamos texto plano
+def html_to_safe_text(s:str)->str:
+    soup = BeautifulSoup(s, "lxml")
+    return soup.get_text(" ", strip=True)
+Presenter: Circuit breaker + reintentos
+// src/adapters/iaClient.ts
+import got from "got";
+import CircuitBreaker from "opossum";
+
+const doQuery = async (q:string)=> got.get(`${process.env.IA_URL}/api/query`,{ searchParams:{ q }, timeout:{ request: 3000 }}).json();
+export const iaQuery = new CircuitBreaker(doQuery, { timeout: 3500, errorThresholdPercentage: 50, resetTimeout: 10000 });
+Viewer con highlight (clic-through)
+// src/server.ts (doc viewer)
+app.get("/ui/v1/docs/:docId/view", async (req, rep)=>{
+  const { docId } = req.params as any;
+  const { page, bbox } = req.query as any;
+  // proxy seguro a IA: /api/docs/{doc_id}/page/{page}?bbox=...
+  const stream = await iaGetDocPage(docId, page, bbox);
+  rep.header("Content-Type","image/png").send(stream);
+});
+________________________________________
+ Criterios de Listo (MVP endurecido)
+•	Híbrido BM25+vectores por defecto con RRF y umbrales de insuficiente evidencia implementados.
+•	Reranker top-N + tuning reproducible (seed/config guardado).
+•	Glosario/TM versionados y consistency score en traducción.
+•	Extracción avanzada con tablas/figuras y cita por celda + clic-through.
+•	Chunking token-aware (HF tokenizer), ecuaciones protegidas y unidades normalizadas.
+•	Trazabilidad completa: qa_run_id, rag_seed, embedding_model_sha, reranker_version, config_fingerprint.
+•	Threat model aplicado: sanitización pre-índice, bloqueo de URLs externas, AV, RBAC, PII masking.
+•	ARCO/DSR/takedown automatizado con evidencia.
+•	Circuit breakers + degradación (solo-BM25, menos K, sin reranker).
+•	Observabilidad con alertas accionables y KPIs de negocio.
+•	CI con Schemathesis, contract tests y golden answers.
+________________________________________
+🧭 Orden de ejecución recomendado (rápido)
+1.	SPRINT 0–2 (scaffold, DDL migrable, upload + AV + licencias).
+2.	SPRINT 3–5 (extracción avanzada, OCR, chunking token-aware + unidades).
+3.	SPRINT 6–8 (NER/taxonomías, embeddings+Chroma, BM25+RRF default).
+4.	SPRINT 9–11 (reranker+tuning, síntesis anti-halluc, endpoints IA + viewer).
+5.	SPRINT 12–14 (harness eval, Presenter v1 con sanitización/clic-through, seguridad).
+6.	SPRINT 15–16 (cumplimiento, colas/backpressure/degradación).
+7.	SPRINT 17–20 (CI completo, observabilidad, migraciones/canary, capacidad).
+8.	SPRINT 21–24 (takedown verificable, UX accesible, scripts utilitarios).

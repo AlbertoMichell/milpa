@@ -1,0 +1,6 @@
+Total metadatas: 37
+Primer metadata: {'fragment_id': '25c04760f649447b89ecdc8fcd305191', 'doc_id': '0928c4425090fdfa90f4b01618579c142421a68d4f0a1e14df31d7f7e3c5f581', 'source': '1758076507__ocr_escaneado.pdf', 'entities': '[]', 'test_field': 'test_value'}
+Keys: ['fragment_id', 'doc_id', 'source', 'entities', 'test_field']
+
+Guardado en ChromaDB: {'test_field': 'test_value', 'entities': '[]', 'doc_id': '0928c4425090fdfa90f4b01618579c142421a68d4f0a1e14df31d7f7e3c5f581', 'fragment_id': '25c04760f649447b89ecdc8fcd305191', 'source': '1758076507__ocr_escaneado.pdf'}
+Keys guardadas: ['test_field', 'entities', 'doc_id', 'fragment_id', 'source']

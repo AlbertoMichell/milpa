@@ -1,0 +1,79 @@
+GUÍA DE FERTILIZACIÓN PARA MAÍZ (Zea mays)
+===========================================
+
+FERTILIZACIÓN NITROGENADA EN MAÍZ
+
+El maíz es un cultivo altamente demandante de nitrógeno. La aplicación óptima es de 120-180 kg N/ha dividida en tres etapas fenológicas:
+
+1. V4 (4 hojas): 40 kg N/ha como arranque
+2. V8 (8 hojas): 60 kg N/ha en macollaje  
+3. VT (panoja visible): 40 kg N/ha en floración
+
+Las fuentes recomendadas son urea (46% N), sulfato de amonio (21% N) o nitrato de amonio (33.5% N). La aplicación debe hacerse en banda lateral a 10-15 cm del tallo para maximizar absorción radicular.
+
+
+FERTILIZACIÓN FOSFORADA Y POTÁSICA
+===================================
+
+FÓSFORO (P2O5)
+
+Aplicación de 80-100 kg P2O5/ha al momento de siembra. El fósforo es crítico para el desarrollo radicular temprano y formación de mazorca. Fuentes: superfosfato triple (46% P2O5) o fosfato monoamónico MAP (52% P2O5).
+
+POTASIO (K2O)
+
+Dosis de 60-80 kg K2O/ha fraccionada: 50% a la siembra y 50% en V6. El potasio fortalece tallos y mejora resistencia a acame. Fuente principal: cloruro de potasio (60% K2O) o sulfato de potasio (50% K2O).
+
+AZUFRE EN SUELOS AGRÍCOLAS
+
+El azufre es un nutriente secundario esencial para el maíz. En suelos deficientes aplicar 20-30 kg S/ha como sulfato de amonio o azufre elemental. Los síntomas de deficiencia incluyen clorosis intervenal en hojas jóvenes. 
+
+El azufre en el suelo mejora la síntesis de proteínas y calidad de grano. En parcelas de maíz con bajo contenido de azufre (< 10 ppm), se recomienda aplicación al voleo antes de siembra. El sulfato de amonio aporta simultáneamente nitrógeno (21% N) y azufre (24% S).
+
+La disponibilidad de azufre en suelos arcillosos es mayor que en suelos arenosos debido a mayor capacidad de retención. El pH óptimo para absorción de azufre en maíz es 6.0-7.0.
+
+
+MICRONUTRIENTES Y MANEJO INTEGRADO
+===================================
+
+ZINC (Zn)
+
+Aplicar 5-10 kg Zn/ha como sulfato de zinc en suelos calcáreos o con pH > 7.5. La deficiencia causa estriado blanco en hojas y reducción de altura del cultivo.
+
+BORO (B)  
+
+Dosis de 1-2 kg B/ha vía foliar o al suelo. El boro es crítico para polinización y formación de grano. Deficiencias reducen cuaje hasta 40%.
+
+MANEJO SEGÚN ANÁLISIS DE SUELO
+
+Realizar análisis cada 2-3 años. Ajustar dosis según:
+- Materia orgánica: >3% reduce necesidad de N en 20-30%
+- pH: valores entre 6.0-7.0 son óptimos para maíz
+- Textura: suelos arenosos requieren fraccionamiento de N
+- Contenido de azufre: < 10 ppm requiere aplicación suplementaria
+
+ROTACIÓN CON LEGUMINOSAS
+
+Cultivar frijol o soya en rotación aporta 40-60 kg N/ha al maíz siguiente mediante fijación biológica de nitrógeno, reduciendo necesidad de fertilización sintética.
+
+
+MANEJO DE PLAGAS COMUNES EN MAÍZ
+=================================
+
+GUSANO COGOLLERO (Spodoptera frugiperda)
+
+Monitoreo semanal desde V3. Umbral de acción: 20% de plantas con daño. Control biológico con Bacillus thuringiensis (Bt) o Trichogramma. Insecticidas químicos: clorpirifos, lambda-cihalotrina.
+
+MOSCA BLANCA (Bemisia tabaci)
+
+Vector de virosis. Monitoreo con trampas amarillas. Control: aceites minerales, jabón potásico, imidacloprid en casos severos.
+
+
+RENDIMIENTO ESPERADO
+====================
+
+Con fertilización balanceada (N-P-K + micronutrientes) y control de plagas:
+- Temporal: 6-8 ton/ha
+- Riego: 10-14 ton/ha
+- Riego tecnificado: 12-16 ton/ha
+
+El contenido adecuado de azufre en suelo puede incrementar rendimiento hasta 15% comparado con parcelas deficientes.

@@ -1,0 +1,50 @@
+Guía de Nutrientes Esenciales para el Cultivo de Maíz
+
+El maíz (Zea mays) requiere un balance adecuado de nutrientes esenciales para lograr un desarrollo óptimo y maximizar el rendimiento. Los nutrientes se clasifican en macronutrientes y micronutrientes, siendo ambos grupos fundamentales para el crecimiento de la planta.
+
+MACRONUTRIENTES PRIMARIOS:
+
+Nitrógeno (N): Es el nutriente más importante para el maíz. Participa en la síntesis de proteínas, clorofila y enzimas. La deficiencia de nitrógeno se manifiesta en hojas amarillentas y reducción del crecimiento. Se recomienda aplicar entre 120-200 kg/ha de N, dividido en dos aplicaciones: 40% a la siembra y 60% en V6-V8.
+
+Fósforo (P): Fundamental para el desarrollo radicular y la formación de energía (ATP). El maíz absorbe la mayor parte del fósforo en las primeras etapas. La dosis recomendada es de 60-100 kg/ha de P₂O₅, aplicado todo a la siembra.
+
+Potasio (K): Esencial para la regulación hídrica, fotosíntesis y transporte de azúcares. Mejora la resistencia a enfermedades y estrés. Se aplican 80-150 kg/ha de K₂O, dependiendo del análisis de suelo.
+
+MACRONUTRIENTES SECUNDARIOS:
+
+Calcio (Ca): Necesario para la división celular y el desarrollo de las paredes celulares. Dosis típica: 30-50 kg/ha.
+
+Magnesio (Mg): Componente central de la clorofila. Aplicar 20-40 kg/ha.
+
+Azufre (S): Importante para la síntesis de proteínas. Requerimiento: 15-25 kg/ha.
+
+MICRONUTRIENTES:
+
+Zinc (Zn): Crítico en suelos alcalinos. Deficiencia causa enanismo. Aplicar 5-10 kg/ha de ZnSO₄.
+
+Boro (B): Esencial para la floración y formación de grano. Dosis: 1-2 kg/ha.
+
+Hierro (Fe), Manganeso (Mn), Cobre (Cu), Molibdeno (Mo): Requeridos en cantidades menores pero igualmente importantes.
+
+FERTILIZACIÓN INTEGRADA:
+
+La fertilización debe basarse en análisis de suelo previo. Un programa típico para maíz con rendimiento esperado de 10 ton/ha incluye:
+
+- Presiembra: 300 kg/ha de fertilizante completo 15-15-15
+- V6: 200 kg/ha de urea (46% N)
+- V10: 100 kg/ha de urea + 50 kg/ha de KCl
+
+SIGNOS DE DEFICIENCIAS:
+
+- N: Clorosis en hojas viejas, planta amarillenta
+- P: Coloración púrpura en hojas, retraso del crecimiento
+- K: Necrosis en bordes de hojas, tallos débiles
+- Zn: Bandas cloróticas entre nervaduras, hojas pequeñas
+
+FACTORES QUE AFECTAN LA DISPONIBILIDAD:
+
+El pH del suelo influye directamente en la disponibilidad de nutrientes. El rango óptimo para maíz es 6.0-7.0. La materia orgánica mejora la retención y liberación gradual de nutrientes. La humedad del suelo debe mantenerse entre 60-80% de capacidad de campo para optimizar la absorción.
+
+CONCLUSIÓN:
+
+Un programa de nutrición balanceado, basado en análisis de suelo y monitoreo foliar, es fundamental para maximizar el rendimiento del maíz. La sincronización de las aplicaciones con las etapas fenológicas críticas (V6, V10, VT) asegura la máxima eficiencia de uso de fertilizantes.

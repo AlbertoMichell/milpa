@@ -9,17 +9,15 @@ __pycache__/
 # Node
 node_modules/
 
-# Datos generados (se reconstruyen con run_all.ps1)
+# Datos generados automáticamente (se reconstruyen con run_all.ps1)
 milpa_ai_backend/data/vector_db/
 milpa_ai_backend/data/bm25_index/
 milpa_ai_backend/data/bm25_idx/
 milpa_ai_backend/data/*.db
 milpa_ai_backend/data/*.db-wal
 milpa_ai_backend/data/*.db-shm
-milpa_ai_backend/data/documents/
 milpa_ai_backend/data/tmp/
-milpa_ai_backend/data/*.txt
-milpa_ai_backend/data/*.pdf
+# NO excluir documents/ - contiene PDFs fuente necesarios
 
 # IDE
 .vscode/
