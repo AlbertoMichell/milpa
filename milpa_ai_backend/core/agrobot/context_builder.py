@@ -33,15 +33,31 @@ _CROP_COLS = [
     "created_at",
 ]
 
+_PROFILE_BASE_COLUMNS = [
+    "crop_name",
+    "optimal_temp_min",
+    "optimal_temp_max",
+    "optimal_soil_moisture_min",
+    "optimal_soil_moisture_max",
+    "optimal_air_humidity_min",
+    "optimal_air_humidity_max",
+    "optimal_ph_min",
+    "optimal_ph_max",
+    "notes",
+]
+
 
 def _format_crop_row(row: Optional[tuple]) -> Optional[Dict[str, Any]]:
     if not row:
         return None
+
     crop = dict(zip(_CROP_COLS, row))
+
     if not crop.get("display_name"):
         base = (crop.get("crop_name") or "Cultivo").strip()
         variety = (crop.get("variety") or "").strip()
         crop["display_name"] = " ".join(part for part in [base.capitalize(), variety] if part)
+
     if not crop.get("growth_stage"):
         progress = int(crop.get("progress") or 0)
         if progress >= 75:
@@ -52,6 +68,7 @@ def _format_crop_row(row: Optional[tuple]) -> Optional[Dict[str, Any]]:
             crop["growth_stage"] = "establecimiento"
         else:
             crop["growth_stage"] = "siembra"
+
     return crop
 
 
@@ -72,6 +89,7 @@ def _load_active_crops(conn, user_id: int) -> List[Dict[str, Any]]:
         "ORDER BY c.created_at DESC",
         (user_id,),
     ).fetchall()
+
     crops = [_format_crop_row(r) for r in rows]
     return [c for c in crops if c]
 
@@ -88,8 +106,10 @@ def _detect_active_crop(message: str, active_crops: List[Dict[str, Any]]) -> Opt
     text = normalize_text(message)
     if not text:
         return None
+
     best = None
     best_len = 0
+
     for crop in active_crops:
         for variant in _crop_variants(crop):
             v = normalize_text(variant)
@@ -98,6 +118,7 @@ def _detect_active_crop(message: str, active_crops: List[Dict[str, Any]]) -> Opt
             if v in text and len(v) > best_len:
                 best = crop
                 best_len = len(v)
+
     return best
 
 
@@ -105,8 +126,10 @@ def _detect_catalog_crop(message: str) -> Optional[str]:
     text = normalize_text(message)
     if not text:
         return None
+
     best = None
     best_len = 0
+
     for name in _known_crop_names():
         n = normalize_text(name)
         if not n or len(n) < 2:
@@ -114,69 +137,109 @@ def _detect_catalog_crop(message: str) -> Optional[str]:
         if n in text and len(n) > best_len:
             best = name
             best_len = len(n)
+
     return best
 
 
+def _existing_columns(conn, table_name: str) -> List[str]:
+    rows = conn.execute(f"PRAGMA table_info({table_name})").fetchall()
+    return [str(r[1]) for r in rows]
+
+
 def _load_profiles(conn, crop_names: List[str]) -> Dict[str, Dict[str, Any]]:
-    names = sorted({normalize_text(n) for n in crop_names if n})
-    if not names:
+    """
+    Carga perfiles agronómicos usando normalización en Python.
+
+    No usamos `WHERE LOWER(crop_name) IN (...)` porque en SQLite LOWER() no resuelve
+    bien todos los casos con acentos. Ejemplo: `maíz` vs `maiz`.
+    """
+    wanted = sorted({normalize_text(n) for n in crop_names if n})
+    if not wanted:
         return {}
-    placeholders = ",".join("?" for _ in names)
-    rows = conn.execute(
-        "SELECT crop_name, optimal_temp_min, optimal_temp_max, optimal_soil_moisture_min, "
-        "       optimal_soil_moisture_max, optimal_air_humidity_min, optimal_air_humidity_max, "
-        "       optimal_ph_min, optimal_ph_max, notes "
-        f"FROM crop_profiles WHERE LOWER(crop_name) IN ({placeholders})",
-        names,
-    ).fetchall()
-    cols = [
-        "crop_name",
-        "optimal_temp_min",
-        "optimal_temp_max",
-        "optimal_soil_moisture_min",
-        "optimal_soil_moisture_max",
-        "optimal_air_humidity_min",
-        "optimal_air_humidity_max",
-        "optimal_ph_min",
-        "optimal_ph_max",
-        "notes",
-    ]
+
+    try:
+        available = set(_existing_columns(conn, "crop_profiles"))
+        cols = [c for c in _PROFILE_BASE_COLUMNS if c in available]
+        if "crop_name" not in cols:
+            return {}
+
+        rows = conn.execute(f"SELECT {', '.join(cols)} FROM crop_profiles").fetchall()
+    except Exception:
+        return {}
+
     profiles: Dict[str, Dict[str, Any]] = {}
+    wanted_set = set(wanted)
+
     for row in rows:
         item = dict(zip(cols, row))
         key = normalize_text(item.get("crop_name"))
-        profiles[key] = item
+        if key in wanted_set:
+            profiles[key] = item
+
     return profiles
 
 
+def _health_index(health_by_crop: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+    out: Dict[str, Dict[str, Any]] = {}
+    for item in health_by_crop:
+        crop_id = item.get("crop_id")
+        if crop_id is not None:
+            out[str(crop_id)] = item
+    return out
+
+
 def build_context(user_id: int, message: str) -> Dict[str, Any]:
+    """
+    Construye el contexto de AgroBot.
+
+    Regla clave:
+    - `target_crop` SOLO se asigna cuando el usuario menciona explícitamente
+      un cultivo activo.
+    - El fallback al primer cultivo activo NO se decide aquí. Lo decide service.py
+      según intención, cantidad de cultivos y modo de consulta.
+    """
     with get_conn() as conn:
         active_crops = _load_active_crops(conn, user_id)
         parcel_latest = _aggregate_parcel_latest(conn, user_id)
         global_edaphology = _get_latest_global_edaphology(conn)
         profiles_by_name = _load_profiles(conn, [c.get("crop_name") for c in active_crops])
 
-    requested_active = _detect_active_crop(message, active_crops)
-    requested_catalog = _detect_catalog_crop(message)
-    rag_conflict = bool(requested_catalog and not requested_active)
+        requested_active = _detect_active_crop(message, active_crops)
+        requested_catalog = _detect_catalog_crop(message)
 
-    fallback_crop = active_crops[0] if active_crops else None
-    target_crop = requested_active or fallback_crop
+        fallback_crop = active_crops[0] if len(active_crops) == 1 else None
+        target_crop = requested_active
 
-    health_by_crop = []
-    for crop in active_crops:
-        profile = profiles_by_name.get(normalize_text(crop.get("crop_name")))
-        health_by_crop.append(_evaluate_crop_health(crop, parcel_latest, profile))
+        rag_conflict = bool(requested_catalog and not requested_active)
 
-    return {
-        "active_crops": active_crops,
-        "target_crop": target_crop,
-        "requested_active_crop": requested_active,
-        "fallback_crop": fallback_crop,
-        "requested_crop_name": requested_catalog,
-        "rag_conflict": rag_conflict,
-        "parcel_latest": parcel_latest,
-        "global_edaphology": global_edaphology,
-        "profiles_by_name": profiles_by_name,
-        "health_by_crop": health_by_crop,
-    }
+        health_by_crop: List[Dict[str, Any]] = []
+        for crop in active_crops:
+            profile = profiles_by_name.get(normalize_text(crop.get("crop_name")))
+            try:
+                health_by_crop.append(_evaluate_crop_health(crop, parcel_latest, profile))
+            except Exception as exc:
+                health_by_crop.append(
+                    {
+                        "crop_id": crop.get("id"),
+                        "crop_name": crop.get("crop_name"),
+                        "label": "sin evaluar",
+                        "score": None,
+                        "summary": f"No se pudo evaluar la salud del cultivo: {exc}",
+                        "factors": ["error_evaluacion_salud"],
+                    }
+                )
+
+        return {
+            "active_crops": active_crops,
+            "target_crop": target_crop,
+            "target_crop_source": "explicit" if target_crop else "none",
+            "requested_active_crop": requested_active,
+            "fallback_crop": fallback_crop,
+            "requested_crop_name": requested_catalog,
+            "rag_conflict": rag_conflict,
+            "parcel_latest": parcel_latest,
+            "global_edaphology": global_edaphology,
+            "profiles_by_name": profiles_by_name,
+            "health_by_crop": health_by_crop,
+            "health_index": _health_index(health_by_crop),
+        }
