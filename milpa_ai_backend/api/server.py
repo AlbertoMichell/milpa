@@ -166,6 +166,14 @@ def build_app() -> FastAPI:
         logger.info("Crops/Sensors/Recommendations endpoints habilitados")
     except Exception as e:
         logger.warning(f"No se pudieron cargar endpoints Crops: {e}")
+
+    # AgroBot router
+    try:
+        from milpa_ai_backend.api.agrobot import router as agrobot_router
+        app.include_router(agrobot_router)
+        logger.info("AgroBot endpoints habilitados")
+    except Exception as e:
+        logger.warning(f"No se pudieron cargar endpoints AgroBot: {e}")
     
     # -------------------------------------------------------------------------
     # SPRINT 19: OpenTelemetry instrumentation
