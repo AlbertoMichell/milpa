@@ -1,79 +1,85 @@
 # milpa_ai_backend/requirements.txt
 # ============================================================
-# Backend IA (versiones fijadas para builds reproducibles)
+# Backend IA - Compatible con Python 3.11 a 3.14
+# Usa versiones minimas (>=) para compatibilidad con wheels
 # ============================================================
 
-# Web & métricas
-fastapi==0.112.0
-uvicorn[standard]==0.30.3
-prometheus-fastapi-instrumentator==6.1.0
+# Web & metricas
+fastapi>=0.112.0
+uvicorn[standard]>=0.30.3
+prometheus-fastapi-instrumentator>=6.1.0
 
-# Configuración
-pydantic==2.8.2
-pydantic-settings==2.4.0
+# Configuracion
+pydantic>=2.8.2
+pydantic-settings>=2.4.0
 
 # Subida de archivos
-python-multipart==0.0.9
+python-multipart>=0.0.9
 
 # Migraciones SQLite
-yoyo-migrations==8.2.0
+yoyo-migrations>=8.2.0
 
-# Antivirus
-clamd==1.0.2
+# Antivirus (opcional, AV_OPTIONAL=true)
+clamd>=1.0.2
 
 # Utilidades generales
-unidecode==1.3.8
+unidecode>=1.3.8
+# Detección de idioma para OCR multilingüe (autodetección Tesseract)
+langdetect>=1.0.9
 
 # ============================================================
-# SPRINT 3–5: Extracción/OCR/Tablas/Traducción
+# Extraccion PDF/OCR/Tablas
 # ============================================================
-pymupdf==1.24.10
-python-docx==1.1.2
-pytesseract==0.3.13
-Pillow==10.4.0
-camelot-py==0.11.0            # sin extras [cv] - pdftopng incompatible en Python 3.11
-pandas==2.2.2
-numpy==1.26.4
-regex==2024.7.24
-pint==0.24.4
-transformers==4.44.2
-sentencepiece==0.2.0          # necesario para algunos modelos HF
-spacy==3.8.7                  # opcional; si no hay modelo ES, cae al diccionario
+pymupdf>=1.25.0
+python-docx>=1.1.2
+pytesseract>=0.3.13
+Pillow>=10.4.0
+camelot-py>=0.11.0
+pandas>=2.2.2
+numpy>=1.26.4
+regex>=2024.7.24
+pint>=0.24.4
+transformers>=4.44.2
+sentencepiece>=0.2.0
+# OpenCV para OCR por regiones (detección de columnas en escaneos)
+opencv-python-headless>=4.8.0
+
+# PDFs sintéticos para pruebas de estrés (opcional fuera de dev/CI):
+reportlab>=4.0.0
+matplotlib>=3.8.0
+
+# NLP
+spacy>=3.8.0
 
 # ============================================================
-# SPRINT 6–8: NER/Taxonomías, Embeddings, BM25+RRF, Vector DB
+# Embeddings, BM25, Vector DB
 # ============================================================
-# Embeddings (usa Torch ya instalado en Dockerfile)
-sentence-transformers==2.7.0
-
-# BM25 léxico (fallback por defecto)
-whoosh==2.7.4
-
-# Vector DB (Chroma)
-chromadb==1.1.0
-
-# Tantivy opcional (si hay wheel compatible). Si no, Whoosh/mem.
-tantivy==0.25.0
+sentence-transformers>=2.7.0
+whoosh>=2.7.4
+chromadb>=0.5.0
+# tantivy 0.26+ expone TextAnalyzerBuilder + Filter (lowercase/ascii_fold/stemmer)
+# que el BM25Index registra como analyzer "ml_es" (multilingüe español).
+tantivy>=0.26.0
 
 # ============================================================
 # Tests
 # ============================================================
-pytest==8.4.2
-pytest-asyncio==0.25.2
+pytest>=8.3.0
+pytest-asyncio>=0.24.0
 
 # ============================================================
-# SPRINT 17: Contract testing, fuzzing, golden answers
+# Contract testing / fuzzing (opcional para desarrollo)
 # ============================================================
-jsonschema==4.23.0            # Validación de esquemas JSON (AJV-like)
-schemathesis==3.34.1          # Fuzzing automático de OpenAPI
-hypothesis==6.122.3           # Property-based testing (req. schemathesis)
+jsonschema>=4.23.0
+schemathesis>=3.34.0
+hypothesis>=6.100.0
 
 # ============================================================
-# SPRINT 19: OpenTelemetry para trazas distribuidas
+# OpenTelemetry (opcional, para trazas distribuidas)
 # ============================================================
-opentelemetry-api==1.27.0
-opentelemetry-sdk==1.27.0
-opentelemetry-semantic-conventions==0.48b0
-opentelemetry-instrumentation==0.48b0
-opentelemetry-instrumentation-fastapi==0.48b0
-opentelemetry-exporter-otlp-proto-grpc==1.27.0
+opentelemetry-api>=1.27.0
+opentelemetry-sdk>=1.27.0
+opentelemetry-semantic-conventions>=0.48b0
+opentelemetry-instrumentation>=0.48b0
+opentelemetry-instrumentation-fastapi>=0.48b0
+opentelemetry-exporter-otlp-proto-grpc>=1.27.0

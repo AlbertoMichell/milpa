@@ -1,0 +1,126 @@
+{
+  "evaluation_queries": [
+    {
+      "id": 1,
+      "query": "¿De qué color es el maíz comercial?",
+      "expected_answer": "amarillo dorado",
+      "relevant_keywords": ["amarillo", "dorado", "color", "maíz", "comercial"],
+      "relevant_fragments": [
+        "El maíz comercial más común presenta granos de color amarillo dorado"
+      ],
+      "category": "descriptivo"
+    },
+    {
+      "id": 2,
+      "query": "¿Cuántos kilogramos de nitrógeno necesita el maíz por hectárea?",
+      "expected_answer": "180 kilogramos",
+      "relevant_keywords": ["nitrógeno", "180", "kilogramos", "maíz", "hectárea"],
+      "relevant_fragments": [
+        "El maíz requiere 180 kilogramos de nitrógeno por hectárea"
+      ],
+      "category": "nutrición"
+    },
+    {
+      "id": 3,
+      "query": "¿Qué altura alcanza el frijol arbustivo?",
+      "expected_answer": "50 centímetros",
+      "relevant_keywords": ["frijol", "arbustivo", "altura", "50", "centímetros"],
+      "relevant_fragments": [
+        "Las variedades de frijol arbustivo alcanzan una altura de 50 centímetros"
+      ],
+      "category": "descriptivo"
+    },
+    {
+      "id": 4,
+      "query": "¿Cuál es la dosis óptima de fósforo para el maíz?",
+      "expected_answer": "90 kilogramos de P₂O₅ por hectárea",
+      "relevant_keywords": ["fósforo", "90", "kilogramos", "maíz", "P₂O₅"],
+      "relevant_fragments": [
+        "La dosis óptima de fósforo para maíz es de 90 kilogramos de P₂O₅ por hectárea"
+      ],
+      "category": "nutrición"
+    },
+    {
+      "id": 5,
+      "query": "¿Cuánto nitrógeno requiere el frijol?",
+      "expected_answer": "40 kilogramos por hectárea",
+      "relevant_keywords": ["nitrógeno", "40", "kilogramos", "frijol", "hectárea"],
+      "relevant_fragments": [
+        "El frijol requiere solo 40 kilogramos de nitrógeno por hectárea"
+      ],
+      "category": "nutrición"
+    },
+    {
+      "id": 6,
+      "query": "¿Qué cultivo necesita más nitrógeno, maíz o frijol?",
+      "expected_answer": "el maíz (180 kg vs 40 kg)",
+      "relevant_keywords": ["nitrógeno", "maíz", "frijol", "180", "40"],
+      "relevant_fragments": [
+        "El maíz requiere 180 kilogramos de nitrógeno por hectárea",
+        "El frijol requiere solo 40 kilogramos de nitrógeno por hectárea"
+      ],
+      "category": "comparativo"
+    },
+    {
+      "id": 7,
+      "query": "¿Cuándo se debe aplicar el potasio en el maíz?",
+      "expected_answer": "en la siembra",
+      "relevant_keywords": ["potasio", "maíz", "aplicación", "siembra"],
+      "relevant_fragments": [
+        "El potasio se aplica completamente en la siembra"
+      ],
+      "category": "manejo"
+    },
+    {
+      "id": 8,
+      "query": "¿Cuántas etapas de crecimiento tiene el maíz?",
+      "expected_answer": "cuatro etapas (emergencia, vegetativo, floración, maduración)",
+      "relevant_keywords": ["etapas", "crecimiento", "maíz", "cuatro"],
+      "relevant_fragments": [
+        "El cultivo de maíz pasa por cuatro etapas principales de crecimiento"
+      ],
+      "category": "fenología"
+    },
+    {
+      "id": 9,
+      "query": "¿Qué altura puede alcanzar el frijol de guía?",
+      "expected_answer": "2 metros",
+      "relevant_keywords": ["frijol", "guía", "altura", "2", "metros"],
+      "relevant_fragments": [
+        "las variedades de guía pueden superar los 2 metros de altura"
+      ],
+      "category": "descriptivo"
+    },
+    {
+      "id": 10,
+      "query": "¿Cuánto fósforo necesita el frijol?",
+      "expected_answer": "60 kilogramos de P₂O₅ por hectárea",
+      "relevant_keywords": ["fósforo", "frijol", "60", "kilogramos", "P₂O₅"],
+      "relevant_fragments": [
+        "El frijol necesita aproximadamente 60 kilogramos de P₂O₅ por hectárea"
+      ],
+      "category": "nutrición"
+    },
+    {
+      "id": 11,
+      "query": "¿Qué tipo de maíz tiene granos de colores variados?",
+      "expected_answer": "maíz criollo",
+      "relevant_keywords": ["maíz", "criollo", "colores", "variados"],
+      "relevant_fragments": [
+        "El maíz criollo puede presentar granos de colores variados"
+      ],
+      "category": "descriptivo"
+    },
+    {
+      "id": 12,
+      "query": "¿Cuál es la diferencia en requerimiento de nitrógeno entre maíz y frijol?",
+      "expected_answer": "140 kilogramos (maíz 180 kg, frijol 40 kg)",
+      "relevant_keywords": ["nitrógeno", "diferencia", "maíz", "frijol", "180", "40"],
+      "relevant_fragments": [
+        "El maíz requiere 180 kilogramos de nitrógeno por hectárea",
+        "El frijol requiere solo 40 kilogramos de nitrógeno por hectárea"
+      ],
+      "category": "comparativo"
+    }
+  ]
+}

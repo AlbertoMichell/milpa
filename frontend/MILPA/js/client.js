@@ -1,65 +1,95 @@
 // client.js
 
-// 1) Inicializar Socket.IO
-// Se incluye el token en el objeto 'auth' para la autenticación de la conexión del socket.
-// El backend (server.js) necesitará verificar este token.
-const token = localStorage.getItem('milpaToken');
-
-const socket = io('http://localhost:4000', {
-  reconnection: true,
-  reconnectionAttempts: 5,
-  auth: { // <--- MODIFICACIÓN: Enviar token para autenticar la conexión del socket
-    token: token 
+// 1) Socket.IO — se crea tras comprobar que existe la librería (CDN).
+// Token inicial desde localStorage; se actualiza en DOMContentLoaded antes de connect().
+function milpaCreateSocket() {
+  if (typeof io !== 'function') {
+    console.error('Socket.IO no cargó (revisa el script CDN / red). El chat en vivo no funcionará.');
+    return null;
   }
-});
+  const token = localStorage.getItem('milpaToken');
+  return io(window.location.origin, {
+    reconnection: true,
+    reconnectionAttempts: 10,
+    reconnectionDelay: 800,
+    timeout: 20000,
+    transports: ['websocket', 'polling'],
+    autoConnect: false,
+    auth: { token },
+  });
+}
+
+const socket = milpaCreateSocket();
 
 // 2) Estado global del usuario
-let currentUser = null; // Se poblará desde localStorage si el token y los datos de usuario existen.
+let currentUser = null;
 
-// 3) Referencias a elementos del DOM (sin cambios en esta sección)
+// 3) Referencias DOM — no fiarse del momento de parseo del script; se rellenan en DOMContentLoaded.
 const UI = {
-  chat: document.getElementById('chat'),
-  inputMensaje: document.getElementById('inputMensaje'),
-  btnEnviar: document.getElementById('btnEnviar'),
-  // Intenta seleccionar el badge de notificación de manera más robusta.
-  notificationBadge: document.querySelector('#notificationsDropdown .badge'), 
-  notificationList: document.querySelector('ul.dropdown-menu[aria-labelledby="notificationsDropdown"]')
+  chat: null,
+  inputMensaje: null,
+  btnEnviar: null,
+  notificationBadge: null,
+  notificationList: null,
 };
+
+function refreshChatElements() {
+  UI.chat = document.getElementById('chat');
+  UI.inputMensaje = document.getElementById('inputMensaje');
+  UI.btnEnviar = document.getElementById('btnEnviar');
+  UI.notificationBadge = document.querySelector('#notificationsDropdown .badge');
+  UI.notificationList = document.querySelector('ul.dropdown-menu[aria-labelledby="notificationsDropdown"]');
+}
+
+function escapeHtml(text) {
+  return String(text ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function formatMessageText(text) {
+  return escapeHtml(text).replace(/\n/g, '<br>');
+}
 
 // 4) Al cargar la página
 document.addEventListener('DOMContentLoaded', () => {
-  // --- MODIFICACIÓN: Priorizar la verificación del token ---
-  const storedToken = localStorage.getItem('milpaToken');
-  const userDataString = localStorage.getItem('milpaUser'); // Asumimos que login.html guarda esto con userId y username
+  refreshChatElements();
 
-  if (!storedToken) { // Si no hay token, no hay sesión válida.
+  const storedToken = localStorage.getItem('milpaToken');
+  const userDataString = localStorage.getItem('milpaUser');
+
+  if (!storedToken) {
     return redirectToLogin();
   }
 
-  if (!userDataString) { // Si hay token pero no datos de usuario, es un estado inconsistente.
+  if (!userDataString) {
     console.error('Token encontrado, pero faltan datos de usuario en localStorage. Redirigiendo a login.');
-    // Opcionalmente, aquí podrías intentar obtener datos del usuario desde un endpoint /api/auth/me
-    // usando el token, pero para simplificar, redirigimos.
-    localStorage.removeItem('milpaToken'); // Limpiar token posiblemente inválido o solitario
+    localStorage.removeItem('milpaToken');
     return redirectToLogin();
+  }
+
+  if (!socket) {
+    showToast('Chat', 'No se pudo inicializar Socket.IO. Recarga la página.', 'danger');
+    return;
   }
 
   currentUser = JSON.parse(userDataString);
+  socket.auth = { token: storedToken };
+  socket.connect();
 
-  // Si llegamos aquí, tenemos token y datos de usuario básicos.
-  // La conexión del socket ya se intentó con el token al inicializar 'socket'.
-  // Si el token es inválido, los eventos 'connect_error' o un evento personalizado del server lo indicarán.
+  updateUserUI();
+  setupEventListeners();
 
-  updateUserUI(); // Actualizar UI con nombre de usuario
-  setupEventListeners(); // Configurar listeners de la UI
+  if (!UI.btnEnviar || !UI.inputMensaje) {
+    console.error('Chat UI: faltan #btnEnviar o #inputMensaje en el DOM.');
+    showToast('Chat', 'No se encontró el formulario de chat en la página.', 'danger');
+  }
 
-  // Pedir historial inicial de chat y notificaciones (asumiendo que la conexión socket fue exitosa)
-  // Esto se podría mover a dentro del evento 'connect' del socket para asegurar que solo se pide si está conectado.
   if (socket.connected) {
-      socket.emit('request_initial_data');
-  } else {
-      // Esperar a que se conecte (el evento 'connect' se encargará si la conexión inicial falla pero luego tiene éxito)
-      console.log("Esperando conexión del socket para pedir datos iniciales...");
+    socket.emit('request_initial_data');
   }
 });
 
@@ -98,75 +128,104 @@ function setupEventListeners() {
 
 // 6) Enviar mensaje al servidor
 function handleChatMessage() {
-  if (!currentUser) { // No enviar si no hay datos de usuario
+  refreshChatElements();
+  if (!socket) {
+    showToast('Chat', 'Socket.IO no disponible. Recarga la página.', 'danger');
+    return;
+  }
+  if (!currentUser) {
     showToast('Error', 'No se ha identificado al usuario.', 'danger');
+    return;
+  }
+  if (!UI.inputMensaje) {
+    showToast('Chat', 'Campo de mensaje no encontrado.', 'danger');
     return;
   }
   const texto = UI.inputMensaje.value.trim();
   if (!texto) return;
 
+  if (!socket.connected) {
+    showToast('Sin conexión', 'Reconectando al chat…', 'warning');
+    socket.auth = { token: localStorage.getItem('milpaToken') };
+    socket.connect();
+    return;
+  }
+
   socket.emit('mensaje_chat', {
     texto,
     usuario: currentUser.username,
-    usuarioId: currentUser.userId 
+    usuarioId: currentUser.userId,
   });
 
   UI.inputMensaje.value = '';
 }
 
 // 7) Eventos de Socket.IO
+let milpaChatWelcomeToast = true;
 
-// --- MODIFICACIÓN: Manejar errores de autenticación del socket ---
-socket.on('unauthorized', (error) => {
-  console.error('Socket unauthorized:', error.message);
-  showToast('Autenticación fallida', 'Tu sesión puede haber expirado. Por favor, inicia sesión de nuevo.', 'danger');
-  logout(); // Forzar logout si la autenticación del socket falla
-});
+if (socket) {
+  socket.on('unauthorized', (error) => {
+    console.error('Socket unauthorized:', error.message);
+    showToast('Autenticación fallida', 'Tu sesión puede haber expirado. Por favor, inicia sesión de nuevo.', 'danger');
+    logout();
+  });
 
-socket.on('connect', () => {
-  showToast('Conectado', 'Conexión establecida con el servidor.', 'success');
-  // Si la conexión se establece (o reestablece) y tenemos un usuario, pedir datos.
-  if (currentUser) {
-    console.log('Socket conectado, solicitando datos iniciales...');
-    socket.emit('request_initial_data');
-  }
-});
+  socket.on('connect', () => {
+    if (milpaChatWelcomeToast) {
+      milpaChatWelcomeToast = false;
+      showToast('Conectado', 'Chat en vivo listo.', 'success');
+    }
+    if (currentUser) {
+      socket.emit('request_initial_data');
+    }
+  });
 
-socket.on('connect_error', (err) => {
-  console.error('Error de conexión Socket.IO:', err.message);
-  // Si el error es por un token inválido (el servidor debería indicarlo), podríamos querer desloguear.
-  // Por ahora, solo mostramos un toast genérico. El evento 'unauthorized' es más específico.
-  if (err.message === 'Authentication error' || err.message === 'invalid token') { // El servidor podría enviar estos mensajes
+  socket.on('connect_error', (err) => {
+    console.error('Error de conexión Socket.IO:', err.message);
+    const m = String(err.message || '');
+    if (m.includes('Authentication error') || m.includes('Invalid token') || m.includes('invalid token')) {
       showToast('Error de autenticación', 'Por favor, inicia sesión de nuevo.', 'danger');
       logout();
-  } else {
-      showToast('Error de conexión', 'Intentando reconectar...', 'danger');
-  }
-});
-
-socket.on('push_notification', ({ type, title, message }) => {
-  appendNotification({ type, title, message });
-  showToast(title, message, type);
-});
-
-socket.on('data_update', data => {
-  if (!UI.chat || !currentUser) return; // Asegurarse que el chat y currentUser existen
-  UI.chat.innerHTML = '';
-  data.forEach(msg => {
-    const isOwn = msg.usuarioId === currentUser.userId;
-    appendChatMessage({ ...msg, isOwn });
+    } else {
+      showToast('Error de conexión', 'Intentando reconectar…', 'warning');
+    }
   });
-});
 
-socket.on('nuevo_mensaje', data => {
-  if (!currentUser) return;
-  const isOwn = data.usuarioId === currentUser.userId;
-  appendChatMessage({ ...data, isOwn });
-});
+  socket.on('push_notification', ({ type, title, message }) => {
+    appendNotification({ type, title, message });
+    showToast(title, message, type);
+  });
+
+  socket.on('data_update', data => {
+    refreshChatElements();
+    if (!UI.chat || !currentUser) return;
+    UI.chat.innerHTML = '';
+    data.forEach(msg => {
+      const isOwn = String(msg.usuarioId) === String(currentUser.userId);
+      appendChatMessage({ ...msg, isOwn });
+    });
+  });
+
+  socket.on('nuevo_mensaje', data => {
+    if (!currentUser) return;
+    refreshChatElements();
+    const isOwn = String(data.usuarioId) === String(currentUser.userId);
+    appendChatMessage({ ...data, isOwn });
+  });
+
+  socket.on('error_chat', ({ message }) => {
+    showToast('Chat', message || 'No se pudo cargar el chat.', 'warning');
+  });
+
+  socket.on('error_mensaje', ({ message }) => {
+    showToast('Chat', message || 'No se pudo enviar el mensaje.', 'danger');
+  });
+}
 
 
 // 8) Renderizar un mensaje en el chat (sin cambios funcionales, solo asegurando que UI.chat exista)
 function appendChatMessage({ texto, fecha, usuario, isOwn }) {
+  refreshChatElements();
   if (!UI.chat) return;
   const hora = new Date(fecha).toLocaleTimeString('es-MX', {
     hour: '2-digit',
@@ -178,10 +237,10 @@ function appendChatMessage({ texto, fecha, usuario, isOwn }) {
   const html = `
     <div class="message ${clase}">
       <div class="message-header">
-        <span class="user fw-bold me-2">${isOwn ? 'Tú' : usuario}</span>
+        <span class="user fw-bold me-2">${escapeHtml(isOwn ? 'Tú' : usuario)}</span>
         <span class="time small text-muted">${hora}</span>
       </div>
-      <div class="message-body">${texto}</div>
+      <div class="message-body">${formatMessageText(texto)}</div>
     </div>
   `;
   UI.chat.insertAdjacentHTML('beforeend', html);
@@ -272,10 +331,9 @@ function updateUserUI() {
 
 // 13) Cerrar sesión
 function logout() {
-  // --- MODIFICACIÓN: Asegurarse de remover ambos items ---
   localStorage.removeItem('milpaUser');
-  localStorage.removeItem('milpaToken'); // <--- IMPORTANTE: Remover el token
-  if(socket) socket.disconnect();
+  localStorage.removeItem('milpaToken');
+  if (socket) socket.disconnect();
   redirectToLogin();
 }
 

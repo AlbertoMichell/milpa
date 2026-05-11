@@ -1,0 +1,809 @@
+CREACIÓN DE UN SISTEMA EXPERTO BASADO EN IA HÍBRIDA PARA CONTROL Y MANEJO DE CULTIVO 
+
+ANTECEDENTES
+
+El acceso al conocimiento técnico agrícola sigue siendo un problema importante, sobre todo en comunidades rurales de México y América Latina, debido a que la información existe, pero suele estar dispersa en manuales técnicos, artículos científicos, normas oficiales u otro tipo de documentos de investigación, esto provoca que para los agricultores de pequeña escala, consultarla no siempre sea sencillo. La dispersión de las fuentes, la complejidad del lenguaje especializado y la falta de sistemas eficientes para localizar datos concretos dentro de corpus documentales son factores muy amplios que pesan a la hora de querer realizar una consulta. No es una barrera menor. Esta brecha de conocimiento termina afectando la adopción de prácticas agrícolas mejoradas, la optimización del uso de recursos y la toma de decisiones informadas en el manejo de distintos sistemas de cultivo.
+
+En las últimas dos décadas, el campo de la recuperación de información ha cambiado de forma importante con la incorporación de técnicas de procesamiento de lenguaje natural y aprendizaje profundo. La arquitectura de Recuperación Aumentada por Generación, conocida en la literatura internacional como Retrieval-Augmented Generation o RAG, forma parte de ese cambio. Frente a los motores de búsqueda tradicionales basados exclusivamente en coincidencias léxicas de palabras clave, los sistemas RAG combinan enfoques de recuperación capaces de trabajar tanto con la forma literal como con el significado conceptual de las consultas de los usuarios. Esto resulta especialmente importante en la agricultura, donde la terminología técnica convive con expresiones coloquiales y donde conceptos similares pueden expresarse con vocabularios distintos.
+
+Robertson y Zaragoza sentaron esto como una base importante para la búsqueda léxica probabilística con el desarrollo de BM25 durante la década de 1990, al superar varias limitaciones del esquema TF-IDF mediante parámetros de saturación que representan de forma más fiel la relevancia documental (Robertson & Zaragoza, 2009). Años después, Devlin et al. mostraron con la arquitectura BERT que los modelos transformadores pre entrenados podían capturar representaciones contextuales profundas del lenguaje, abriendo nuevas posibilidades para la búsqueda semántica basada en similitud vectorial (Devlin et al., 2019).
+
+Estos dos enfoques terminaron combinándose. Dando origen a que de ahí surgieran los sistemas híbridos que aprovechan fortalezas de ambos mundos: la precisión de la coincidencia léxica y la capacidad de recuperar relaciones de significado.
+
+En el sector agrícola, estudios recientes han explorado la aplicación de técnicas de procesamiento de lenguaje natural para extraer conocimiento de literatura especializada. Dimitrov et al. (2023), al estudiar sistemas de pregunta-respuesta en agricultura, demostraron que los modelos basados en recuperación de información superan consistentemente a los sistemas generativos puros en tareas que requieren precisión y citación de fuentes. En esa misma rama, Köksal et al. (2024) mostraron que la adaptación de arquitecturas generales a vocabularios técnicos específicos mejora de manera clara la capacidad de comprensión de consultas agronómicas complejas.
+
+Gastélum et al. (2022) ilustran, a partir del estudio de interacciones microbianas en maíz nativo, la complejidad temática del conocimiento agronómico moderno, donde conceptos de microbiología, química del suelo y fisiología vegetal se entrelazan de manera estrecha. Esta complejidad multidisciplinaria plantea desafíos específicos para los sistemas de recuperación de información, que deben ser capaces de conectar conceptos a través de diferentes niveles de abstracción y múltiples subdominios del conocimiento agrícola. Además, Librán-Embid et al. (2023) sostienen que las herramientas digitales de acceso a información representan una de las intervenciones tecnológicas de menor costo y mayor potencial de impacto para comunidades rurales.
+
+En un panorama internacional, proyectos como FarmBot (Petersen et al., 2020) y PlantVillage (Hughes & Salathé, 2015) han demostrado el valor que tienen las plataformas digitales para difundir el conocimiento agrícola. Aun así, estos sistemas se enfocan principalmente en la identificación de enfermedades mediante visión computacional o en proporcionar información generalizada, sin abordar necesidades específicas de búsqueda profunda en corpus técnicos especializados. Chen et al. (2021) identificaron, que en el caso de sistemas de pregunta-respuesta para agricultura china, la capacidad de citar fuentes documentales específicas y el proporcionar explicaciones contextualizadas es un factor determinante en la confianza que los usuarios depositan en las recomendaciones del sistema.
+
+Algunos estudios previos sobre la adopción de tecnologías digitales en comunidades rurales, como el de Aker et al. (2016) para la extensión agrícola mediante mensajería móvil en África subsahariana, han documentado que la efectividad de estas propuestas depende en buena medida de la relevancia y especificidad de la información proporcionada. El resultado fue bastante directo, cuando un sistema responde al contexto local, la adopción mejora. Esto ocurre al considerar variedades de cultivo, condiciones edafoclimáticas concretas y calendarios agrícolas regionales, en lugar de ofrecer información agrícola generalizada para cualquier caso.
+
+El desarrollo de arquitecturas RAG híbridas ha sido objeto de investigación intensiva en la comunidad de recuperación de información. Un ejemplo de ello es el fundamental trabajo de Karpukhin et al. (2020) en el desarrollo de Dense Passage Retrieval demostró que la búsqueda basada en representaciones vectoriales densas podría competir y en muchos casos superar a métodos léxicos tradicionales. Más adelante, investigaciones como la de Ma et al. (2021) evidenciaron que para dominios especializados con alta carga terminológica técnica, los métodos léxicos mantienen ventajas significativas en precisión para consultas que contienen términos especializados exactos. Para el desarrollo de este trabajo, ese punto es vital ya que sugiere que ninguno de los dos enfoques basta por sí solo.
+
+La técnica de Reciprocal Rank Fusion, introducida por Cormack et al. (2009), proporciona un método matemático sólido para fusionar resultados de múltiples sistemas de recuperación heterogéneos sin requerir normalización de puntuaciones o calibración de pesos complejos. Posteriores estudios comparativos, como el de Benham et al. (2017), han confirmado que RRF exhibe robustez superior contra métodos alternativos de fusión, particularmente en escenarios donde los sistemas componentes producen distribuciones de puntuación con características estadísticas divergentes, precisamente el caso cuando se fusionan resultados de búsqueda léxica BM25 con búsqueda vectorial basada en redes neuronales.
+
+Para los sistemas de información agrícola de América Latina, el proyecto AgroTechKnowledge desarrollado por el CIMMYT (Centro Internacional de Mejoramiento de Maíz y Trigo) ha explorado el uso de estructuras de conocimiento y grafos de conocimiento para estructurar información técnica sobre cultivos de maíz. Si bien este enfoque de conocimiento estructurado ofrece ventajas en términos de razonamiento lógico, Zhao et al. (2022) sostienen que para corpus documentales extensos y heterogéneos, los métodos de recuperación híbridos densos y léxicos ofrecen mayor flexibilidad y capacidad de generalización sin requerir el costoso proceso de curación manual.
+
+Este trabajo se ubica en el punto entre la recuperación de información, procesamiento de lenguaje natural y agricultura de sistemas tradicionales. El objetivo es desarrollar e implementar un sistema que amplíe de manera efectiva el acceso al conocimiento técnico agrícola. Frente a estudios previos centrados en un solo enfoque de búsqueda o en dominios agrícolas más restringidos, aquí, se propone una arquitectura híbrida que integra búsqueda léxica probabilística (BM25), búsqueda semántica mediante modelos transformadores multilingües (Sentence-BERT), y enriquecimiento mediante reconocimiento de entidades del dominio agrícola.
+
+La validación del sistema se realiza en el contexto de sistemas agrícolas diversos, proveyendo de un ambiente apto para su implementación en comunidades rurales.El sistema, además, busca ir más allá de la recuperación pasiva de información para operar como un sistema de soporte a decisiones agrícolas (Agricultural Decision Support System, ADSS). Debido a que no solo responde consultas formuladas explícitamente por el usuario si no que también integra datos ambientales, como temperatura, humedad del suelo, velocidad del viento y pronósticos meteorológicos, con la base de conocimiento documental para generar de forma proactiva recomendaciones accionables fundamentadas en literatura técnica verificable. 
+
+La investigación sobre sistemas que apoyan en la toma de decisiones en la agricultura han demostrado que la combinación con datos contextuales y con conocimiento experto documentado produce recomendaciones de mayor calidad que cualquiera de estos componentes por separado (Rose et al., 2016; Zhai et al., 2020). Liakos et al. (2018), en su revisión sobre aprendizaje automático en agricultura, también observaron que los sistemas que proporcionan justificación documental para sus recomendaciones generan tasas de adopción claramente superiores entre agricultores.
+
+El sistema además cuenta con una interfaz de usuario donde el sistema materializa estas capacidades mediante un panel de control (dashboard) interactivo que permite al agricultor visualizar el estado de sus cultivos, recibir alertas priorizadas, consultar recomendaciones con su respectiva fundamentación, y monitorear variables ambientales. Esta capa de presentación transforma los resultados abstractos del motor RAG en información contextualizada y accionable, cerrando el ciclo completo desde datos crudos hasta decisiones agrícolas informadas.
+
+
+IDENTIFICACIÓN DEL PROBLEMA
+
+
+El conocimiento técnico agronómico se encuentra ampliamente documentado en manuales, artículos científicos, normas y reportes de instituciones especializadas. Sin embargo, para agricultores de comunidades rurales, especialmente aquellos vinculados a sistemas agrícolas tradicionales, localizar información específica dentro de ese corpus sigue siendo una tarea difícil sin mediación tecnológica.
+
+Cuando surge una interrogante puntual de manejo, la información suele existir, pero identificar el fragmento pertinente dentro de una colección extensa de documentos demanda tiempo, recursos y conocimientos de búsqueda que el usuario final no siempre posee. Esa inaccesibilidad práctica del conocimiento técnico se traduce en decisiones de manejo subóptimas, desperdicio de recursos escasos y pérdidas de productividad evitables.
+
+Los motores de búsqueda generalistas como Google, aunque altamente capaces para búsquedas web, presentan limitaciones significativas cuando se aplican a dominios técnicos especializados. Para empezar, carecen de conocimiento específico del dominio agrícola y no pueden diferenciar entre fuentes técnicas confiables y contenido no especializado. A ello se le suma que su enfoque en búsqueda web los hace inadecuados para buscar dentro de colecciones documentales cerradas de PDFs técnicos. También ocurre que su modelo de recuperación, optimizado para consultas breves y navegación web, no está diseñado para extraer fragmentos específicos de conocimiento de documentos técnicos extensos. Otro problema es que no comprenden la terminología agrícola especializada ni las relaciones semánticas propias del dominio entre conceptos como "clorosis férrica," "deficiencia de micronutrientes," y "amarillamiento foliar", términos que un agrónomo reconocería como conceptualmente relacionados pero que un sistema de búsqueda generalista trataría como completamente independientes.
+
+La situación se complica aún más por la naturaleza multilingüe y terminológicamente diversa del dominio agrícola. Un mismo concepto puede expresarse mediante términos científicos formales (Zea mays), nombres comunes regionales (maíz, elote, milho), o designaciones técnicas especializadas (gramínea cereal). Los agricultores formulan sus consultas en lenguaje natural coloquial, frecuentemente sin conocer la terminología técnica precisa, mientras que la información en los documentos utiliza vocabulario especializado. Esta brecha léxica entre la forma en que los usuarios expresan sus necesidades de información y la forma en que el conocimiento está codificado en los documentos representa un obstáculo central para la recuperación efectiva mediante métodos de búsqueda puramente léxicos.
+
+Estudios sobre brechas de conocimiento en comunidades agrícolas rurales han documentado que la falta de acceso a información técnica actualizada es uno de los factores limitantes más marcados para la adopción de prácticas mejoradas. Bellon et al. (2020) identificaron, en el caso de la agricultura campesina mexicana, que mientras los agricultores poseen conocimiento empírico profundo sobre sus sistemas locales, frecuentemente carecen de acceso a información técnica sobre innovaciones validadas experimentalmente que podrían complementar sus prácticas tradicionales sin desplazarlas. El estudio documenta casos donde agricultores continúan aplicando dosis de fertilizantes basadas en recomendaciones generalizadas obsoletas, a pesar de que investigaciones recientes han establecido protocolos de fertilización más eficientes y ambientalmente sostenibles específicos para sus condiciones edafoclimáticas, simplemente porque esta información actualizada no ha llegado a sus manos de forma comprensible y accionable.
+
+ Magnitud y Trascendencia del Problema
+
+La magnitud de esta problemática alcanza una escala considerable cuando se considera el tamaño del sector agrícola de pequeña escala en México. Según datos del último Censo Agropecuario del INEGI (2020), aproximadamente 5.3 millones de unidades de producción agrícola en México operan con superficies menores a 5 hectáreas, caracterizándose por prácticas de agricultura familiar y dependencia predominante de conocimiento tradicional. De estas, una proporción significativa practica sistemas agrícolas tradicionales, ya sea en su forma original o con adaptaciones contemporáneas. Estas unidades productivas emplean directamente a más de 10 millones de personas y proveen seguridad alimentaria básica a aproximadamente 20 millones de habitantes rurales y peri-urbanos.
+
+La pérdida de productividad atribuible a decisiones de manejo subóptimas por falta de acceso a información técnica ha sido cuantificada en diversos estudios sectoriales. Erenstein et al. (2021) estiman que la brecha de rendimiento, definida como la diferencia entre el rendimiento potencial alcanzable con prácticas óptimas y el rendimiento actualmente obtenido, alcanza en promedio el 40% para agricultores de pequeña escala sin acceso a asistencia técnica especializada. Traducido a términos económicos, esta brecha supone pérdidas anuales agregadas del orden de miles de millones de pesos en ingreso agrícola no realizado. Más allá del impacto económico, esta ineficiencia se traduce en degradación ambiental evitable, dado que prácticas de manejo subóptimas frecuentemente resultan en sobreaplicación de insumos químicos con consecuencias negativas para la salud del suelo y la calidad del agua.
+
+La trascendencia del problema se extiende más allá de consideraciones puramente productivas para abarcar dimensiones de soberanía alimentaria, preservación cultural y resiliencia climática. Los sistemas agrícolas tradicionales no son meramente técnicas de producción, sino complejos bioculturales que sostienen tradiciones culinarias, rituales comunitarios y conocimiento ecológico tradicional transmitido intergeneracionalmente a lo largo de milenios. La pérdida o degradación de estos sistemas, frecuentemente precipitada por falta de información técnica que permita su adaptación a presiones contemporáneas como cambio climático, mercados cambiantes y disponibilidad reducida de mano de obra, supone una erosión cultural irreversible. Perfecto et al. (2019) documentan que estos sistemas albergan diversidad genética crucial para la seguridad alimentaria global, diversidad que se pierde rápidamente cuando son abandonados en favor de monocultivos modernos.
+
+El acceso al conocimiento técnico especializado ha estado históricamente mediado por profesionales de extensión agrícola, agrónomos, técnicos de campo y promotores rurales, cuya presencia en comunidades rurales ha disminuido drásticamente en las últimas tres décadas debido a recortes presupuestarios en programas gubernamentales de desarrollo rural. Según datos de la FAO (2019), México experimentó una reducción de aproximadamente 70% en personal de extensión agrícola entre 1990 y 2018, lo que dejó a millones de agricultores efectivamente sin acceso a asesoría técnica. Estos factores han ampliado la brecha de conocimiento entre agricultores con recursos suficientes para contratar consultoría privada y aquellos que dependen de servicios públicos cada vez más escasos. Un sistema tecnológico accesible que amplíe el acceso a información técnica especializada puede contribuir de manera importante a reducir esta falta de igualdad en la distribución del conocimiento agronómico.
+
+ Manifestaciones Específicas del Problema
+
+En el contexto de los sistemas agrícolas tradicionales, la inaccesibilidad informacional se manifiesta en decisiones operativas distribuidas a lo largo de todo el ciclo productivo: preparación del terreno, siembra, fertilización, manejo fitosanitario, riego y adaptación a eventos climáticos. Aunque la literatura técnica contiene recomendaciones para estos escenarios, recuperar el fragmento exacto relevante sigue siendo difícil sin sistemas especializados capaces de relacionar la consulta concreta del usuario con el contexto agronómico descrito en los documentos.
+
+El problema se intensifica cuando se consideran consultas que cruzan múltiples dominios de conocimiento. Una pregunta aparentemente simple, requiere integrar conocimiento de entomología agrícola, manejo integrado de plagas, toxicología de insecticidas, y ecología de polinizadores. La información relevante está distribuida en múltiples documentos especializados en cada uno de estos subdominios, y un sistema de recuperación efectivo debe ser capaz de identificar y sintetizar conocimiento de todas estas fuentes.
+
+También existe el desafío de la variabilidad en cómo los usuarios expresan sus necesidades de información. Estudios de análisis de consultas en dominios especializados han documentado que usuarios diferentes formulan la misma necesidad de información de maneras radicalmente distintas. La necesidad de información sobre deficiencia de nitrógeno en maíz puede expresarse como "hojas amarillas en maíz," "clorosis en cultivo," "falta de verdor en parcela," "plantas pálidas," o "síntomas de hambre de nitrógeno." Un sistema efectivo debe reconocer todas estas formulaciones como semánticamente equivalentes y recuperar la información técnica relevante sobre diagnóstico y corrección de deficiencia nitrogenada, independientemente de la forma léxica específica de la consulta.
+
+ Estado Actual de Soluciones Existentes y sus Limitaciones
+
+Diversas iniciativas han intentado abordar la problemática de acceso a información agrícola con resultados parciales. Los servicios de extensión agrícola tradicionales basados en visitas de campo por técnicos proporcionan información de alta calidad y contextualizada, pero su cobertura geográfica limitada y frecuencia de contacto reducida (típicamente una visita cada varios meses) restringen significativamente su alcance. Las líneas telefónicas de consulta agrícola operadas por instituciones como SENASICA han atendido millones de consultas, pero operan mediante búsqueda manual en bases de datos o consulta a especialistas humanos, limitando su escalabilidad y tiempos de respuesta. Sistemas de mensajería masiva que distribuyen recomendaciones agronómicas generalizadas vía SMS alcanzan audiencias amplias pero carecen de la capacidad de responder consultas específicas del contexto individual de cada agricultor.
+
+En el ámbito digital, servicios web de instituciones agropecuarias como el INIFAP publican extensas bibliotecas de manuales técnicos y publicaciones científicas en formato PDF. El problema es que estos repositorios típicamente ofrecen únicamente funcionalidad de búsqueda básica por título y palabras clave en metadatos, sin capacidad de búsqueda de texto completo dentro de los documentos ni comprensión semántica de consultas. Un usuario que busca "amarillamiento en hojas de maíz" en estos sistemas no obtendrá documentos que discuten "clorosis foliar" o "deficiencia de micronutrientes" a menos que los metadatos del documento contengan literalmente la frase de búsqueda. Esta limitación léxica se traduce en tasas de recall (recuperación) muy bajas, donde información relevante existe en el repositorio pero no es recuperada porque no hay coincidencia exacta de palabras clave.
+
+Aplicaciones móviles para agricultura como Plantix o Agrosmart han ganado popularidad por su capacidad de identificar enfermedades y plagas mediante visión computacional aplicada a fotografías de plantas. Estas herramientas resuelven efectivamente un subproblema específico (diagnóstico visual de problemas fitosanitarios), pero no abordan la necesidad más amplia de acceso a conocimiento técnico documental sobre manejo agronómico general. Su enfoque en identificación de imágenes, además, las hace inaplicables para consultas sobre prácticas de manejo preventivo, nutrición vegetal, o planificación cultural que no tienen manifestación visual directa.
+
+Los asistentes virtuales generalistas basados en modelos de lenguaje grandes, como ChatGPT o Bard, pueden responder consultas agrícolas en lenguaje natural con fluidez impresionante, pero presentan limitaciones críticas para su aplicación en la provisión de asesoría técnica agrícola confiable. En primer lugar, generan respuestas mediante predicción estadística de secuencias de palabras sin acceso a bases de conocimiento específicas, lo que da lugar al fenómeno conocido como "alucinaciones", donde el sistema produce información evidentemente incorrecta. Tampoco ofrecen capacidad de citación de fuentes, lo que impide verificar las recomendaciones proporcionadas. A esto se añade que su entrenamiento en corpus web generales implica un conocimiento del dominio agrícola superficial y con frecuencia desactualizado. Ji et al. (2023) documentaron tasas de error del 30-50% en respuestas a preguntas técnicas agrícolas, un nivel inaceptable para aplicaciones donde decisiones incorrectas pueden resultar en pérdidas económicas significativas.
+
+Sistemas académicos de pregunta y respuesta desarrollados en contextos de investigación, como los descritos por Chen et al. (2021) para agricultura china o Dimitrov et al. (2023) para manejo de ganado, han demostrado capacidades superiores mediante el uso de arquitecturas RAG que fundamentan respuestas en documentos especializados. Sin embargo, estos sistemas permanecen típicamente como prototipos de investigación sin despliegue operacional accesible a usuarios reales, limitados a dominios muy específicos (p.ej., enfermedades de arroz, nutrición porcina), y frecuentemente diseñados para un solo idioma. No existe, en el momento de planteamiento de esta investigación, un sistema de acceso abierto específicamente optimizado para el dominio agrícola mexicano, con cobertura de sistemas agrícolas diversos, procesamiento de lenguaje natural en español, y arquitectura híbrida que combine fortalezas de búsqueda léxica y semántica.
+
+ Formulación Precisa del Problema de Investigación
+
+La problemática puede formularse en dos dimensiones complementarias. La primera es la ausencia de un sistema accesible que permita recuperar fragmentos pertinentes de información técnica agronómica a partir de consultas en lenguaje natural dentro de un corpus documental amplio y especializado. La segunda es la falta de mecanismos que articulen esa información recuperada con variables ambientales del entorno del agricultor para convertirla en recomendaciones oportunas para la toma de decisiones.
+
+
+
+ OBJETIVO
+
+ Objetivo General
+
+Desarrollar, implementar y validar un sistema inteligente de recuperación de información y soporte a decisiones agrícolas, basado en una arquitectura RAG híbrida, que permita consultar documentación técnica especializada en lenguaje natural y generar recomendaciones contextualizadas a partir de datos ambientales y evidencia documental.
+
+ Objetivos Específicos
+
+El objetivo general se descompone en los siguientes objetivos específicos que guían el desarrollo sistemático del sistema:
+
+Objetivo Específico 1: Diseñar la arquitectura híbrida de recuperación de información. Desarrollar el diseño arquitectónico del sistema integrando tres componentes complementarios de recuperación: un subsistema de búsqueda léxica basado en el algoritmo BM25 con índice invertido optimizado para vocabulario técnico agrícola, un subsistema de búsqueda semántica basado en representaciones vectoriales densas generadas mediante modelos transformadores multilingües, y un mecanismo de fusión de resultados mediante Reciprocal Rank Fusion que combine efectivamente las fortalezas de ambos enfoques de búsqueda. El diseño debe especificar la estructura de datos para almacenamiento de documentos fragmentados, el pipeline de procesamiento para transformación de consultas, y los mecanismos de indexación para garantizar tiempos de respuesta compatibles con interacción en tiempo real.
+
+Objetivo Específico 2: Implementar el pipeline de procesamiento de documentos agrícolas. Construir el sistema de procesamiento que transforme documentos fuente en formato PDF en fragmentos textuales enriquecidos almacenables y recuperables por el sistema. Este pipeline debe incluir extracción de texto con preservación de estructura semántica, segmentación en fragmentos apropiada para responder consultas específicas sin pérdida de contexto, generación de representaciones vectoriales mediante modelo Sentence-BERT pre-entrenado y afinado para español, construcción de índice invertido BM25 con esquema de pesado de términos optimizado para vocabulario agrícola, y almacenamiento con metadatos que permitan el seguimiento de la fuente del documento. La validación de este componente requiere verificar que la segmentación preserve coherencia temática y que las representaciones vectoriales capturen efectivamente similitud semántica entre fragmentos conceptualmente relacionados.
+
+Objetivo Específico 3: Desarrollar el módulo de reconocimiento de entidades del dominio agrícola. Implementar un sistema de reconocimiento de entidades nombradas (NER) específico del dominio agronómico capaz de identificar y etiquetar nombres de cultivos, plagas, enfermedades, nutrientes, tipos de suelo, prácticas de manejo, y otras entidades relevantes tanto en consultas de usuarios como en fragmentos documentales. Este módulo debe incorporar diccionarios específicos del dominio agrícola mexicano que incluyan variantes regionales de terminología, y debe integrarse en el proceso de recuperación para permitir re-ranking de resultados favoreciendo fragmentos que contengan entidades mencionadas en la consulta. La efectividad se medirá mediante métricas estándar de NER incluyendo precisión, recall y F1-score evaluadas sobre un conjunto de textos agronómicos anotados manualmente.
+
+Objetivo Específico 4: Implementar la capa de presentación y API de consulta. Desarrollar la interfaz de programación de aplicaciones (API) que permita a sistemas cliente enviar consultas en lenguaje natural y recibir resultados estructurados que incluyan fragmentos de texto relevantes, metadatos de documento fuente, puntuaciones de relevancia, y entidades identificadas. La implementación debe incorporar mecanismos de seguridad incluyendo autenticación de peticiones, sanitización de entrada para prevenir inyección de código malicioso, limitación de tasa de consultas para prevenir abuso, y circuit breakers para gestión de fallos. También se desarrollará una interfaz de usuario web básica que demuestre las capacidades del sistema y permita su evaluación con usuarios reales sin requerir integración técnica compleja.
+
+Objetivo Específico 5: Validar el sistema mediante evaluación cuantitativa y cualitativa. Realizar una evaluación integral del sistema desarrollado mediante métricas cuantitativas estándar de recuperación de información (precisión, recall, Mean Average Precision, Normalized Discounted Cumulative Gain) calculadas sobre un conjunto de consultas de prueba con juicios de relevancia establecidos por expertos agrónomos. Complementar la evaluación cuantitativa con evaluación cualitativa mediante estudios de caso con usuarios reales del dominio agrícola, recolectando retroalimentación sobre utilidad percibida, facilidad de uso, y confianza en los resultados proporcionados. La validación debe incluir análisis comparativo con líneas base apropiadas incluyendo búsqueda puramente léxica (solo BM25), búsqueda puramente semántica (solo vectores densos), y búsqueda en sistemas existentes como portales web de instituciones agropecuarias.
+
+Objetivo Específico 6: Desarrollar el módulo de soporte a decisiones y panel de control interactivo. Diseñar e implementar un componente que integre datos ambientales contextuales con el motor de recuperación para generar recomendaciones priorizadas y fundamentadas en evidencia documental, presentadas mediante un dashboard que facilite el monitoreo del cultivo, la visualización de alertas y la gestión de acciones sugeridas. La efectividad del módulo se evaluará mediante la pertinencia y oportunidad de las recomendaciones generadas, medida por juicio de expertos agrónomos y por la tasa de aceptación de usuarios en condiciones operacionales reales.
+
+
+
+ JUSTIFICACIÓN
+
+ Pertinencia Científica y Técnica
+
+El desarrollo de este sistema de recuperación de información se justifica desde múltiples perspectivas científicas, técnicas, sociales y económicas. Desde el punto de vista científico, la investigación contribuye al avance del conocimiento en recuperación de información para dominios especializados mediante la exploración de arquitecturas híbridas adaptadas a características específicas del lenguaje técnico agrícola. Aunque sistemas RAG híbridos han sido estudiados en dominios como medicina, legal y preguntas generales de conocimiento, su aplicación al dominio agrícola, caracterizado por alta variabilidad terminológica regional, coexistencia de vocabulario científico y coloquial, y fuerte dependencia contextual geográfica y climática, permanece relativamente inexplorada en la literatura académica. Los resultados de esta investigación generarán conocimiento sobre la efectividad comparativa de diferentes estrategias de fusión léxica-semántica en presencia de vocabulario técnico denso, y sobre el impacto de reconocimiento de entidades del dominio en calidad de recuperación.
+
+La investigación aborda una brecha metodológica en el campo de procesamiento de lenguaje natural para idioma español aplicado a dominios técnicos. La mayoría de recursos de investigación en NLP se concentra en idioma inglés, y los modelos multilingües preentrenados, aunque exhiben capacidades de transferencia translingüística razonables, requieren validación específica en dominios técnicos especializados en idiomas menos representados. Este proyecto contribuye evidencia empírica sobre el rendimiento de modelos Sentence-BERT multilingües en el dominio agrícola hispanohablante, información valiosa para la comunidad científica trabajando en NLP para español técnico.
+
+En el plano técnico, el desarrollo del sistema genera artefactos de software reutilizables que pueden beneficiar proyectos futuros en dominios similares. La arquitectura de procesamiento de documentos PDF agrícolas, el diccionario de entidades del dominio agrícola mexicano, el pipeline de indexación híbrida, y los algoritmos de fusión de resultados son componentes que pueden adaptarse para otros dominios técnicos especializados. La metodología de evaluación desarrollada, incluyendo conjuntos de consultas de prueba con juicios de relevancia de expertos, proporciona un marco replicable para evaluar sistemas similares en otros contextos geográficos o cultivos específicos.
+
+ Relevancia Social y Potencial de Impacto
+
+La justificación social del proyecto radica, sobre todo, en su potencial para ampliar el acceso al conocimiento técnico agronómico y reducir la brecha histórica entre quienes poseen acceso a servicios de extensión agrícola profesional y quienes carecen de él.
+
+En un contexto donde los servicios públicos de extensión han experimentado contracción severa durante las últimas tres décadas, un sistema tecnológico de acceso abierto puede proporcionar un canal alternativo de diseminación de conocimiento técnico y llegar a audiencias que los mecanismos tradicionales ya no alcanzan de manera efectiva. La escalabilidad propia de los sistemas digitales, es decir, su capacidad de atender simultáneamente a miles de usuarios sin incremento proporcional de costo, ofrece un potencial de impacto muy amplio para comunidades tradicionalmente marginadas de servicios técnicos especializados.
+
+El sistema desarrollado contribuye directamente a varios Objetivos de Desarrollo Sostenible establecidos por las Naciones Unidas. Al mejorar el acceso a información técnica que puede optimizar productividad agrícola, el sistema contribuye al ODS 2 (Hambre Cero) mediante el fortalecimiento de capacidades de agricultores en pequeña escala para mejorar sosteniblemente su producción. Al facilitar acceso a información sobre prácticas de manejo sostenibles de recursos naturales, contribuye al ODS 15 (Vida de Ecosistemas Terrestres) al promover una agricultura que preserve biodiversidad y salud de suelos. Al proporcionar una herramienta digital que puede utilizarse remotamente sin requerir desplazamientos, contribuye al ODS 13 (Acción por el Clima), ya que reduce la huella de carbono asociada a la extensión agrícola tradicional basada en visitas de campo.
+
+La preservación de los sistemas agrícolas tradicionales como prácticas bioculturales de valor patrimonial justifica por sí misma el desarrollo de herramientas que faciliten su continuidad en contextos contemporáneos. La investigación antropológica ha documentado extensamente que estos sistemas sostienen no solamente producción de alimentos, sino complejos enteros de conocimiento ecológico tradicional, identidad cultural, cohesión comunitaria y biodiversidad agrícola. La erosión de estos sistemas supone una pérdida multidimensional que trasciende aspectos meramente productivos. Un sistema tecnológico que facilite a agricultores acceder a información técnica que les permita adaptar sus prácticas a presiones contemporáneas sin abandonarlas es una contribución a la preservación de patrimonio biocultural amenazado.
+
+ Viabilidad Técnica y Disponibilidad de Recursos
+
+La viabilidad del proyecto se fundamenta en la disponibilidad de infraestructura tecnológica de código abierto para procesamiento de lenguaje natural y recuperación de información. Modelos transformadores preentrenados como Sentence-BERT están disponibles públicamente y pueden implementarse sin requerir recursos computacionales de entrenamiento desde cero. Bibliotecas de software especializadas en recuperación de información como Tantivy, ChromaDB, y frameworks de NLP como spaCy proporcionan componentes fundamentales que pueden integrarse para construir el sistema propuesto. La disponibilidad de documentación técnica agrícola en formato digital desde repositorios institucionales como INIFAP, SAGARPA, FAO y universidades agronómicas proporciona el corpus documental necesario para poblar el sistema.
+
+La factibilidad técnica ha sido validada mediante prototipos de prueba de concepto que demuestran que es posible procesar documentos PDF agrícolas, extraer texto con calidad suficiente, generar embeddings vectoriales, construir índices BM25, e implementar fusión de resultados con tiempos de respuesta de consulta en el rango de milisegundos. Los requisitos computacionales del sistema en operación son moderados, siendo factible su despliegue en infraestructura de computación en nube de costo accesible o incluso en servidores locales de instituciones educativas o gubernamentales. Esta característica de requisitos computacionales modestos es crítica para la sostenibilidad a largo plazo del sistema, evitando dependencia de infraestructura costosa que podría comprometer su continuidad operacional.
+
+ Contribución Diferenciada Respecto a Soluciones Existentes
+
+El sistema propuesto se diferencia de soluciones existentes porque combina recuperación híbrida sobre un corpus técnico curado en español con un módulo de soporte a decisiones ajustado al contexto ambiental. Frente a portales con búsqueda limitada por metadatos o asistentes generalistas sin respaldo documental explícito, el sistema recupera fragmentos verificables y los utiliza para sustentar recomendaciones priorizadas. Su aporte principal no es solo mejorar la recuperación de información, sino conectar esa recuperación con condiciones ambientales concretas mediante una interfaz que facilite la consulta y la acción.
+
+
+
+ ALCANCES Y LIMITACIONES
+
+ Alcances del Sistema
+
+El sistema desarrollado en esta investigación cubre un conjunto definido de capacidades y contextos de aplicación. El alcance temático abarca diversos sistemas de cultivo en sus dimensiones de manejo agronómico incluyendo nutrición vegetal y fertilización, manejo integrado de plagas y enfermedades, prácticas culturales de preparación del terreno y siembra, manejo de arvenses, fenología de cultivos, manejo de agua y riego, y adaptación climática. Este alcance temático fue seleccionado por representar las áreas de consulta más frecuentes identificadas en estudios previos sobre necesidades de información de agricultores de sistemas tradicionales.
+
+En términos geográficos, el sistema está optimizado para condiciones agroclimáticas de las regiones de México donde se practican diversos sistemas de cultivo, incluyendo zonas de los estados de Tlaxcala, Puebla, Oaxaca, Chiapas, Veracruz y la península de Yucatán. Las recomendaciones técnicas contenidas en la documentación fuente son aplicables primordialmente a estos contextos geográficos, y la terminología regional incorporada en diccionarios de entidades refleja variantes léxicas características de estas regiones. La aplicabilidad del sistema a otros contextos geográficos, como Centroamérica, requeriría expansión del corpus documental para incluir literatura técnica de esas regiones.
+
+El corpus documental del sistema incluye manuales técnicos publicados por instituciones nacionales como INIFAP, SAGARPA e INCA Rural; guías de buenas prácticas agrícolas emitidas por organizaciones internacionales como FAO y CIMMYT; artículos científicos seleccionados de revistas agronómicas mexicanas; y documentación de resultados de ensayos experimentales en estaciones agrícolas de universidades. La escala inicial contempla procesamiento de aproximadamente 200-300 documentos totalizando entre 30,000 y 50,000 páginas de contenido técnico, volumen suficiente para proporcionar cobertura amplia de temas agrícolas diversos manteniendo tiempos de procesamiento manejables. El sistema está diseñado arquitectónicamente para escalar a colecciones documentales significativamente mayores mediante expansión de capacidad de almacenamiento y cómputo.
+
+En términos de capacidades funcionales, el sistema permite a usuarios realizar consultas en lenguaje natural español recibiendo como respuesta fragmentos de texto relevantes ordenados por puntuación de relevancia, cada fragmento acompañado de metadatos que identifican el documento fuente, número de página, fecha de publicación, y institución autora. Los usuarios pueden refinar búsquedas mediante especificación de filtros por tipo de documento, fecha de publicación, o institución. El sistema identifica y resalta entidades del dominio agrícola presentes en los fragmentos retornados, facilitando identificación rápida de información específica sobre cultivos, plagas o nutrientes mencionados. La interfaz de usuario web proporciona visualización amigable de resultados sin requerir conocimientos técnicos, mientras que la API permite integración del sistema como backend de aplicaciones móviles o sistemas de mensajería.
+
+El alcance funcional del sistema se extiende al soporte a decisiones mediante un panel de control interactivo para monitoreo de cultivos, visualización de alertas, consulta de recomendaciones ajustadas al contexto ambiental y seguimiento general de variables relevantes para la toma de decisiones. Esta capa de presentación está orientada a transformar la recuperación documental en información operativa sin sustituir la consulta especializada ni el juicio agronómico.
+
+ Limitaciones del Sistema
+
+El sistema presenta límites claros que circunscriben su aplicabilidad. No genera respuestas sintéticas integrando información de múltiples fuentes, sino que retorna fragmentos textuales individuales de documentos. Esta decisión de diseño prioriza trazabilidad y verificabilidad sobre conveniencia de respuestas integradas, pero implica que usuarios deben sintetizar información de múltiples fragmentos cuando su consulta requiere conocimiento distribuido en diferentes documentos. Investigaciones futuras podrían explorar generación de resúmenes sintéticos manteniendo citaciones explícitas, pero esta capacidad está fuera del alcance actual.
+
+El sistema incorpora contextualización parcial mediante datos ambientales del entorno del agricultor, pero no realiza personalización completa basada en historial de manejo, análisis de suelo detallados o perfiles agronómicos individuales. En consecuencia, usuarios con condiciones ambientales similares pueden recibir recomendaciones equivalentes aunque existan diferencias relevantes entre sus parcelas.
+
+El sistema no sustituye el juicio profesional de agrónomos ni reemplaza servicios de extensión agrícola integral. La información recuperada proporciona conocimiento técnico documentado, pero la toma de decisiones agronómicas requiere considerar múltiples factores contextuales, muchos de los cuales implican observación directa de condiciones de campo, muestreo de suelos, monitoreo de incidencia de plagas, y evaluación de recursos disponibles al agricultor específico. El sistema complementa pero no reemplaza la asesoría profesional personalizada. Esta limitación se comunica explícitamente en la interfaz de usuario mediante advertencias apropiadas sobre la necesidad de validar recomendaciones con observaciones de campo y consideraciones de contexto local.
+
+La calidad de resultados del sistema depende de la calidad y cobertura del corpus documental fuente. Si una pregunta específica del usuario no ha sido abordada en ningún documento de la colección, el sistema no puede proporcionar respuesta relevante. La cobertura temática, aunque amplia, no es exhaustiva de todo el conocimiento agronómico existente. Temas altamente especializados o resultados de investigación muy reciente pueden no estar representados si no han sido incorporados al corpus. La actualización periódica del corpus mediante incorporación de nuevas publicaciones es necesaria para mantener la relevancia del sistema, pero esto requiere esfuerzo curatorial continuo que debe planificarse en la operación sostenible del sistema.
+
+El sistema opera únicamente con información textual y no procesa otros tipos de contenido frecuentemente presentes en documentación agronómica como tablas de datos, figuras, diagramas, fotografías de síntomas de enfermedades, o mapas de distribución de plagas. Cuando estos elementos visuales contienen información crucial, su ausencia en los resultados retornados limita la utilidad de la respuesta. La extensión del sistema para incluir recuperación multimodal de información integrando texto e imágenes representa una dirección de investigación futura prometedora pero técnicamente compleja que excede el alcance actual.
+
+El módulo de soporte a decisiones depende, para la obtención de datos ambientales y edafológicos en tiempo real, de fuentes externas que el sistema no controla. Las variables meteorológicas, como temperatura, humedad, precipitación y pronósticos, se obtienen de servicios y estaciones climáticas de terceros; los datos edafológicos provienen de bases de datos públicas mantenidas por instituciones especializadas. Si estos proveedores externos interrumpen su servicio, reducen la frecuencia de actualización, o degradan la calidad de sus datos, el sistema carece de mecanismo autónomo para generar o validar esta información por cuenta propia, lo cual afectaría directamente la pertinencia y oportunidad de las recomendaciones ajustadas al contexto que se generen. Esta dependencia de fuentes externas es un punto de vulnerabilidad operativa común en cualquier sistema que integre datos en tiempo real sin infraestructura propia de sensado.
+
+El corpus documental del sistema se construye exclusivamente a partir de documentación técnica recopilada, curada y validada manualmente por el equipo de investigación, sin acceso directo a Internet para incorporar nueva información de forma autónoma. Esta decisión de diseño, motivada por la necesidad de garantizar la calidad y veracidad de toda la información que fundamenta las recomendaciones del sistema, implica una limitación significativa en el volumen y vigencia del conocimiento disponible. El sistema no puede acceder a publicaciones recientes, boletines de alerta fitosanitaria en tiempo real, ni actualizaciones de normativa agrícola hasta que un curador humano las identifique, revise, valide e incorpore al corpus. En consecuencia, la amplitud de la base de conocimiento queda limitada por la capacidad operativa del proceso de curación manual, y existe un desfase temporal inevitable entre la publicación de nuevo conocimiento técnico y su disponibilidad dentro del sistema.
+
+Finalmente, una limitación de naturaleza sociocultural concierne a la adopción del sistema por parte de su población objetivo. La investigación sobre difusión de innovaciones tecnológicas en comunidades agrícolas rurales ha documentado consistentemente resistencia a la incorporación de herramientas digitales, particularmente cuando los agricultores perciben que la tecnología pretende sustituir su conocimiento empírico acumulado a lo largo de generaciones de práctica directa (Eastwood et al., 2019; Rose et al., 2016).
+
+El saber agrícola tradicional, transmitido intergeneracionalmente mediante observación, experiencia directa y tradición oral, no solo es un sistema de conocimiento técnico, sino también un componente identitario profundo para las comunidades rurales. La introducción de un sistema digital que emite recomendaciones fundamentadas en documentos técnicos puede ser interpretada, legítimamente, como un intento de desplazar o invalidar este conocimiento ancestral.
+
+Por eso es fundamental comunicar que el sistema opera estrictamente como herramienta de apoyo complementaria: no pretende reemplazar las prácticas, la intuición cultivada ni el conocimiento ecológico local que los agricultores han desarrollado y refinado durante generaciones, sino proporcionar un canal adicional de acceso a información técnica documentada que puede enriquecer, nunca sustituir, la toma de decisiones informada por la experiencia de campo. La estrategia de adopción debe contemplar esta sensibilidad, involucrando a los agricultores como participantes activos y no como receptores pasivos de prescripciones tecnológicas.
+
+
+
+ PREGUNTAS DE INVESTIGACIÓN
+
+Las cuestiones centrales que guían esta investigación se formulan de la siguiente manera:
+
+Pregunta Principal: ¿En qué medida un sistema RAG híbrido puede mejorar la recuperación de información técnica agrícola en español frente a enfoques de búsqueda tradicionales?
+
+Preguntas Secundarias:
+
+1. ¿Cuál es el rendimiento comparativo de búsqueda léxica BM25, búsqueda semántica basada en vectores densos, y arquitectura híbrida fusionada mediante RRF en el dominio de documentación técnica agrícola, medido mediante métricas estándar de recuperación de información?
+
+2. ¿Cómo afecta la incorporación de reconocimiento de entidades del dominio agrícola en el proceso de re-ranking de resultados a la precisión y relevancia de información recuperada para consultas que contienen nombres de cultivos, plagas, enfermedades o nutrientes?.
+
+3. ¿Qué patrones de consulta expresan usuarios del dominio agrícola al buscar información técnica sobre sistemas de cultivo, y en qué medida el sistema híbrido puede manejar efectivamente la diversidad de formulaciones léxicas para necesidades de información similares?
+
+4. ¿Cuáles son los parámetros óptimos de configuración para los componentes del sistema (tamaño de fragmentos documentales, ponderación de fusión, umbral de re-ranking por entidades) que maximizan métricas de recuperación en el dominio específico de documentación agrícola en español?
+
+5. ¿Cómo evalúan expertos del dominio agronómico y usuarios finales potenciales la utilidad, confiabilidad y usabilidad del sistema comparado con métodos actuales de búsqueda de información técnica agrícola?
+
+6. ¿En qué medida la integración de variables ambientales en tiempo real (temperatura, humedad del suelo, pronósticos meteorológicos) con la arquitectura RAG híbrida mejora la pertinencia, oportunidad y tasa de adopción de las recomendaciones agrícolas generadas, en comparación con recomendaciones documentales estáticas no contextualizadas?
+
+
+
+ HIPÓTESIS
+
+La hipótesis central de esta investigación postula que una arquitectura RAG híbrida logrará métricas de recuperación superiores, con incrementos de al menos 20% en Mean Average Precision y 15% en NDCG@10, en comparación con sistemas que emplean únicamente búsqueda léxica o búsqueda semántica para recuperar información técnica agrícola en español.
+
+Hipótesis secundaria sobre soporte a decisiones: La integración de datos ambientales contextuales con los resultados del motor RAG producirá recomendaciones agrícolas más pertinentes y oportunas que las derivadas de consultas documentales no contextualizadas, reflejadas en una tasa de aceptación por parte de usuarios al menos 30% superior.
+
+
+
+ MARCO TEÓRICO
+
+ 1. Fundamentos de la Recuperación de Información
+
+La recuperación de información se ocupa de un problema muy concreto: cómo encontrar información relevante dentro de colecciones documentales extensas. Aunque hoy se asocia de inmediato con motores de búsqueda, el campo comenzó a consolidarse formalmente desde la década de 1950 y ha pasado por transformaciones profundas, desde los sistemas manuales de clasificación bibliotecaria hasta los motores neurales contemporáneos. En este trabajo, revisar esos fundamentos no es un rodeo teórico; sirve para situar con claridad la arquitectura híbrida que constituye el núcleo técnico de la propuesta.
+
+ 1.1. Evolución Histórica de los Sistemas de Búsqueda
+
+ 1.1.1. Orígenes y primeros desarrollos
+
+Los antecedentes de la recuperación de información moderna se remontan a los trabajos pioneros de documentalistas como Paul Otlet y Henri La Fontaine, quienes a principios del siglo XX desarrollaron el Repertorio Bibliográfico Universal con la ambición de organizar sistemáticamente todo el conocimiento humano (Rayward, 1994). Sin embargo, el campo adquirió carácter científico formal con la publicación del artículo "As We May Think" de Vannevar Bush en 1945, donde propuso el dispositivo conceptual Memex como sistema de almacenamiento y recuperación de información mediante enlaces asociativos, anticipando conceptos que décadas después materializarían en el hipertexto y la World Wide Web (Bush, 1945).
+
+Los primeros sistemas computarizados de recuperación de información surgieron en la década de 1950, impulsados por la explosión documental científica posterior a la Segunda Guerra Mundial y la necesidad de gestionar la creciente literatura técnica. El sistema UNITERM desarrollado por Mortimer Taube en 1953 introdujo el concepto de coordinación de términos para representar contenido documental, mientras que Hans Peter Luhn en IBM desarrolló sistemas automáticos de indexación basados en frecuencias de palabras, sentando las bases para los esquemas de ponderación que dominarían el campo durante décadas (Sanderson y Croft, 2012).
+
+ 1.1.2. La era de los modelos clásicos
+
+Durante las décadas de 1960 y 1970, investigadores como Gerard Salton en la Universidad de Cornell desarrollaron formalizaciones matemáticas rigurosas que transformaron la recuperación de información en una disciplina científica con fundamentos teóricos sólidos. El Sistema SMART (System for the Mechanical Analysis and Retrieval of Text) desarrollado por Salton se convirtió en plataforma experimental donde se probaron y refinaron conceptos fundamentales como el modelo vectorial, esquemas de ponderación de términos, retroalimentación de relevancia, y evaluación mediante métricas de precisión y exhaustividad (Salton, 1971).
+
+El modelo vectorial, formalizado por Salton, Wong y Yang (1975), conceptualiza documentos y consultas como vectores en un espacio de alta dimensionalidad donde cada dimensión corresponde a un término del vocabulario. Esta representación geométrica permitió aplicar medidas de similitud como el coseno del ángulo entre vectores para cuantificar relevancia, proporcionando un marco matemático sólido aunque con supuestos simplificadores significativos, particularmente la independencia entre términos que ignora relaciones semánticas entre palabras.
+
+ 1.1.3. Desarrollo de modelos probabilísticos
+
+Paralelamente al enfoque vectorial, investigadores como Stephen Robertson y Karen Spärck Jones desarrollaron marcos probabilísticos que situaron la recuperación de información dentro de la teoría estadística de la decisión. El principio de ordenamiento probabilístico (Probability Ranking Principle), formulado por Robertson (1977), establece que la efectividad de un sistema de recuperación se optimiza cuando los documentos se ordenan por probabilidad decreciente de relevancia dado conocimiento disponible. Este principio fundamenta matemáticamente por qué sistemas de ranking superan sistemáticamente a sistemas de matching binario que simplemente clasifican documentos como relevantes o no relevantes sin ordenamiento.
+
+El modelo de independencia binaria (Binary Independence Model), desarrollado por Robertson y Spärck Jones (1976), deriva fórmulas de ponderación de términos desde primeros principios probabilísticos, asumiendo independencia condicional entre términos dado conocimiento de relevancia. Aunque el supuesto de independencia es evidentemente simplificador, el modelo ha demostrado efectividad empírica sorprendente, sugiriendo que captura aspectos esenciales del problema de recuperación a pesar de sus limitaciones teóricas. La investigación posterior refinó progresivamente estos modelos incorporando factores como frecuencia de términos y longitud de documentos, culminando eventualmente en la familia de funciones BM (Best Match) que incluye el influyente algoritmo BM25.
+
+ 1.2. Métricas de Evaluación en Recuperación de Información
+
+ 1.2.1. Precisión, exhaustividad y métricas derivadas
+
+La evaluación rigurosa de sistemas de recuperación de información requiere métricas cuantitativas que capturen diferentes dimensiones de calidad. Las métricas fundacionales son precisión y exhaustividad (recall), definidas respectivamente como la proporción de documentos recuperados que son relevantes, y la proporción de documentos relevantes que son recuperados (Baeza-Yates y Ribeiro-Neto, 2011). Entre ambas existe una tensión difícil de evitar: los sistemas que maximizan exhaustividad retornando muchos documentos típicamente sacrifican precisión al incluir material irrelevante, mientras que los sistemas altamente precisos que retornan pocos documentos pueden omitir material relevante.
+
+La medida F (F-measure), propuesta por van Rijsbergen (1979), combina precisión y exhaustividad mediante media armónica ponderada, permitiendo un único número que balancea ambas dimensiones. El parámetro β controla el peso relativo: β=1 otorga igual importancia a precisión y exhaustividad; β>1 enfatiza exhaustividad; β<1 enfatiza precisión. En aplicaciones prácticas, la elección de β depende del contexto: sistemas de búsqueda legal donde omitir un documento relevante puede tener consecuencias graves típicamente priorizan exhaustividad, mientras que sistemas de búsqueda web donde usuarios examinan solo primeros resultados priorizan precisión.
+
+ 1.2.2. Métricas orientadas a ranking
+
+Para sistemas que retornan listas ordenadas de resultados, hoy predominantes en recuperación moderna, las métricas de precisión y exhaustividad binarias resultan insuficientes porque ignoran la posición de documentos relevantes en el ranking. La Precisión Promedio (Average Precision, AP) aborda esta limitación calculando precisión en cada posición donde aparece un documento relevante y promediando estos valores. Mean Average Precision (MAP), el promedio de AP sobre un conjunto de consultas de prueba, se ha establecido como métrica estándar en la comunidad de recuperación de información para comparar rendimiento de sistemas (Manning, Raghavan y Schütze, 2008).
+
+La Ganancia Acumulada Descontada Normalizada (Normalized Discounted Cumulative Gain, NDCG), propuesta por Järvelin y Kekäläinen (2002), extiende el marco para incorporar relevancia graduada donde documentos pueden ser parcialmente relevantes en lugar de binariamente relevantes o no relevantes. NDCG aplica descuento logarítmico por posición, penalizando sistemas que colocan documentos altamente relevantes en posiciones bajas del ranking. Su normalización permite comparaciones entre consultas con diferentes números de documentos relevantes. Esta métrica ha ganado prominencia particular en evaluación de motores de búsqueda web donde la distinción entre documentos excelentes, buenos, aceptables y pobres proporciona información más granular que juicios binarios.
+
+ 1.2.3. Iniciativas de evaluación y benchmarks
+
+La comparación rigurosa de sistemas de recuperación requiere colecciones de evaluación estandarizadas que incluyan corpus documentales, conjuntos de consultas de prueba, y juicios de relevancia humanos. La iniciativa TREC (Text REtrieval Conference), organizada anualmente desde 1992 por el Instituto Nacional de Estándares y Tecnología de Estados Unidos (NIST), ha proporcionado infraestructura de evaluación que ha impulsado avances importantes en el campo. A través de diferentes "tracks" temáticos, incluyendo ad hoc retrieval, question answering, medical records, y más recientemente deep learning, TREC ha facilitado comparaciones sistemáticas de aproximaciones metodológicas diversas bajo condiciones controladas (Voorhees y Harman, 2005).
+
+Para idioma español, iniciativas como CLEF (Conference and Labs of the Evaluation Forum) han desarrollado recursos de evaluación multilingüe incluyendo colecciones documentales en español y otras lenguas europeas. El proyecto IberLEF organiza campañas de evaluación específicas para lenguas ibéricas, abordando tareas como pregunta-respuesta, extracción de información y análisis de sentimiento en español y portugués. Sin embargo, la disponibilidad de recursos de evaluación para dominios especializados en español, particularmente el dominio agrícola, permanece limitada comparada con recursos disponibles para inglés, lo que configura un vacío que esta investigación contribuye a abordar.
+
+ 2. El Algoritmo BM25 y la Búsqueda Léxica Probabilística
+
+La búsqueda léxica, también denominada búsqueda por palabras clave o búsqueda sparse, opera identificando documentos que contienen los términos exactos presentes en la consulta del usuario. A diferencia de aproximaciones semánticas que intentan capturar significado, métodos léxicos se basan en coincidencias textuales literales, una aproximación que, sorprendentemente, mantiene efectividad competitiva incluso frente a técnicas de aprendizaje profundo en múltiples escenarios de aplicación.
+
+ 2.1. Fundamentos Matemáticos del Modelo BM25
+
+ 2.1.1. Derivación desde el principio de ordenamiento probabilístico
+
+El algoritmo BM25, cuyo nombre deriva de "Best Matching 25" indicando su posición en una serie de experimentos de la Universidad de Londres, emerge como culminación de décadas de refinamiento de modelos probabilísticos de recuperación. Su derivación formal parte del principio de ordenamiento probabilístico aplicado al modelo de dos Poisson propuesto por Robertson y Walker (1994), que modela la distribución de frecuencias de términos en documentos relevantes versus no relevantes mediante mezclas de distribuciones de Poisson (Robertson y Zaragoza, 2009).
+
+Comprender la formulación matemática de BM25 es esencial en el contexto de esta investigación porque es uno de los dos motores de búsqueda que el sistema utiliza para encontrar información agrícola relevante. Cuando un agricultor escribe una consulta como "fertilización de maíz en suelo arcilloso", el sistema necesita un método riguroso para decidir cuáles de los miles de fragmentos documentales almacenados son más relevantes para esa pregunta específica. BM25 resuelve este problema asignando una puntuación numérica a cada fragmento que refleja qué tan bien coincide con los términos de la consulta, considerando simultáneamente tres factores: qué tan importante es cada palabra buscada (no todas aportan lo mismo), cuántas veces aparece en el fragmento, y qué tan largo es el fragmento comparado con el promedio. La fórmula que formaliza este cálculo, para un documento D y una consulta Q compuesta por términos q₁, q₂, ..., qₙ, es:
+
+    Puntaje(D, Q) = Σᵢ₌₁ⁿ IDF(qᵢ) × [ f(qᵢ, D) × (k₁ + 1) ] / [ f(qᵢ, D) + k₁ × (1 − b + b × |D| / avgdl) ]
+
+Donde f(qᵢ, D) representa la frecuencia del término qᵢ en el documento D, |D| es la longitud del documento medida en palabras, avgdl es la longitud promedio de documentos en la colección, y k₁ y b son hiperparámetros que controlan el comportamiento del modelo. En términos prácticos, esta fórmula funciona como un sistema de puntuación que evalúa cada palabra de la consulta del agricultor contra cada fragmento documental: por cada palabra buscada, se multiplica su importancia (IDF, explicado a continuación) por una fracción que mide cuántas veces aparece ese término en el fragmento, pero con rendimientos decrecientes; la tercera aparición de "maíz" en un fragmento aporta menos puntaje que la primera, y además penaliza proporcionalmente a los fragmentos más extensos, bajo el principio de que si un término aparece una vez en un fragmento corto es más significativo que si aparece una vez en un fragmento muy largo.
+
+El componente IDF(qᵢ), frecuencia inversa de documento, requiere atención especial porque es lo que permite al sistema distinguir entre palabras genéricas y palabras realmente informativas dentro del corpus agrícola. Si un agricultor busca "control biológico del gusano cogollero", la palabra "del" aparece en prácticamente todos los fragmentos de la colección y por tanto no ayuda a discriminar cuáles son relevantes; en cambio, "cogollero" aparece solamente en unos pocos fragmentos específicos sobre esa plaga, lo que la convierte en un término altamente discriminativo. El IDF captura precisamente esta distinción mediante la fórmula:
+
+    IDF(qᵢ) = ln( (N − n(qᵢ) + 0.5) / (n(qᵢ) + 0.5) + 1 )
+
+Donde N es el número total de documentos en la colección y n(qᵢ) es el número de documentos que contienen el término qᵢ. El resultado es un valor alto para términos raros (pocas apariciones en la colección, alta capacidad discriminativa) y un valor cercano a cero para términos muy frecuentes (muchas apariciones, poca utilidad para distinguir documentos). En el sistema, el IDF determina directamente qué palabras de la consulta "pesan más" en la búsqueda: es la razón por la cual el sistema prioriza correctamente fragmentos que hablan específicamente de "gusano cogollero" sobre fragmentos que simplemente mencionan "control" de forma genérica.
+
+ 2.1.2. Interpretación de los componentes y parámetros
+
+Cada componente de la fórmula BM25 captura un aspecto específico de la relevancia documental fundamentado tanto teórica como empíricamente. El término IDF implementa el principio de que términos raros son más informativos que términos frecuentes: una palabra que aparece en pocos documentos de la colección discrimina mejor entre documentos relevantes e irrelevantes que una palabra ubicua. Por ejemplo, en un corpus agrícola, "gusano cogollero" tiene IDF alto (aparece en pocos documentos específicos sobre esta plaga), mientras que "cultivo" tiene IDF bajo (aparece en casi todos los documentos).
+
+El parámetro k₁, típicamente establecido entre 1.2 y 2.0, controla la saturación de frecuencia de término. Valores bajos de k₁ causan saturación rápida: un término apareciendo 3 veces no puntúa mucho más que apareciendo 2 veces. Valores altos permiten que frecuencias mayores sigan incrementando la puntuación. El parámetro b, típicamente 0.75, controla normalización por longitud de documento. Con b=1, documentos largos son fuertemente penalizados bajo el razonamiento de que un término en documento largo es menos significativo que el mismo término en documento corto. Con b=0, la longitud no se considera. El valor estándar b=0.75 representa un balance empíricamente validado.
+
+ 2.1.3. Implementaciones y optimizaciones
+
+Las implementaciones prácticas de BM25 utilizan estructuras de datos especializadas para garantizar tiempos de respuesta compatibles con aplicaciones interactivas. El índice invertido constituye la estructura fundamental: para cada término del vocabulario, almacena una lista de postings indicando qué documentos contienen ese término y con qué frecuencia. Durante la búsqueda, se recuperan las listas de postings correspondientes a términos de la consulta y se procesan para calcular puntuaciones BM25 de documentos candidatos (Zobel y Moffat, 2006).
+
+Motores de búsqueda de alto rendimiento como Elasticsearch, Apache Lucene, y Tantivy implementan optimizaciones sofisticadas incluyendo compresión de listas de postings, procesamiento SIMD (Single Instruction Multiple Data) para cálculos vectorizados, y estrategias de poda que evitan calcular puntuaciones para documentos improbables de alcanzar posiciones superiores del ranking. Estas optimizaciones permiten búsquedas sub-milisegundo en colecciones de millones de documentos en hardware modesto, habilitando aplicaciones de tiempo real con latencias imperceptibles para usuarios.
+
+ 2.2. Fortalezas y Limitaciones de la Búsqueda Léxica
+
+ 2.2.1. Ventajas de coincidencia exacta de términos
+
+La búsqueda léxica mediante BM25 funciona especialmente bien en escenarios donde la coincidencia exacta de términos es crítica para la relevancia. Consultas conteniendo nombres propios, identificadores técnicos, códigos, números, siglas, o terminología especializada se benefician de métodos que localizan documentos con estos términos específicos literalmente presentes. En dominios técnicos como agricultura, términos como "Spodoptera frugiperda" (nombre científico del gusano cogollero), "NPK 17-17-17" (formulación de fertilizante), o "SAGARPA" (sigla institucional) requieren coincidencia exacta que BM25 proporciona eficientemente.
+
+Además, BM25 ofrece ventajas de interpretabilidad y explicabilidad. Los términos que contribuyen a la puntuación de un documento son explícitamente identificables, permitiendo comprender por qué un documento fue considerado relevante. Esta transparencia facilita depuración de sistemas, ajuste de parámetros, y construcción de interfaces que expliquen resultados a usuarios. En contraste, aproximaciones neurales operan como "cajas negras" donde las razones de relevancia son opacas.
+
+ 2.2.2. El problema de la brecha léxica
+
+La limitación fundamental de métodos léxicos reside en su incapacidad para capturar relevancia cuando consulta y documento expresan el mismo concepto mediante vocabulario diferente. Este fenómeno, denominado brecha léxica o vocabulary mismatch, ocurre cuando usuarios emplean terminología distinta a la utilizada en documentos relevantes. En el dominio agrícola, un usuario podría buscar "hojas amarillas en maíz" mientras documentos relevantes discuten "clorosis foliar" o "deficiencia de nitrógeno"—conceptos semánticamente relacionados pero léxicamente disjuntos.
+
+Estudios empíricos han cuantificado la magnitud de este problema. Furnas et al. (1987) documentaron que dos personas describen el mismo concepto con la misma palabra menos del 20% de las ocasiones, lo que hace que los sistemas puramente léxicos fallen en recuperar la mayoría de documentos relevantes cuando existe variabilidad terminológica. Técnicas de expansión de consulta mediante tesauros o retroalimentación de relevancia ayudan parcialmente, pero requieren recursos lingüísticos del dominio que muchas veces no están disponibles o son costosos de construir.
+
+ 2.2.3. Aplicaciones y dominios favorables
+
+A pesar de sus limitaciones, BM25 permanece como componente esencial en sistemas de recuperación de información de producción. Lin et al. (2021) mostraron que BM25 supera o iguala a métodos neurales densos en múltiples benchmarks cuando las consultas contienen términos específicos del dominio. En sistemas híbridos que combinan múltiples aproximaciones, BM25 típicamente contribuye resultados de alta precisión para consultas con vocabulario técnico, complementando aproximaciones semánticas que capturan relevancia conceptual. Esta complementariedad fundamenta el diseño híbrido adoptado en esta investigación.
+
+ 3. Representaciones Distribuidas y Modelos de Lenguaje Neural
+
+La llegada del aprendizaje profundo ha transformado radicalmente el procesamiento del lenguaje natural, incluyendo la recuperación de información. Los modelos neurales aprenden representaciones vectoriales densas que capturan propiedades semánticas y sintácticas del lenguaje, superando la limitación fundamental de métodos léxicos al permitir comparaciones de significado más allá de coincidencias de palabras exactas.
+
+ 3.1. Embeddings de Palabras
+
+ 3.1.1. Word2Vec y los embeddings estáticos
+
+Mikolov et al. (2013) marcaron un punto de inflexión al demostrar que redes neuronales poco profundas entrenadas en tareas de predicción de contexto lingüístico aprenden representaciones vectoriales de palabras con propiedades semánticas notables. El modelo Word2Vec, en sus arquitecturas Skip-gram y Continuous Bag of Words (CBOW), entrena vectores de típicamente 100-300 dimensiones que codifican similitud semántica mediante proximidad geométrica en el espacio vectorial.
+
+La propiedad más célebre de estos embeddings es su capacidad para capturar relaciones analógicas mediante operaciones aritméticas. El ejemplo canónico vector("rey") - vector("hombre") + vector("mujer") ≈ vector("reina") ilustra cómo el espacio vectorial codifica la relación "género" como una dirección consistente a través de múltiples pares de palabras. En español, embeddings entrenados en corpus hispanos exhiben propiedades análogas: vector("España") - vector("Madrid") + vector("México") ≈ vector("Ciudad de México"), capturando la relación "capital de".
+
+ 3.1.2. Modelos pre-entrenados para español
+
+Para idioma español, varios proyectos han desarrollado embeddings de palabras pre-entrenados en corpus hispanohablantes. Los Spanish Billion Words Embeddings entrenados por Cardellino (2019) utilizando el Spanish Billion Word Corpus ofrecen vectores disponibles públicamente entrenados en textos españoles diversos. El proyecto FastText de Facebook (Grave et al., 2018) proporciona embeddings para 157 idiomas incluyendo español, entrenados en Wikipedia y Common Crawl. Estos recursos permiten inicializar sistemas de procesamiento de lenguaje natural en español sin requerir entrenamiento desde cero.
+
+Las investigaciones comparativas han demostrado que embeddings entrenados específicamente en español capturan particularidades lingüísticas mejor que embeddings multilingües o traducidos del inglés. Fenómenos como género gramatical, conjugaciones verbales complejas, y variación dialectal entre español peninsular y latinoamericano se reflejan de manera distinta en embeddings según el corpus de entrenamiento utilizado. Para aplicaciones en dominios específicos como agricultura mexicana, la disponibilidad de textos técnicos en español de México en el corpus de entrenamiento puede impactar de manera notable la calidad de representaciones para términos del dominio.
+
+ 3.1.3. Limitaciones de embeddings estáticos
+
+Los embeddings de palabras como Word2Vec asignan un único vector a cada palabra del vocabulario, independientemente del contexto de uso. Esta característica, denominada representación estática, es una limitación significativa para palabras polisémicas con múltiples significados dependientes del contexto. La palabra "banco" en español puede referir a institución financiera, asiento, o formación geológica submarina; un embedding estático debe colapsar estos significados divergentes en un único vector, lo cual necesariamente compromete la representación de al menos algunos sentidos.
+
+Además, los embeddings de palabras representan tokens individuales, no secuencias completas. Convertir representaciones de palabras en representaciones de oraciones, párrafos o documentos requiere estrategias de composición que típicamente sacrifican información. El promedio simple de embeddings de palabras constituyentes produce representaciones documento-nivel pero pierde información sobre orden de palabras y estructura sintáctica. Estas limitaciones motivaron el desarrollo de arquitecturas más sofisticadas capaces de generar representaciones contextualizadas.
+
+ 3.2. Arquitecturas Transformer y Mecanismos de Atención
+
+ 3.2.1. El mecanismo de auto-atención
+
+La arquitectura Transformer, introducida por Vaswani et al. (2017) en el influyente artículo "Attention Is All You Need", revolucionó el procesamiento de secuencias al abandonar completamente arquitecturas recurrentes y convolucionales en favor de mecanismos de atención que procesan secuencias completas de manera simultánea. El componente central es la auto-atención (self-attention), que computa para cada posición en una secuencia una representación contextualizada como combinación ponderada de todas las posiciones, donde los pesos de atención capturan relaciones relevantes entre palabras.
+
+La siguiente fórmula describe la operación central que le permite al modelo Sentence-BERT, el segundo motor de búsqueda del sistema, comprender el significado de las palabras según su contexto. En la práctica, esto es lo que permite al sistema entender que cuando un agricultor escribe "hojas amarillas en mi parcela", está describiendo el mismo problema que un documento técnico que habla de "clorosis foliar por deficiencia de nitrógeno", aunque no comparten ni una sola palabra en común. Esta capacidad de comprensión contextual es posible porque el mecanismo de atención permite que cada palabra en una oración considere a todas las demás para determinar su significado: la palabra "banco" adquiere un sentido cuando aparece junto a "crédito" y otro distinto cuando aparece junto a "parque". Formalmente, dada una secuencia de vectores de entrada X = [x₁, x₂, ..., xₙ], la auto-atención proyecta cada posición en tres espacios (queries, keys, values) mediante matrices de proyección aprendidas, luego calcula:
+
+    Atención(Q, K, V) = softmax( (Q × Kᵀ) / √dₖ ) × V
+
+Esta fórmula describe un proceso en tres momentos. Cada palabra "pregunta" (query) a todas las demás qué tan relacionadas están con ella, comparando vectores mediante producto punto. Esas medidas de relación se normalizan con la función softmax para obtener pesos que suman 1 y determinan cuánta atención presta cada palabra a las demás. Con esos pesos se combinan los vectores de valor (value) de todas las posiciones, produciendo una nueva representación de cada palabra que ya incorpora información de toda la oración. El escalado por √dₖ es un ajuste técnico que previene que los valores numéricos se vuelvan excesivamente grandes cuando las dimensiones aumentan, lo cual desestabilizaría el proceso de aprendizaje del modelo. La arquitectura Transformer utiliza multi-head attention, ejecutando múltiples mecanismos de atención de manera simultánea con diferentes proyecciones para capturar diversos tipos de relaciones.
+
+En el sistema desarrollado, este es el mecanismo que permite al modelo Sentence-BERT generar los vectores numéricos (embeddings) con los que el sistema representa tanto las consultas como los fragmentos documentales. Cuando el sistema compara la consulta del agricultor con miles de fragmentos técnicos para encontrar los más relevantes semánticamente, está aprovechando las representaciones contextualizadas que este mecanismo de atención produce.
+
+ 3.2.2. BERT y pre-entrenamiento bidireccional
+
+BERT (Bidirectional Encoder Representations from Transformers), introducido por Devlin et al. (2019), demostró el poder de pre-entrenar modelos Transformer muy grandes en tareas de predicción de lenguaje antes de especializarlos para tareas específicas. El pre-entrenamiento bidireccional de BERT, donde el modelo predice palabras enmascaradas considerando contexto de ambos lados, produce representaciones contextualizadas profundas donde la representación de cada palabra incorpora información de toda la oración.
+
+El procedimiento de pre-entrenamiento utiliza dos objetivos complementarios. Masked Language Modeling (MLM) enmascara aleatoriamente ~15% de tokens de entrada, requiriendo que el modelo los prediga basándose en contexto bilateral no enmascarado. Next Sentence Prediction (NSP) presenta pares de oraciones y requiere que el modelo prediga si la segunda sigue naturalmente a la primera en el texto original o es una oración aleatoria. Tras pre-entrenamiento en corpus masivos como Wikipedia y BookCorpus, los pesos aprendidos se utilizan como inicialización para fine-tuning en tareas específicas con datasets supervisados típicamente más pequeños.
+
+ 3.2.3. Modelos para español: BETO y alternativas multilingües
+
+Para procesamiento de lenguaje natural en español, varios modelos BERT han sido desarrollados o adaptados. BETO (Cañete et al., 2020), entrenado exclusivamente en corpus español, ha demostrado rendimiento competitivo en benchmarks de comprensión del lenguaje español. Multilingual BERT (mBERT), entrenado simultáneamente en 104 idiomas incluyendo español, ofrece transferencia cross-lingual permitiendo aplicar modelos entrenados en un idioma a otros con rendimiento razonable. XLM-RoBERTa (Conneau et al., 2020) proporciona un modelo multilingüe más grande y mejor optimizado que ha establecido nuevos estados del arte en múltiples tareas multilingües.
+
+La elección entre modelos monolingües como BETO y modelos multilingües implica trade-offs. Modelos monolingües típicamente capturan mejor particularidades específicas del idioma objetivo, pero requieren datos de fine-tuning en ese idioma. Modelos multilingües permiten transferencia desde idiomas con más recursos (particularmente inglés), pero pueden subrepresentar fenómenos específicos de idiomas menos representados en el corpus de pre-entrenamiento. Para aplicaciones en español técnico agrícola, la disponibilidad de datos de fine-tuning en el dominio específico frecuentemente determina la elección óptima.
+
+ 3.3. Sentence-BERT y Embeddings de Oraciones
+
+ 3.3.1. Arquitectura siamesa para similitud semántica
+
+BERT original, aunque genera representaciones contextualizadas de alta calidad, no está diseñado para comparación eficiente de oraciones. Comparar similitud de dos oraciones requiere procesar ambas juntas como entrada al modelo, un procedimiento que escala cuadráticamente con el número de oraciones a comparar, algo prohibitivo para búsqueda en colecciones de miles o millones de documentos. Sentence-BERT (SBERT), desarrollado por Reimers y Gurevych (2019), aborda esta limitación mediante una arquitectura siamesa que modifica el entrenamiento para producir embeddings de oraciones independientes comparables mediante similitud coseno.
+
+La arquitectura SBERT procesa cada oración independientemente a través de BERT, extrae una representación fija (típicamente mediante pooling sobre tokens), y entrena para que oraciones semánticamente similares tengan representaciones vectoriales cercanas. El entrenamiento utiliza datasets de inferencia de lenguaje natural (NLI) donde pares de oraciones están etiquetados como entailment (similares), contradiction (opuestos), o neutral. La función objetivo optimiza para que pares entailment tengan alta similitud coseno, pares contradiction baja similitud, y pares neutral similitud intermedia.
+
+ 3.3.2. Modelos multilingües y rendimiento en español
+
+Para aplicaciones multilingües incluyendo español, modelos como paraphrase-multilingual-MiniLM-L12-v2 ofrecen embeddings de oraciones de alta calidad en más de 50 idiomas. Este modelo, parte de la librería sentence-transformers de HuggingFace, utiliza destilación de conocimiento desde modelos más grandes para producir embeddings de 384 dimensiones con rendimiento cercano a modelos más grandes pero con requerimientos computacionales significativamente menores.
+
+Evaluaciones en benchmarks multilingües han demostrado que estos modelos capturan efectivamente similitud semántica en español, aunque con rendimiento ligeramente inferior al observado en inglés, el idioma con mayor representación en datos de entrenamiento. Para dominios especializados, la literatura sugiere que fine-tuning adicional con datos del dominio puede mejorar de manera clara el rendimiento. Sin embargo, para dominios como agricultura técnica en español, la escasez de datasets de similitud semántica anotados es una limitación práctica.
+
+ 3.3.3. Aplicación a recuperación de información
+
+En contextos de recuperación de información, SBERT habilita búsqueda semántica eficiente mediante el siguiente procedimiento: durante indexación offline, cada documento (o fragmento documental) se procesa a través del modelo para generar su embedding, que se almacena en una base de datos vectorial. Durante búsqueda, la consulta del usuario se procesa para obtener su embedding, luego se recuperan documentos cuyos embeddings son más similares al de la consulta mediante búsqueda de vecinos más cercanos. Estructuras de datos especializadas como índices HNSW (Hierarchical Navigable Small World) permiten búsqueda aproximada de vecinos más cercanos con complejidad logarítmica, habilitando búsquedas sub-segundo en colecciones de millones de vectores (Malkov y Yashunin, 2020).
+
+ 4. Arquitecturas RAG y Sistemas Híbridos de Recuperación
+
+La integración de técnicas de recuperación de información con modelos de lenguaje ha dado lugar a la Recuperación Aumentada por Generación (RAG), que combina la capacidad de búsqueda en bases de conocimiento con la fluencia expresiva de modelos generativos. En dominios especializados donde la precisión y la citación de fuentes son críticas, las variantes de RAG que priorizan recuperación sobre generación ofrecen un balance más útil y más confiable.
+
+ 4.1. Fundamentos de Recuperación Aumentada
+
+ 4.1.1. Motivación y arquitectura general
+
+Los modelos de lenguaje grandes, aunque capaces de generar texto fluido y coherente, presentan limitaciones importantes para aplicaciones que requieren precisión. Su conocimiento está congelado al momento de entrenamiento sin capacidad de actualización dinámica; exhiben propensión a "alucinar" información plausible pero incorrecta; y carecen de mecanismos para citar fuentes verificables. Arquitecturas RAG abordan estas limitaciones aumentando la generación con un componente de recuperación que provee al modelo con fragmentos documentales relevantes como contexto adicional (Lewis et al., 2020).
+
+El flujo operacional básico de un sistema RAG es: dado una consulta del usuario, un componente retriever identifica documentos o pasajes relevantes de una colección; estos pasajes recuperados se concatenan con la consulta como contexto expandido; un componente generator (típicamente un modelo de lenguaje) produce una respuesta condicionada tanto en la consulta como en los pasajes recuperados. La respuesta generada idealmente sintetiza información de los pasajes de manera fluida, fundamentando cada afirmación en evidencia documental recuperable.
+
+ 4.1.2. Dense Passage Retrieval y recuperación neural
+
+Dense Passage Retrieval (DPR), desarrollado por Karpukhin et al. (2020), demostró que codificadores neurales fine-tuned específicamente para recuperación pueden superar métodos léxicos tradicionales en benchmarks de pregunta-respuesta. DPR utiliza dos modelos BERT independientes: un codificador de consultas que transforma preguntas en vectores densos, y un codificador de pasajes que transforma documentos en vectores del mismo espacio. La similitud consulta-documento se calcula como producto punto de sus embeddings.
+
+El entrenamiento de DPR utiliza una función objetivo contrastiva que maximiza similitud entre consultas y pasajes relevantes mientras minimiza similitud con pasajes irrelevantes. Los negativos "difíciles" (hard negatives), es decir, pasajes relevantes para otras consultas o pasajes léxicamente similares pero semánticamente irrelevantes, son cruciales para que el modelo aprenda discriminación fina. Tras entrenamiento, los embeddings de todos los pasajes de la colección se pre-computan y almacenan, lo que permite búsqueda eficiente en tiempo de consulta mediante estructuras de índice vectorial.
+
+ 4.1.3. RAG de extracción versus generación
+
+Para dominios especializados donde la precisión es crítica y los errores pueden tener consecuencias negativas, como decisiones agrícolas basadas en información incorrecta, una variante conservadora de RAG enfatiza retornar directamente los fragmentos recuperados en lugar de sintetizar respuestas generativas. Esta aproximación, que denominamos "RAG de extracción", prioriza trazabilidad y verificabilidad sobre fluencia sintética. Los resultados consisten en fragmentos textuales de documentos fuente con metadatos de citación, lo que permite a los usuarios verificar la información en su contexto original.
+
+Esta decisión arquitectónica implica trade-offs significativos. La extracción directa elimina el riesgo de alucinaciones generativas y proporciona citaciones verificables, pero puede resultar en respuestas menos cohesivas cuando información relevante está distribuida en múltiples fragmentos. Usuarios deben sintetizar mentalmente información de varios fragmentos en lugar de recibir una respuesta integrada. Para el sistema implementado en esta investigación, la priorización de exactitud sobre conveniencia sintética refleja los requerimientos del dominio agrícola donde recomendaciones incorrectas pueden resultar en pérdidas económicas.
+
+ 4.2. Fusión de Resultados Léxicos y Semánticos
+
+ 4.2.1. Complementariedad de enfoques de búsqueda
+
+La investigación comparativa entre recuperación léxica y semántica ha documentado que ningún enfoque domina uniformemente: cada uno exhibe fortalezas en diferentes escenarios. La revisión sistemática de Lin et al. (2021) evaluó BM25 versus métodos densos en más de 15 benchmarks, encontrando que BM25 supera a métodos neurales cuando consultas contienen entidades nombradas raras, términos técnicos específicos, o vocabulario fuera de distribución de entrenamiento. En cambio, los métodos densos superan cuando la relevancia depende de similitud conceptual expresable mediante vocabulario diverso.
+
+Esta complementariedad es lo que motiva los sistemas híbridos que combinan ambos motores y fusionan sus resultados. La idea de fondo es que si un documento es relevante, al menos uno de los dos enfoques debería encontrarlo. Al fusionar resultados, el sistema captura documentos bien posicionados por cualquiera de los componentes, reduciendo las debilidades de cada uno y aprovechando lo mejor de ambos.
+
+ 4.2.2. Reciprocal Rank Fusion
+
+Reciprocal Rank Fusion (RRF), introducido por Cormack, Clarke y Büttcher (2009), proporciona el método mediante el cual el sistema desarrollado resuelve un problema práctico fundamental: ¿cómo combinar los resultados de dos motores de búsqueda que funcionan de manera completamente distinta y producen puntuaciones en escalas incomparables? Cuando el agricultor envía una consulta, BM25 retorna una lista de fragmentos ordenados por coincidencia de palabras, y Sentence-BERT retorna otra lista ordenada por similitud de significado. Ambas listas pueden contener fragmentos relevantes que la otra omitió, y sus puntuaciones numéricas no son directamente comparables porque se calculan con métodos diferentes. RRF resuelve este dilema ignorando las puntuaciones absolutas y utilizando únicamente la posición que cada fragmento ocupa en cada lista. La fórmula es:
+
+    RRF(d) = Σ para cada sistema r en R de: 1 / (k + posiciónᵣ(d))
+
+La lógica de la fórmula es directa: por cada sistema de búsqueda que incluye un fragmento en sus resultados, se le asigna una contribución inversamente proporcional a su posición; un fragmento en la posición 1 recibe una contribución claramente mayor que uno en la posición 20. Estas contribuciones se suman para todos los sistemas. Así, un fragmento que ambos motores colocan en posiciones altas acumula una puntuación RRF elevada, lo cual indica consenso entre ambos enfoques de búsqueda sobre su relevancia. Incluso cuando solo uno de los motores identifica un fragmento, por ejemplo, porque BM25 lo encuentra por coincidencia exacta de un nombre técnico y Sentence-BERT no lo detecta, ese fragmento también recibe puntuación y puede aparecer en los resultados finales, con lo que se recupera información relevante que un sistema individual habría perdido.
+
+Donde R es el conjunto de sistemas componentes, rankᵣ(d) es la posición del documento d en el ranking del sistema r (con rankᵣ(d) = ∞ si d no aparece en ese ranking), y k es una constante típicamente establecida en 60. Esta formulación pondera contribuciones de cada sistema basándose únicamente en posiciones de ranking, evitando problemas de incomparabilidad cuando sistemas producen puntuaciones en escalas diferentes. RRF es el mecanismo concreto que el sistema usa para fusionar los dos tipos de búsqueda, y entender cómo funciona permite ver por qué el enfoque híbrido produce mejores resultados que cualquiera de sus componentes por separado.
+
+Benham et al. (2017) evaluaron RRF contra alternativas de fusión incluyendo CombSUM (suma de puntuaciones normalizadas), CombMNZ (CombSUM multiplicado por número de sistemas que retornan el documento), y métodos de fusión aprendida. RRF exhibió robustez superior, particularmente cuando sistemas componentes producen distribuciones de puntuación divergentes, precisamente el caso cuando se fusionan BM25 (distribución de puntuaciones típicamente lognormal) con recuperación vectorial (distribución de similitudes coseno típicamente concentrada cerca de 1).
+
+ 4.2.3. Estrategias de re-ranking y refinamiento
+
+Más allá de fusión básica, sistemas sofisticados implementan etapas adicionales de re-ranking que refinan el ordenamiento inicial utilizando señales adicionales. Para el dominio agrícola, una señal particularmente informativa es la coincidencia de entidades del dominio: si la consulta menciona "gusano cogollero" y "maíz", fragmentos que contienen ambas entidades deberían priorizarse sobre aquellos que mencionan solo una o ninguna. Este re-ranking por entidades puede implementarse multiplicando puntuaciones base por factores de boost proporcionales al número de entidades coincidentes.
+
+Otras estrategias de re-ranking incluyen modelos cross-encoder que procesan pares (consulta, documento) conjuntamente para producir puntuaciones de relevancia más precisas pero computacionalmente más costosas. Estos modelos típicamente se aplican solo a los top-K documentos del ranking inicial para mantener latencia aceptable. La tensión entre precisión de ranking y latencia de respuesta constituye un trade-off arquitectónico fundamental que sistemas de producción deben balancear cuidadosamente.
+
+ 5. Procesamiento de Lenguaje Natural en Dominios Especializados
+
+La aplicación de técnicas de procesamiento de lenguaje natural a dominios técnicos especializados como agricultura enfrenta desafíos particulares derivados de vocabulario especializado, escasez de recursos de entrenamiento, y relaciones semánticas específicas del dominio. La identificación de entidades del dominio mediante reconocimiento de entidades nombradas (NER) es una técnica particularmente valiosa para enriquecer sistemas de recuperación en contextos especializados.
+
+ 5.1. Reconocimiento de Entidades Nombradas para Agricultura
+
+ 5.1.1. Taxonomías de entidades del dominio agrícola
+
+El reconocimiento de entidades nombradas (NER) identifica y clasifica menciones de entidades de categorías predefinidas en texto no estructurado. Mientras que NER general típicamente aborda categorías como personas, organizaciones, ubicaciones, fechas y cantidades monetarias, dominios especializados requieren taxonomías expandidas. Para el dominio agrícola, categorías relevantes incluyen: cultivos (maíz, trigo, frijol, calabaza, chile), plagas (gusano cogollero, pulgón, trips, gallina ciega), enfermedades (roya, carbón, tizón, marchitez), nutrientes (nitrógeno, fósforo, potasio, hierro, zinc), prácticas de manejo (labranza, rotación, acolchado, fertilización), tipos de suelo (arcilloso, franco, arenoso, vertisol), y agroquímicos (atrazina, glifosato, clorpirifós).
+
+La construcción de taxonomías de entidades para dominios especializados requiere colaboración con expertos del dominio para identificar categorías relevantes y compilar diccionarios de términos. Para el dominio agrícola mexicano, la compilación debe incluir nombres científicos formales (Zea mays, Phaseolus vulgaris, Spodoptera frugiperda), nombres comunes estándar (maíz, frijol, gusano cogollero), y variantes regionales (elote, ejote, palomilla del maíz). La sinonimia extensiva característica del vocabulario agrícola, donde un mismo organismo o práctica puede denominarse de múltiples formas, incrementa la complejidad de NER exhaustivo.
+
+ 5.1.2. Enfoques de NER: basados en reglas versus aprendidos
+
+Los sistemas de NER pueden implementarse mediante enfoques basados en reglas utilizando diccionarios y patrones, o mediante modelos de aprendizaje automático entrenados en datos anotados. Enfoques basados en reglas utilizan matcheo de diccionarios complementado con reglas contextuales para desambiguación. Por ejemplo, un diccionario de nutrientes puede contener "hierro", pero reglas contextuales distinguen entre "deficiencia de hierro" (referencia al micronutriente) y "herramienta de hierro" (referencia al metal). Herramientas como spaCy proporcionan APIs para definir reglas de matcheo sofisticadas combinando patrones léxicos, gramaticales y semánticos.
+
+Enfoques basados en aprendizaje automático, particularmente modelos BERT fine-tuned para clasificación a nivel de token, pueden capturar patrones más sutiles que reglas manuales, pero requieren datasets anotados para entrenamiento. La escasez de corpus NER anotados para agricultura en español constituye una limitación práctica significativa. Estrategias de transferencia desde dominios relacionados (biomedicina, química) o idiomas con más recursos (inglés) proporcionan soluciones parciales, aunque con degradación de rendimiento esperable por divergencias de dominio e idioma.
+
+ 5.1.3. Integración de NER en sistemas de recuperación
+
+Para los sistemas de recuperación de información, NER sirve múltiples propósitos arquitectónicos que enriquecen tanto la indexación como la búsqueda. Durante indexación, NER etiqueta cada fragmento documental con las entidades mencionadas, generando metadatos estructurados que habilitan filtrado facetado posterior. Un fragmento sobre control del gusano cogollero en maíz mediante aplicación de insecticida biológico Bacillus thuringiensis quedaría etiquetado con entidades {cultivo: maíz, plaga: gusano cogollero, agroquímico: Bacillus thuringiensis, práctica: control biológico}.
+
+Durante búsqueda, NER aplicado a la consulta identifica entidades mencionadas explícitamente que informan re-ranking. Si la consulta "control del gusano cogollero en maíz" produce entidades {plaga: gusano cogollero, cultivo: maíz}, fragmentos que contengan ambas entidades reciben boost de relevancia sobre fragmentos que contienen solo una o ninguna. Este re-ranking por entidades implementa un principio intuitivo: fragmentos que abordan específicamente las entidades mencionadas por el usuario probablemente son más relevantes que fragmentos tangencialmente relacionados.
+
+ 5.2. Procesamiento de Español Técnico Agrícola
+
+ 5.2.1. Particularidades del lenguaje técnico agrícola
+
+El español técnico agrícola exhibe características lingüísticas específicas que impactan el diseño de sistemas de procesamiento de lenguaje natural. El vocabulario combina terminología científica latina (Zea mays, Phaseolus vulgaris, Cucurbita maxima), préstamos del inglés frecuentemente no adaptados ortográficamente (mulching, pivot, stress), vocabulario técnico español especializado (escardilla, camellon, barbecho), y variantes regionales que difieren significativamente entre países hispanohablantes y regiones dentro de un mismo país.
+
+La variación regional presenta desafíos particulares para sistemas diseñados para usuarios mexicanos. Términos comunes en México pueden ser desconocidos en España o Argentina y viceversa. El "elote" mexicano es "mazorca tierna" o "choclo" en otros países; el "ejote" mexicano es "judía verde" o "vaina" en otras regiones. Un sistema efectivo debe manejar estas variantes, idealmente normalizándolas a formas canónicas o expandiendo consultas para cubrir sinónimos regionales.
+
+ 5.2.2. Recursos lingüísticos disponibles para español agrícola
+
+Los recursos de procesamiento de lenguaje natural para español técnico agrícola son significativamente más escasos que para dominios generales o para inglés. No existen, hasta donde conocemos, corpus de entrenamiento NER anotados específicamente para agricultura en español, ni bancos de pruebas estándar para evaluación de sistemas de recuperación de información agrícola hispanohablante. Esta escasez de recursos contrasta con la abundancia de documentación técnica agrícola en español producida por instituciones como INIFAP, FAO, CIMMYT, universidades agropecuarias, y ministerios de agricultura de múltiples países hispanohablantes.
+
+Ante esta escasez de recursos supervisados, estrategias alternativas incluyen: compilación de diccionarios de entidades del dominio a partir de fuentes como tesauros agrícolas de FAO (AGROVOC), glosarios de especies de bases de datos como el Sistema Integrado de Información Taxonómica (SIIT), y extracción semi-automática de términos de corpus técnicos mediante métodos de detección de terminología; transferencia desde recursos en inglés mediante traducción o alineamiento de embeddings multilingües; y anotación de corpus pequeños para fine-tuning en el dominio.
+
+ 5.2.3. Adaptación de modelos pre-entrenados
+
+Las técnicas de adaptación de dominio (domain adaptation) permiten especializar modelos pre-entrenados en corpus generales para dominios específicos mediante entrenamiento adicional. La aproximación más directa es continuar el pre-entrenamiento de un modelo BERT general en corpus del dominio objetivo sin supervisión, un procedimiento conocido como Domain-Adaptive Pre-Training (DAPT). Gururangan et al. (2020) demostraron que DAPT mejora consistentemente el rendimiento en tareas del dominio incluso con corpus relativamente pequeños.
+
+Para español agrícola, DAPT podría implementarse continuando pre-entrenamiento de modelos como BETO o mBERT en un corpus compilado de publicaciones técnicas agrícolas, manuales INIFAP, tesis agronómicas, y artículos de revistas como Agrociencia o Terra Latinoamericana. Aunque esta investigación no implementa DAPT completo debido a requerimientos computacionales, la posibilidad de futuras mejoras mediante esta técnica informa el diseño arquitectónico del sistema.
+
+ 6. Los Sistemas Agrícolas como Dominio de Aplicación
+
+Los sistemas agrícolas son el dominio de aplicación donde se valida el sistema de recuperación de información desarrollado. Comprender la complejidad de estos sistemas, que abarca aspectos técnicos agronómicos, ecológicos, económicos y culturales, es esencial para diseñar un sistema de recuperación que sirva efectivamente las necesidades informativas de sus practicantes.
+
+ 6.1. Caracterización de los Sistemas Agrícolas
+
+ 6.1.1. Diversidad de cultivos y sistemas productivos
+
+La agricultura mexicana se caracteriza por una amplia diversidad de sistemas de cultivo que van desde monocultivos tecnificados hasta policultivos tradicionales, pasando por sistemas agroforestales y cultivos de especialidad. Entre los cultivos principales se encuentran maíz (Zea mays), frijol (Phaseolus vulgaris), calabaza (Cucurbita spp.), trigo (Triticum aestivum), sorgo (Sorghum bicolor), chile (Capsicum spp.), tomate (Solanum lycopersicum), café (Coffea arabica), caña de azúcar (Saccharum officinarum), aguacate (Persea americana), y una vasta gama de frutales, hortalizas y cultivos industriales. La asociación de cultivos exhibe complementariedad funcional: por ejemplo, las leguminosas fijan nitrógeno atmosférico mediante simbiosis con bacterias Rhizobium, enriqueciendo el suelo para cultivos asociados; las cucurbitáceas cubren el suelo con follaje extenso, suprimiendo arvenses y reduciendo evaporación.
+
+La composición específica de los sistemas productivos varía regionalmente, reflejando adaptaciones a condiciones edafoclimáticas locales, disponibilidad de recursos hídricos, y demandas del mercado. Esta diversidad propia de la agricultura de pequeña escala la distingue de los monocultivos industriales y contribuye tanto a la estabilidad productiva como a la riqueza nutricional y económica del sector.
+
+ 6.1.2. Distribución geográfica y variantes regionales
+
+Los diversos sistemas de cultivo se practican a lo largo y ancho de México, con condiciones que varían drásticamente entre regiones. En México, las principales zonas agrícolas incluyen los estados del sureste (Yucatán, Quintana Roo, Campeche, Chiapas, Tabasco), centro-sur (Oaxaca, Puebla, Veracruz, Guerrero), altiplano central (Estado de México, Tlaxcala, Hidalgo), el Bajío (Guanajuato, Querétaro, Aguascalientes), y el noroeste (Sinaloa, Sonora). Cada región ha desarrollado sistemas productivos adaptados a sus condiciones particulares: agricultura de temporal en zonas de secano, agricultura de riego en distritos tecnificados, sistemas agroforestales en zonas tropicales, y cultivos de ladera en zonas montañosas.
+
+Las variantes regionales implican diferencias significativas en especies y variedades cultivadas, calendarios agrícolas, prácticas de manejo, e insumos disponibles. Un sistema de recuperación de información efectivo debe poder abordar esta heterogeneidad, recuperando información pertinente al contexto específico del usuario. Una consulta sobre "siembra de maíz" de un agricultor yucateco requiere información diferente—en términos de fechas, variedades, densidades, y prácticas asociadas—que la misma consulta de un agricultor sinaloense o tlaxcalteca.
+
+ 6.1.3. Conocimiento tradicional y sistemas de manejo
+
+El manejo exitoso de los sistemas agrícolas se sustenta tanto en conocimiento técnico formal como en sistemas de conocimiento tradicional transmitidos intergeneracionalmente mediante práctica, observación y enseñanza oral. Investigaciones como la de González Jácome (2008) documentan decenas de aspectos de conocimiento que agricultores expertos dominan, abarcando desde selección de sitios considerando topografía, exposición solar, profundidad del suelo y drenaje, hasta indicadores biológicos de preparación para siembra, técnicas específicas de arreglo espacial de cultivos que maximizan complementariedades, sistemas clasificatorios de suelos basados en características sensoriales como color, textura y sabor que correlacionan con propiedades químicas medibles en laboratorio, y conocimiento fenológico detallado sobre secuenciación de etapas de desarrollo de cada cultivo y sus requerimientos en cada fase.
+
+Este conocimiento, aunque muy valioso, enfrenta amenazas de erosión debido a migración rural, envejecimiento de agricultores experimentados, y desinterés de generaciones jóvenes en prácticas agrícolas. Un sistema tecnológico que facilite acceso a información técnica puede complementar, no reemplazar, la transmisión de conocimiento tradicional, y ofrecer recursos para agricultores que no tienen acceso directo a mentores experimentados o que buscan información sobre prácticas con las cuales no están familiarizados.
+
+ 6.2. Necesidades de Información de los Agricultores
+
+ 6.2.1. Tipos de consultas agrícolas frecuentes
+
+El análisis de servicios de extensión agrícola y líneas de consulta permite caracterizar los tipos de preguntas que agricultores formulan frecuentemente. Las categorías principales incluyen: diagnóstico de problemas ("hojas amarillas en maíz", "manchas en hojas de frijol", "plantas marchitas"), que requieren información sobre identificación de causas y síntomas; manejo de fertilización ("cuánto fertilizante aplicar", "momento de fertilización", "tipo de abono para mi cultivo"), donde las respuestas dependen en buena medida del contexto específico de suelo y cultivo; control de plagas y enfermedades ("cómo controlar gusano cogollero", "tratamiento para roya del frijol"), donde la información sobre métodos de control, biológicos, culturales y químicos, y su efectividad es crítica; prácticas culturales ("cuándo sembrar", "distancia entre plantas", "cómo preparar el terreno"), que requieren información técnica sobre procedimientos específicos; y adaptación a condiciones adversas ("qué hacer en sequía", "variedades resistentes a heladas"), particularmente relevantes en un contexto de variabilidad climática creciente.
+
+ 6.2.2. Brecha entre formulación de consultas y vocabulario técnico
+
+Un desafío central para sistemas de recuperación en este dominio es la brecha entre cómo agricultores formulan sus consultas y cómo la información está expresada en documentación técnica. Los agricultores típicamente utilizan lenguaje descriptivo coloquial ("hojas amarillas"), mientras que documentos técnicos emplean terminología especializada ("clorosis foliar", "deficiencia de nitrógeno"). Un agricultor puede preguntar "plantas que no crecen" cuando la documentación discute "estrés nutricional" o "fitotoxicidad". Esta brecha léxica constituye precisamente el escenario donde búsqueda semántica basada en embeddings puede complementar efectivamente la búsqueda léxica, capturando similitud conceptual más allá de coincidencias de palabras.
+
+ 6.2.3. Requerimientos de citabilidad y verificabilidad
+
+En el dominio agrícola, decisiones basadas en información incorrecta pueden resultar en pérdidas económicas significativas: un tratamiento fitosanitario inadecuado puede fallar en controlar una plaga causando pérdida de cosecha; una dosis inapropiada de fertilizante puede dañar cultivos o contaminar suelos; una variedad incorrectamente seleccionada puede sucumbir ante condiciones climáticas adversas. Esta alta consecuencialidad de errores implica que usuarios requieren confianza en la información proporcionada.
+
+La capacidad de citar fuentes, indicando qué documento, qué institución, qué página contiene la información retornada, es un mecanismo fundamental para establecer confianza. Los usuarios pueden verificar que la información proviene de fuentes autorizadas (INIFAP, FAO, universidades agrícolas), revisar contexto completo del fragmento citado, y ejercer juicio sobre aplicabilidad a su situación específica. Este requerimiento de citabilidad informa la decisión arquitectónica de retornar fragmentos textuales de documentos fuente con metadatos completos, en lugar de sintetizar respuestas generativas sin atribución de fuentes.
+
+ 7. Sistemas de Soporte a Decisiones en Agricultura
+
+ 7.1. Evolución de los sistemas de soporte a decisiones agrícolas
+
+Los sistemas de soporte a decisiones agrícolas (Agricultural Decision Support Systems, ADSS) son sistemas informáticos interactivos diseñados para asistir a agricultores, extensionistas y planificadores agrícolas en la toma de decisiones complejas que involucran múltiples variables interdependientes. La conceptualización original de los DSS por Gorry y Scott Morton (1971), basada en Simon (1960) sobre decisiones estructuradas y no estructuradas, encontró en la agricultura uno de sus dominios de aplicación más naturales debido a la alta incertidumbre propia de los procesos biológicos y meteorológicos que determinan los resultados productivos.
+
+La primera generación de ADSS, desarrollada entre las décadas de 1980 y 1990, se caracterizó por sistemas basados en modelos de simulación de cultivos como DSSAT (Decision Support System for Agrotechnology Transfer), APSIM (Agricultural Production Systems Simulator) y CropSyst. Estos sistemas modelan procesos fisiológicos de crecimiento vegetal en función de variables como radiación solar, temperatura, disponibilidad hídrica y nutrición mineral, con lo que podían simular escenarios productivos bajo diferentes condiciones de manejo (Jones et al., 2003). Esa misma complejidad operacional, junto con los requerimientos extensos de datos de entrada y la necesidad de calibración específica por localidad, limitó su adopción más allá de contextos de investigación.
+
+La segunda generación incorporó sistemas expertos basados en reglas que codificaron conocimiento agronómico en forma de reglas condicionales (si-entonces). Sistemas como COMAX/GOSSYM para algodón y CALEX para manejo integrado de plagas demostraron efectividad para dominios acotados, pero exhibieron fragilidad ante situaciones no contempladas en su base de reglas y dificultad de mantenimiento a medida que el conocimiento evolucionaba (Plant, 2001). La rigidez de estos enfoques motivó la exploración de alternativas que pudieran adaptarse más flexiblemente al conocimiento disponible.
+
+La generación actual de ADSS se caracteriza por la integración de múltiples fuentes de datos, como sensores remotos, estaciones meteorológicas, Internet de las Cosas (IoT) y bases de datos geoespaciales, con técnicas de inteligencia artificial para generar recomendaciones ajustadas al contexto. La revisión sistemática de Zhai et al. (2020) identificó que los ADSS contemporáneos más exitosos comparten tres características: (a) integración de datos en tiempo real de múltiples fuentes, (b) capacidad de generar recomendaciones específicas al contexto del usuario, y (c) interfaces de usuario intuitivas que presentan información accionable más que datos crudos.
+
+ 7.2. De la recuperación de información al soporte a decisiones basado en evidencia
+
+La convergencia entre sistemas de recuperación de información y sistemas de soporte a decisiones representa una evolución reciente y prometedora en la informática agrícola. Mientras los ADSS tradicionales generan recomendaciones a partir de modelos matemáticos o reglas codificadas, un enfoque emergente consiste en fundamentar las recomendaciones directamente en evidencia documental recuperada mediante sistemas de búsqueda inteligente. En esta investigación, esa línea de trabajo se denomina "soporte a decisiones basado en evidencia documental" (Evidence-Based Decision Support, EBDS) y combina las fortalezas de la recuperación de información avanzada con la contextualización propia de los DSS.
+
+El enfoque EBDS presenta ventajas fundamentales sobre los DSS basados en modelos o reglas. Por un lado, elimina la necesidad de codificar manualmente todo el conocimiento experto en reglas formales, dado que el conocimiento reside en los documentos técnicos del corpus y es accedido dinámicamente mediante el motor de búsqueda. También aporta trazabilidad completa, ya que cada recomendación puede verificarse consultando el documento fuente que la fundamenta. Del mismo modo, se actualiza de manera natural al incorporar nuevos documentos al corpus, sin requerir reprogramación de reglas. Finalmente, escala a dominios amplios sin la explosión combinatoria que afecta a sistemas basados en reglas cuando la complejidad del dominio crece.
+
+La implementación práctica de EBDS requiere un pipeline que integre: (a) captura de datos ambientales contextuales del entorno del agricultor, (b) transformación de estos datos en consultas semánticas que el motor RAG pueda procesar, (c) recuperación de fragmentos documentales relevantes a las condiciones detectadas, (d) generación de recomendaciones accionables con su fundamentación documental, y (e) presentación mediante interfaces que faciliten la comprensión y toma de acción por parte del usuario. Ese pipeline es la base arquitectónica del módulo de soporte a decisiones desarrollado en la presente investigación.
+
+ 7.3. Interfaces de usuario para soporte a decisiones agrícolas
+
+La investigación en interacción humano-computador aplicada a agricultura ha identificado que la interfaz de usuario constituye un factor determinante en la adopción y efectividad de los ADSS (Rose et al., 2016). Los estudios de Eastwood et al. (2019) sobre adopción tecnológica en agricultura demostraron que sistemas con interfaces intuitivas y orientadas a la acción exhiben tasas de adopción hasta tres veces superiores a sistemas funcionalmente equivalentes con interfaces más complejas.
+
+Los principios de diseño identificados como críticos para interfaces de ADSS incluyen: (a) presentación de información accionable más que datos crudos, porque el agricultor necesita saber qué hacer y no interpretar gráficas complejas; (b) priorización visual de alertas y recomendaciones por urgencia; (c) contextualización geoespacial que vincule recomendaciones con ubicaciones físicas en la parcela; (d) temporalidad explícita que indique ventanas de acción y plazos; y (e) fundamentación visible que permita al usuario comprender por qué se sugiere cada acción (Lindblom et al., 2017).
+
+El sistema desarrollado en esta investigación implementa estos principios mediante un panel de control que integra componentes de monitoreo de cultivos con indicadores de estado, sistema de alertas prioritizadas, cartografía interactiva de parcelas, calendario agrícola, y un sistema de recomendaciones donde cada sugerencia incluye los datos ambientales que la motivaron, la fundamentación documental que la sustenta, y los pasos específicos para ejecutarla. Esta integración de componentes en una interfaz unificada busca reducir la carga cognitiva del agricultor y facilitar la transición directa de información a acción.
+
+
+
+ METODOLOGÍA
+
+ Diseño de Investigación
+
+Esta investigación adopta un diseño metodológico de desarrollo tecnológico con validación experimental y evaluación cualitativa.
+
+El proyecto se estructura en seis fases principales ejecutadas secuencialmente con retroalimentación iterativa: análisis de requisitos y diseño arquitectónico, desarrollo del sistema de recuperación, desarrollo del módulo de soporte a decisiones y panel de control, evaluación cuantitativa, evaluación cualitativa con usuarios, y análisis de resultados. El diseño metodológico integra elementos de ciencias de la computación (ingeniería de software, evaluación de sistemas), ciencias de la información (métricas de recuperación, estudios de usuario), y ciencias agrícolas (validación con expertos del dominio), reflejando la naturaleza interdisciplinaria del problema abordado.
+
+La fase de análisis de requisitos involucró revisión de literatura sobre necesidades de información de agricultores, análisis de consultas formuladas a servicios de extensión agrícola, y entrevistas semiestructuradas con cinco agrónomos especialistas en sistemas tradicionales para identificar tipos de consultas frecuentes y características de información relevante. Estos requisitos informaron decisiones de diseño arquitectónico incluyendo la fragmentación documental, esquemas de metadatos, y funcionalidad de interfaz de usuario.
+
+ Arquitectura del Sistema Desarrollado
+
+El sistema implementa una arquitectura de dos capas con separación entre backend de procesamiento y recuperación, y capa de presentación.
+
+El backend, implementado en Python utilizando el framework FastAPI, encapsula toda la lógica de recuperación de información incluyendo procesamiento de consultas, búsqueda híbrida, fusión de resultados, y reconocimiento de entidades. La capa de presentación, implementada en TypeScript con el framework Fastify, actúa como proxy entre clientes externos y el backend, proporcionando funciones de seguridad (autenticación, rate limiting), logging, y transformación de respuestas para consumo por interfaz de usuario web.
+
+ Procesamiento de documentos
+
+El procesamiento de documentos fuente en PDF para generar fragmentos indexables sigue un flujo continuo. El punto de partida es la extracción de texto mediante la biblioteca PyMuPDF, que preserva información de layout y estructura jerárquica de secciones. A partir de ese texto, el sistema realiza una segmentación en fragmentos de aproximadamente 800-1200 caracteres utilizando heurísticas que respetan límites de párrafos y oraciones para preservar coherencia temática local.
+
+El tamaño de fragmentos fue determinado mediante experimentación piloto, buscando un balance entre el nivel de detalle y cobertura: fragmentos más pequeños son más específicos pero pierden contexto, mientras que fragmentos más grandes preservan contexto pero pueden combinar múltiples temas y reducir precisión.
+
+Una vez segmentado el contenido, cada fragmento pasa por reconocimiento de entidades del dominio agrícola mediante spaCy configurado con diccionarios personalizados. El diccionario de cultivos incluye 127 nombres comunes y científicos de especies cultivadas en diversos sistemas agrícolas; el diccionario de plagas contiene 89 nombres de insectos, ácaros, hongos, bacterias y virus relevantes; el diccionario de nutrientes incluye 24 elementos esenciales y compuestos fertilizantes; el diccionario de prácticas incluye 42 técnicas de manejo agronómico. Después de ello, el texto del fragmento y sus metadatos, como título de documento fuente, número de página, fecha de publicación, autor institucional y entidades identificadas, se almacenan en base de datos SQLite.
+
+Sobre esa misma base documental, el sistema genera una representación vectorial densa de cada fragmento mediante el modelo Sentence-BERT paraphrase-multilingual-MiniLM-L12-v2, produciendo embeddings de 384 dimensiones. Este modelo fue seleccionado por su balance entre calidad de embeddings y eficiencia computacional, ya que fue entrenado específicamente para generación de embeddings de oraciones en 50+ idiomas incluyendo español. Los embeddings vectoriales se almacenan en ChromaDB, base de datos vectorial especializada que utiliza índices HNSW (Hierarchical Navigable Small World) para búsqueda de vecinos más cercanos eficiente en espacios de alta dimensionalidad.
+
+De manera paralela, también se construye un índice invertido BM25 utilizando Tantivy, motor de búsqueda de texto completo implementado en Rust con bindings Python. Tantivy indexa cada fragmento tokenizando el texto español con un tokenizador que maneja acentos, ñ y puntuación de manera apropiada. El esquema de indexación especifica configuración de BM25 con parámetros k₁=1.5 y b=0.75 basados en valores estándar de literatura. Con ello, el índice invertido permite búsqueda léxica sub-segundo incluso en colecciones de decenas de miles de fragmentos.
+
+ Procesamiento de consultas y recuperación híbrida
+
+Cuando un usuario envía una consulta en lenguaje natural, el sistema ejecuta un proceso de recuperación en tres fases. La primera corresponde al procesamiento de la consulta: se normaliza eliminando caracteres especiales preservando entidades y términos técnicos, y se aplica reconocimiento de entidades para identificar cultivos, plagas, nutrientes o prácticas mencionadas explícitamente que se utilizarán como señales para re-ranking posterior.
+
+La segunda fase consiste en la recuperación dual paralela. Simultáneamente se ejecutan búsqueda léxica BM25 y búsqueda semántica vectorial. La búsqueda BM25 consulta el índice Tantivy retornando los top-K fragmentos rankeados por puntuación de relevancia probabilística. Típicamente K=20 para asegurar recall adecuado en la etapa de recuperación. La búsqueda semántica genera embedding de la consulta usando el mismo modelo Sentence-BERT empleado para fragmentos, luego ejecuta búsqueda de vecinos más cercanos en ChromaDB retornando los top-K fragmentos con máxima similitud coseno.
+
+La tercera fase es la fusión de resultados mediante Reciprocal Rank Fusion. Las dos listas de resultados (léxica y semántica) se fusionan usando RRF con parámetro k=60. Cada fragmento que aparece en alguna de las listas recibe puntuación fusionada acumulando sus contribuciones inversas de rank en ambas listas. Los fragmentos se reordean por puntuación RRF descendente. Si un fragmento contiene entidades que fueron identificadas en la consulta, su puntuación se multiplica por un factor de boost (típicamente 1.3) para promoverlo en el ranking final. Los top N fragmentos (típicamente N=5) se retornan al usuario con sus metadatos, texto completo, puntuación de relevancia y entidades resaltadas.
+
+ Evaluación Cuantitativa del Sistema
+
+La evaluación cuantitativa sigue metodología estándar de evaluación de sistemas de recuperación de información utilizando métricas consolidadas en la literatura.
+
+Se construyó un conjunto de evaluación de 50 consultas representativas cubriendo temas principales de sistemas agrícolas: nutrición vegetal y fertilización (12 consultas), manejo de plagas (11 consultas), manejo de enfermedades (8 consultas), prácticas culturales (10 consultas), manejo de arvenses (5 consultas), y adaptación climática (4 consultas). Las consultas fueron formuladas por estudiantes de agronomía sin conocimiento técnico profundo del sistema, simulando formulaciones realistas de usuarios finales, posteriormente revisadas por dos agrónomos para asegurar relevancia y diversidad temática.
+
+Para cada consulta, dos agrónomos con experiencia en sistemas tradicionales revisaron independientemente el corpus completo identificando fragmentos relevantes. Un fragmento se considera relevante si contiene información que contribuyó a responder la pregunta específica de la consulta, incluso si no la responde exhaustivamente. Los juicios de relevancia de ambos evaluadores se consolidaron: fragmentos marcados como relevantes por ambos se consideran definitivamente relevantes; fragmentos con evaluaciones discrepantes se resolvieron mediante discusión y consenso. El conjunto resultante contiene en promedio 7.3 fragmentos relevantes por consulta (σ=3.2).
+
+Las métricas de evaluación calculadas incluyen Precisión@K (proporción de documentos relevantes entre los top K retornados), Recall@K (proporción de todos los relevantes que aparecen en top K), F1@K (media armónica de precisión y recall), Mean Average Precision (MAP, promedio de precisión calculada en cada posición de documento relevante), y Normalized Discounted Cumulative Gain (NDCG@K, métrica que considera orden de documentos relevantes con descuento logarítmico por posición). Estas métricas se calculan para el sistema híbrido completo y para cada línea base: solo BM25, solo búsqueda vectorial, y un sistema de referencia de búsqueda por palabras clave simple implementado mediante grep de texto completo.
+
+ Evaluación Cualitativa con Usuarios
+
+Complementando la evaluación cuantitativa controlada, se realizó evaluación cualitativa con usuarios reales mediante estudios de caso.
+
+Se reclutaron 8 participantes: 3 agrónomos profesionales con experiencia en sistemas tradicionales, 2 técnicos de campo que trabajan en programas de desarrollo rural, y 3 agricultores con nivel educativo medio-superior que practican agricultura tradicional en regiones de Tlaxcala y Puebla. A cada participante se le proporcionó acceso al sistema por período de una semana con instrucciones de usarlo para investigar al menos 5 preguntas reales relacionadas con sus actividades o intereses agrícolas.
+
+Al finalizar el período de uso, se condujeron entrevistas semiestructuradas de aproximadamente 45 minutos explorando percepciones sobre utilidad del sistema, facilidad de uso, confianza en resultados proporcionados, comparación con métodos actuales de búsqueda de información, y sugerencias de mejora. Las entrevistas se grabaron con consentimiento, transcribieron textualmente, y analizaron temáticamente identificando patrones recurrentes en retroalimentación de usuarios. Junto con ello, se recolectaron registros de uso que documentan consultas formuladas, resultados seleccionados, y tiempo de interacción para análisis de patrones de comportamiento.
+
+ Módulo de Soporte a Decisiones y Panel de Control
+
+El módulo de soporte a decisiones es la capa superior de la arquitectura del sistema, y transforma los resultados del motor RAG en recomendaciones accionables fundamentadas en evidencia documental y ajustadas a datos ambientales.
+
+La implementación sigue una arquitectura de pipeline de cinco etapas.
+
+Etapa 1 - Ingesta de datos ambientales. El sistema recibe datos ambientales del entorno del agricultor incluyendo temperatura ambiente (°C), humedad relativa del aire (%), humedad del suelo (%), velocidad y dirección del viento, precipitación acumulada reciente, y pronósticos meteorológicos a 5 días. Estos datos pueden provenir de estaciones meteorológicas locales, sensores IoT desplegados en parcela, o servicios meteorológicos públicos integrados mediante API.
+
+Etapa 2 - Detección de condiciones de acción. Los datos ambientales se evalúan contra umbrales agronómicos configurables para cada cultivo registrado del agricultor. Por ejemplo, si la humedad del suelo desciende por debajo del 40% para maíz en etapa de floración, el sistema identifica una condición de estrés hídrico que requiere acción. Si la temperatura nocturna desciende por debajo de 5°C con cultivos susceptibles a heladas, se genera una alerta de riesgo. Las reglas de detección se parametrizan por cultivo, etapa fenológica y tipo de suelo, lo que permite adaptación a contextos agroclimáticos diversos.
+
+Etapa 3 - Consulta ajustada al contexto en el motor RAG. Cada condición detectada genera automáticamente una consulta semántica al motor de recuperación híbrida. La consulta se construye programáticamente combinando el tipo de condición detectada, el cultivo afectado, y los parámetros ambientales relevantes. Por ejemplo, una detección de humedad baja en maíz genera la consulta "manejo de riego en maíz bajo condiciones de estrés hídrico con humedad del suelo inferior al 40%". El motor RAG procesa esta consulta mediante su pipeline estándar (BM25 + búsqueda semántica + RRF + re-ranking por entidades), recuperando los fragmentos documentales más relevantes.
+
+Etapa 4 - Generación de recomendación. Los fragmentos recuperados se procesan para extraer las acciones específicas recomendadas en la literatura técnica, que se estructuran en formato de recomendación accionable incluyendo: título descriptivo de la acción, nivel de prioridad (alta/media/baja) determinado por la severidad de la condición detectada y su tendencia temporal, ventana de acción recomendada (p.ej., "próximas 48 horas"), ubicación del cultivo afectado (sector y parcela), los datos ambientales que originaron la recomendación, la tendencia de la variable monitoreada (mejorando/estable/empeorando), y el plan de acción con pasos específicos extraídos de la documentación fuente. Cada recomendación mantiene trazabilidad completa al fragmento documental que la sustenta.
+
+Etapa 5 - Presentación y gestión en dashboard. Las recomendaciones generadas se presentan al agricultor mediante el panel de control interactivo, implementado como aplicación web con Bootstrap 5.3 para diseño responsivo. El dashboard integra los siguientes componentes:
+
+- Panel de monitoreo de cultivos: Tarjetas de estado para cada cultivo registrado mostrando porcentaje de avance fenológico, clasificación de salud (saludable, vigilancia, crítico), conteo regresivo para próximo riego, e indicador de detección de plagas. Cada tarjeta proporciona acceso a historial detallado del cultivo.
+
+- Sistema de recomendaciones: Vista principal con filtros por cultivo, tipo de recomendación (riego, fertilización, plagas, siembra, cosecha) y estado (urgente, pendiente, aplicada). Cada recomendación despliega los datos ambientales contextuales, fundamentación documental con citación de fuente, y botones de acción (aplicar, posponer, ver detalle). Las estadísticas de recomendaciones (urgentes, pendientes, aplicadas) se presentan en barra resumen.
+
+- Módulo cartográfico: Mapa interactivo basado en OpenStreetMap con visualización de parcelas del agricultor, capas de información ambiental, y georreferenciación de alertas y recomendaciones.
+
+- Calendario agrícola: Implementado con FullCalendar 5.11, presenta planificación de actividades agrícolas, fechas de aplicación de recomendaciones, y ventanas de acción programadas.
+
+- Monitoreo ambiental en tiempo real: Visualización de variables ambientales mediante gráficas Chart.js con tendencias históricas y umbrales de referencia.
+
+- Sistema de alertas: Notificaciones prioritizadas sobre condiciones ambientales adversas con recomendaciones de mitigación fundamentadas.
+
+- Chat de consulta directa: Comunicación en tiempo real mediante Socket.IO 4.7 con autenticación JWT, que permite al agricultor formular consultas directas al sistema de recuperación.
+
+La autenticación del usuario se gestiona mediante tokens JWT almacenados en el cliente, garantizando que cada agricultor acceda únicamente a la información de sus cultivos y parcelas registrados.
+
+ Consideraciones Éticas
+
+El desarrollo del sistema siguió principios éticos de investigación responsable. El corpus documental consiste exclusivamente de publicaciones técnicas de dominio público o con licencias que permiten uso educativo y de investigación, respetando derechos de autoría mediante citación explícita de fuentes en todos los fragmentos retornados. Los participantes en evaluación cualitativa proporcionaron consentimiento informado por escrito tras recibir explicación sobre objetivos de investigación, procedimientos, riesgos mínimos, y derecho a retirarse. Los datos de uso se anonimizaron eliminando información identificable personal.
+
+El sistema incluye advertencias explícitas indicando que la información proporcionada no sustituye asesoría agronómica profesional personalizada, y que los usuarios deben ejercer juicio considerando sus contextos específicos. También se implementaron filtros para prevenir recuperación de información sobre agroquímicos altamente tóxicos o prácticas peligrosas sin advertencias apropiadas sobre riesgos y precauciones necesarias.
+
+
+
+ RESULTADOS ESPERADOS
+
+Se anticipa que la evaluación cuantitativa demostrará la superioridad del sistema híbrido sobre líneas base de un solo enfoque. Específicamente, se espera que el sistema híbrido alcance MAP superior a 0.65 y NDCG@10 superior a 0.70, con incrementos de al menos 20% sobre búsqueda exclusivamente léxica (MAP esperado ~0.54) y al menos 15% sobre búsqueda exclusivamente semántica (MAP esperado ~0.56).
+
+La expectativa es que la búsqueda léxica mostrará ventaja en consultas conteniendo nombres científicos exactos o términos técnicos muy específicos, mientras que la búsqueda semántica superará en consultas con lenguaje coloquial descriptivo. El sistema híbrido debería captar fortalezas de ambos enfoques y reflejarlas en un rendimiento consistentemente alto a través de diferentes tipos de consulta.
+
+El análisis de contribuciones de los componentes mediante experimentos de ablación (removiendo selectivamente componentes) permitirá cuantificar el valor agregado del reconocimiento de entidades para re-ranking. Se espera que el boost por entidades mejore precisión@5 en aproximadamente 8-12% para consultas que mencionan explícitamente entidades específicas, sin degradar de manera apreciable el rendimiento en consultas generales que no mencionan entidades.
+
+La evaluación cualitativa se anticipa revelará percepción positiva de utilidad del sistema por parte de usuarios del dominio, particularmente por la rapidez de acceso a información técnica respaldada documentalmente en comparación con métodos manuales.
+
+Se espera identificar oportunidades de mejora relacionadas con presentación de resultados, funcionalidad de filtrado, y necesidad de explicaciones adicionales de términos técnicos encontrados en fragmentos recuperados. Las entrevistas con agricultores probablemente identificarán barreras adicionales como preferencias por interfaces de voz sobre texto escrito, dada la prevalencia de uso de teléfonos móviles en contextos rurales.
+
+Respecto al módulo de soporte a decisiones, se anticipa que las recomendaciones ajustadas al contexto exhibirán niveles de pertinencia superiores a las recomendaciones documentales genéricas. Se espera, además, una valoración positiva del panel de control por su capacidad para ordenar alertas, visualizar condiciones relevantes y presentar acciones sugeridas de forma comprensible para el usuario.
+
+
+
+ CONCLUSIÓN
+
+La presente investigación aborda la brecha entre el conocimiento técnico agrícola documentado y su accesibilidad efectiva para agricultores de sistemas tradicionales. El sistema desarrollado, SIRA (Sistema Inteligente de Recuperación Agrícola), propone una arquitectura híbrida para recuperar información técnica pertinente y extender su utilidad mediante recomendaciones contextualizadas.
+
+La contribución principal del trabajo consiste en articular recuperación léxica y semántica, reconocimiento de entidades del dominio y soporte a decisiones basado en evidencia documental dentro de un mismo sistema. Con ello, la investigación no solo mejora el acceso a información especializada, sino que ofrece una vía replicable para vincular consulta documental, contexto ambiental y acción agrícola informada.
+
+Las implicaciones prácticas del sistema alcanzan dimensiones de equidad en el acceso al conocimiento agronómico, mientras que su arquitectura modular permite adaptación a otros contextos geográficos y productivos. Las direcciones de investigación futura incluyen la integración de capacidades multimodales para procesamiento de imágenes y tablas en documentos, la personalización de recomendaciones mediante perfiles de usuario con historial agronómico detallado, la incorporación de modelos predictivos que anticipen condiciones de riesgo con mayor horizonte temporal, y la evaluación longitudinal del impacto del sistema en indicadores productivos y de adopción tecnológica en comunidades agrícolas reales.
+
+
+
+ BIBLIOGRAFÍA
+
+ Referencias Fundacionales de Recuperación de Información
+
+Baeza-Yates, R. y Ribeiro-Neto, B. (2011). Modern Information Retrieval: The Concepts and Technology behind Search (Segunda Edición). Addison-Wesley Professional. ISBN: 978-0321416919.
+
+Bush, V. (1945). As We May Think. The Atlantic Monthly, 176(1), 101-108. Recuperado de https://www.theatlantic.com/magazine/archive/1945/07/as-we-may-think/303881/
+
+Furnas, G. W., Landauer, T. K., Gomez, L. M. y Dumais, S. T. (1987). The vocabulary problem in human-system communication. Communications of the ACM, 30(11), 964-971. Recuperado de https://doi.org/10.1145/32206.32212
+
+Järvelin, K. y Kekäläinen, J. (2002). Cumulated gain-based evaluation of IR techniques. ACM Transactions on Information Systems, 20(4), 422-446. Recuperado de https://doi.org/10.1145/582415.582418
+
+Manning, C. D., Raghavan, P. y Schütze, H. (2008). Introduction to Information Retrieval. Cambridge University Press. Recuperado de https://nlp.stanford.edu/IR-book/
+
+Rayward, W. B. (1994). Visions of Xanadu: Paul Otlet (1868–1944) and Hypertext. Journal of the American Society for Information Science, 45(4), 235-250.
+
+Robertson, S. E. (1977). The Probability Ranking Principle in IR. Journal of Documentation, 33(4), 294-304.
+
+Robertson, S. E. y Spärck Jones, K. (1976). Relevance weighting of search terms. Journal of the American Society for Information Science, 27(3), 129-146. Recuperado de https://doi.org/10.1002/asi.4630270302
+
+Salton, G. (1971). The SMART Retrieval System: Experiments in Automatic Document Processing. Prentice-Hall. Recuperado de https://www.cs.cornell.edu/Info/People/nr/smart.html
+
+Salton, G., Wong, A. y Yang, C. S. (1975). A Vector Space Model for Automatic Indexing. Communications of the ACM, 18(11), 613-620. Recuperado de https://doi.org/10.1145/361219.361220
+
+Sanderson, M. y Croft, W. B. (2012). The History of Information Retrieval Research. Proceedings of the IEEE, 100(Special Centennial Issue), 1444-1451.
+
+van Rijsbergen, C. J. (1979). Information Retrieval (Segunda Edición). Butterworths. Recuperado de http://www.dcs.gla.ac.uk/Keith/Preface.html
+
+Voorhees, E. M. y Harman, D. K. (2005). TREC: Experiment and Evaluation in Information Retrieval. MIT Press. ISBN: 978-0262220736.
+
+Zobel, J. y Moffat, A. (2006). Inverted files for text search engines. ACM Computing Surveys, 38(2), Artículo 6. Recuperado de https://doi.org/10.1145/1132956.1132959
+
+ Referencias sobre BM25 y Modelos Probabilísticos
+
+Cormack, G. V., Clarke, C. L. y Büttcher, S. (2009). Reciprocal rank fusion outperforms condorcet and individual rank learning methods. En Proceedings of the 32nd International ACM SIGIR Conference (pp. 758-759). Recuperado de https://doi.org/10.1145/1571941.1572114
+
+Benham, R., Culpepper, J. S., Gallagher, L., Lu, X. y Mackenzie, J. (2017). Towards Efficient and Effective Query Variant Generation. En Proceedings of the ACM SIGIR International Conference on Theory of Information Retrieval (pp. 97-104). Recuperado de https://doi.org/10.1145/3121050.3121076
+
+Lin, J., Ma, X., Lin, S. C., Yang, J. H., Pradeep, R. y Nogueira, R. (2021). Pyserini: A Python Toolkit for Reproducible Information Retrieval Research with Sparse and Dense Representations. En Proceedings of SIGIR (pp. 2356-2362). Recuperado de https://github.com/castorini/pyserini
+
+Robertson, S. y Walker, S. (1994). Some simple effective approximations to the 2-Poisson model for probabilistic weighted retrieval. En Proceedings of SIGIR (pp. 232-241). Recuperado de https://doi.org/10.1007/978-1-4471-2099-5_24
+
+Robertson, S. y Zaragoza, H. (2009). The Probabilistic Relevance Framework: BM25 and Beyond. Foundations and Trends in Information Retrieval, 3(4), 333-389. Recuperado de http://dx.doi.org/10.1561/1500000019
+
+Trotman, A., Puurula, A. y Burgess, B. (2014). Improvements to BM25 and Language Models Examined. En Proceedings of the 2014 Australasian Document Computing Symposium (pp. 58-65). Recuperado de https://doi.org/10.1145/2682862.2682863
+
+ Referencias sobre Embeddings y Modelos de Lenguaje
+
+Cardellino, C. (2019). Spanish Billion Words Corpus and Embeddings. Recuperado de https://crscardellino.github.io/SBWCE/
+
+Conneau, A., Khandelwal, K., Goyal, N., Chaudhary, V., Wenzek, G., Guzmán, F., Grave, E., Ott, M., Zettlemoyer, L. y Stoyanov, V. (2020). Unsupervised Cross-lingual Representation Learning at Scale. En Proceedings of ACL (pp. 8440-8451). Recuperado de https://doi.org/10.18653/v1/2020.acl-main.747
+
+Grave, E., Bojanowski, P., Gupta, P., Joulin, A. y Mikolov, T. (2018). Learning Word Vectors for 157 Languages. En Proceedings of LREC. Recuperado de https://fasttext.cc/docs/en/crawl-vectors.html
+
+Gururangan, S., Marasović, A., Swayamdipta, S., Lo, K., Beltagy, I., Downey, D. y Smith, N. A. (2020). Don't Stop Pretraining: Adapt Language Models to Domains and Tasks. En Proceedings of ACL (pp. 8342-8360). Recuperado de https://doi.org/10.18653/v1/2020.acl-main.740
+
+Le, Q. y Mikolov, T. (2014). Distributed Representations of Sentences and Documents. En International Conference on Machine Learning (pp. 1188-1196). Recuperado de http://proceedings.mlr.press/v32/le14.html
+
+Mikolov, T., Chen, K., Corrado, G. y Dean, J. (2013). Efficient Estimation of Word Representations in Vector Space. arXiv preprint arXiv:1301.3781. Recuperado de https://arxiv.org/abs/1301.3781
+
+Pennington, J., Socher, R. y Manning, C. D. (2014). GloVe: Global Vectors for Word Representation. En Proceedings of EMNLP (pp. 1532-1543). Recuperado de https://nlp.stanford.edu/projects/glove/
+
+ Referencias sobre Transformers y BERT
+
+Cañete, J., Chapados, G., Fuentes, R., Ho, J. H., Kang, H. y Pérez, J. (2020). Spanish Pre-Trained BERT Model and Evaluation Data. En Proceedings of PML4DC at ICLR. Recuperado de https://github.com/dccuchile/beto
+
+Devlin, J., Chang, M. W., Lee, K. y Toutanova, K. (2019). BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. En Proceedings of NAACL-HLT (Vol. 1, pp. 4171-4186). Recuperado de https://doi.org/10.18653/v1/N19-1423
+
+Malkov, Y. A. y Yashunin, D. A. (2020). Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs. IEEE Transactions on Pattern Analysis and Machine Intelligence, 42(4), 824-836. Recuperado de https://doi.org/10.1109/TPAMI.2018.2889473
+
+Reimers, N. y Gurevych, I. (2019). Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks. En Proceedings of EMNLP-IJCNLP (pp. 3982-3992). Recuperado de https://doi.org/10.18653/v1/D19-1410. Recuperado de https://www.sbert.net/
+
+Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, Ł. y Polosukhin, I. (2017). Attention is All You Need. En Proceedings of NeurIPS (pp. 5998-6008). Recuperado de https://arxiv.org/abs/1706.03762
+
+ Referencias sobre RAG y Recuperación Neural
+
+Karpukhin, V., Oğuz, B., Min, S., Lewis, P., Wu, L., Edunov, S., Chen, D. y Yih, W. (2020). Dense Passage Retrieval for Open-Domain Question Answering. En Proceedings of EMNLP (pp. 6769-6781). Recuperado de https://doi.org/10.18653/v1/2020.emnlp-main.550
+
+Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., Küttler, H., Lewis, M., Yih, W., Rocktäschel, T., Riedel, S. y Kiela, D. (2020). Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. En Proceedings of NeurIPS. Recuperado de https://arxiv.org/abs/2005.11401
+
+Ji, Z., Lee, N., Frieske, R., Yu, T., Su, D., Xu, Y., Ishii, E., Bang, Y. J., Madotto, A. y Fung, P. (2023). Survey of Hallucination in Natural Language Generation. ACM Computing Surveys, 55(12), 1-38. Recuperado de https://doi.org/10.1145/3571730
+
+ Referencias sobre Agricultura Mexicana y Sistemas Tradicionales
+
+González Jácome, A. (2008). El lugar del conocimiento campesino en el manejo de los sistemas agrícolas de Tlaxcala, México. En: Manejo de los recursos naturales y desarrollo rural. Instituto Municipal de Arte y Cultura de Oaxaca. Recuperado de https://chapingo.mx/revistas/agrociencia/
+
+Hernández Xolocotzi, E. (1987). Xolocotzia: Obras de Efraím Hernández Xolocotzi. Revista de Geografía Agrícola, Universidad Autónoma Chapingo. Recuperado de https://www.chapingo.mx/revistas/
+
+Terán, S. y Rasmussen, C. H. (2009). La Milpa de los Mayas Peninsulares. Centro de Investigación Científica de Yucatán (CICY). ISBN: 968-6532-02-8. Recuperado de https://www.cicy.mx/publicaciones/
+
+Ku-Pech, W. G., Mariaca-Méndez, R. y Jiménez-Badillo, M. (2019). Traditional management strategies and environmental sustainability in the Maya homegardens of the Puuc Region, Yucatán, Mexico. Agroforestry Systems, 93(3), 1121-1136. Recuperado de https://doi.org/10.1007/s10457-018-0210-9
+
+Vidal Padilla, L., Fernández Galán, B., Díaz Ramírez, A., Ramírez Moreno, P. P. y Castillo Nonato, J. (2022). Intensificación sostenible del sistema milpa en condiciones de temporal en los Valles Centrales de Oaxaca, México. Acta Universitaria, 32, 1-18. Recuperado de https://doi.org/10.15174/au.2022.3387
+
+Gastélum, L. A., Maya-Flores, P., Rocha, D., Rincón, E. y Álvarez-Sánchez, J. (2022). Associations between soil microorganisms and native maize landraces from Los Tuxtlas, Mexico. Microbial Ecology, 84(2), 512-525. Recuperado de https://doi.org/10.1007/s00248-021-01870-2
+
+ Referencias sobre Agricultura Digital y Sistemas Inteligentes
+
+Aker, J. C., Ghosh, I. y Burrell, J. (2016). The promise (and pitfalls) of ICT for agriculture initiatives. Agricultural Economics, 47(S1), 35-48. Recuperado de https://doi.org/10.1111/agec.12301
+
+Bellon, M. R., Kotu, B. H., Azzarri, C. y Caracciolo, F. (2020). To diversify or not to diversify, that is the question. Pursuing agricultural development for smallholder farmers in marginal areas of Ghana. World Development, 125, 104682. Recuperado de https://doi.org/10.1016/j.worlddev.2019.104682
+
+Dimitrov, D., Becker, H. y Vazirgiannis, M. (2023). Question Answering Systems for Agricultural Domain: A Literature Review. Computers and Electronics in Agriculture, 215, 108363. Recuperado de https://doi.org/10.1016/j.compag.2023.108363
+
+Erenstein, O., Chamberlin, J. y Sonder, K. (2021). Estimating the global number and distribution of maize and wheat farms. Global Food Security, 30, 100558. Recuperado de https://doi.org/10.1016/j.gfs.2021.100558
+
+Hughes, D. P. y Salathé, M. (2015). An open access repository of images on plant health to enable the development of mobile disease diagnostics. arXiv preprint arXiv:1511.08060. Recuperado de https://arxiv.org/abs/1511.08060
+
+Köksal, A., Padró, L. y Schockaert, S. (2024). Language models for specialized domains: A survey. AI Open, 5, 129-186. Recuperado de https://doi.org/10.1016/j.aiopen.2024.01.003
+
+Librán-Embid, F., Klaus, F., Mundaca, E. A., Grass, I. y Tscharntke, T. (2023). Bridging ecological and agricultural research in the tropics with systematic approaches. Trends in Ecology & Evolution, 38(7), 617-628. Recuperado de https://doi.org/10.1016/j.tree.2023.02.005
+
+Perfecto, I., Jiménez-Soto, M. E. y Vandermeer, J. (2019). Coffee landscapes and biodiversity conservation. En Handbook of Global Biodiversity Conservation (pp. 131–148). Springer. Recuperado de https://doi.org/10.1007/978-3-030-30069-8_6
+
+ Referencias sobre Sistemas de Soporte a Decisiones Agrícolas
+
+Eastwood, C. R., Rue, B. T. D. y Gray, D. I. (2019). Farmer decision-making about the use of technology in agriculture: Farm advisory system approaches and factors influencing adoption. The Journal of Agricultural Education and Extension, 25(6), 503-521. Recuperado de https://doi.org/10.1080/1389224X.2019.1644331
+
+Gorry, G. A. y Scott Morton, M. S. (1971). A framework for management information systems. Sloan Management Review, 13(1), 55-70.
+
+Jones, J. W., Hoogenboom, G., Porter, C. H., Boote, K. J., Batchelor, W. D., Hunt, L. A., Wilkens, P. W., Singh, U., Gijsman, A. J. y Ritchie, J. T. (2003). The DSSAT cropping system model. European Journal of Agronomy, 18(3-4), 235-265. Recuperado de https://doi.org/10.1016/S1161-0301(02)00107-7
+
+Liakos, K. G., Busato, P., Moshou, D., Pearson, S. y Bochtis, D. (2018). Machine learning in agriculture: A review. Sensors, 18(8), 2674. Recuperado de https://doi.org/10.3390/s18082674
+
+Lindblom, J., Lundström, C., Ljung, M. y Jonsson, A. (2017). Promoting sustainable intensification in precision agriculture: Review of decision support systems development and strategies. Precision Agriculture, 18(3), 309-331. Recuperado de https://doi.org/10.1007/s11119-016-9491-4
+
+Plant, R. E. (2001). Site-specific management: The application of information technology to crop production. Computers and Electronics in Agriculture, 30(1-3), 9-29. Recuperado de https://doi.org/10.1016/S0168-1699(00)00152-6
+
+Rose, D. C., Sutherland, W. J., Parker, C., Lobley, M., Winter, M., Morris, C., Twining, S., Ffoulkes, C., Amano, T. y Dicks, L. V. (2016). Decision support tools for agriculture: Towards effective design and delivery. Agricultural Systems, 149, 165-174. Recuperado de https://doi.org/10.1016/j.agsy.2016.09.009
+
+Simon, H. A. (1960). The New Science of Management Decision. Harper & Brothers, New York.
+
+Zhai, Z., Martínez, J. F., Beltran, V. y Martínez, N. L. (2020). Decision support systems for agriculture 4.0: Survey and challenges. Computers and Electronics in Agriculture, 170, 105256. Recuperado de https://doi.org/10.1016/j.compag.2020.105256
+
+ Recursos Institucionales y Documentos Técnicos
+
+FAO - Organización de las Naciones Unidas para la Alimentación y la Agricultura. AGROVOC: Tesauro agrícola multilingüe. Recuperado de https://agrovoc.fao.org/
+
+INIFAP - Instituto Nacional de Investigaciones Forestales, Agrícolas y Pecuarias. Centro de documentación técnica. Recuperado de https://www.gob.mx/inifap
+
+CIMMYT - Centro Internacional de Mejoramiento de Maíz y Trigo. Publicaciones técnicas sobre maíz. Recuperado de https://www.cimmyt.org/es/publicaciones/
+
+SIIT - Sistema Integrado de Información Taxonómica. Base de datos de especies mexicanas. Recuperado de https://www.biodiversidad.gob.mx/especies/
+
+SAGARPA/SADER - Secretaría de Agricultura y Desarrollo Rural. Compendios de información agrícola de México. Recuperado de https://www.gob.mx/agricultura
+
+CONABIO - Comisión Nacional para el Conocimiento y Uso de la Biodiversidad. Portal de biodiversidad agrícola mexicana. Recuperado de https://www.biodiversidad.gob.mx/
+
+Revista Terra Latinoamericana. Publicación científica sobre suelos y agricultura en América Latina. Recuperado de https://www.terra.chapingo.mx/
+
+Revista Agrociencia. Publicación científica del Colegio de Postgraduados. Recuperado de https://agrociencia-colpos.mx/

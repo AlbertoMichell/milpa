@@ -11,6 +11,7 @@
     <!-- CSS personalizado -->
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/milpa-layout.css">
     <style>
 
  /* ————————— MODIFICADO: añadidos estilos para el sidebar ————————— */
@@ -154,7 +155,7 @@
         }
     </style>
 </head>
-<body>
+<body class="milpa-page" data-active-page="configuracion.html">
     <!-- Sidebar (igual que en recommendations.html) -->
 
  <!-- ————————— AGREGADO: Sidebar panel con menú de navegación ————————— -->
@@ -165,7 +166,7 @@
         </div>
         <ul class="sidebar-nav mt-3">
             <li class="sidebar-nav-item">
-                <a href="dashboard.html" class="sidebar-nav-link active">
+                <a href="dashboard.html" class="sidebar-nav-link">
                     <i class="fas fa-home sidebar-icon"></i>
                     <span class="sidebar-text">Inicio</span>
                 </a>
@@ -174,7 +175,7 @@
                 <a href="recomendaciones.html" class="sidebar-nav-link">
                     <i class="fas fa-lightbulb sidebar-icon"></i>
                     <span class="sidebar-text">Recomendaciones</span>
-                    <span class="badge bg-danger alert-badge">3</span>
+                    <span class="badge bg-danger alert-badge" style="display:none">0</span>
                 </a>
             </li>
             <li class="sidebar-nav-item">
@@ -212,12 +213,18 @@
 
     <!-- ————————— AGREGADO: inicio del contenedor principal que empuja el contenido al lado del sidebar ————————— -->
     <div class="main-content" id="mainContent">
+        <nav class="navbar navbar-expand-lg navbar-light border-bottom milpa-top-navbar" aria-label="Barra superior">
+            <div class="container-fluid px-3">
+                <button class="btn btn-link text-secondary px-1" type="button" id="sidebarToggle" aria-label="Alternar menú lateral">
+                    <i class="fas fa-bars fs-5" aria-hidden="true"></i>
+                </button>
+                <div class="ms-auto d-flex align-items-center gap-2">
+                    <a href="dashboard.html" class="btn btn-sm btn-outline-secondary d-none d-md-inline">Inicio</a>
+                    <button type="button" class="btn btn-sm btn-outline-danger" id="milpaLogoutBtn">Salir</button>
+                </div>
+            </div>
+        </nav>
 
-
-    
-    <!-- Main Content (igual que en recommendations.html) -->
-
-    <!-- Page Content -->
     <div class="container-fluid px-4 py-4">
         <div class="row mb-4">
             <div class="col-12">
@@ -259,20 +266,21 @@
                 </div>
             </div>
             <div class="col-lg-9 mb-4">
+                <div id="settingsStatus"></div>
                 <div class="tab-content" id="settingsTabsContent">
                     <!-- Pestaña Perfil -->
                     <div class="tab-pane fade show active" id="profile" role="tabpanel">
                         <div class="card border-0 shadow-sm settings-card">
                             <div class="card-body">
                                 <h4 class="mb-4">Perfil de usuario</h4>
-                                <form>
+                                <form id="profileForm">
                                     <div class="row mb-4">
                                         <div class="col-md-4 text-center">
-                                            <img src="images/farmer-avatar.jpg" alt="Foto de perfil" class="profile-pic rounded-circle mb-3">
+                                            <img id="profileAvatarPreview" src="elementos/Campesinos.jpg" alt="Foto de perfil" class="profile-pic rounded-circle mb-3">
                                             <div class="d-grid gap-2">
                                                 <button type="button" class="btn btn-outline-forest-green upload-btn">
                                                     <i class="fas fa-camera me-2"></i> Cambiar foto
-                                                    <input type="file" accept="image/*">
+                                                    <input id="avatarInput" type="file" accept="image/*">
                                                 </button>
                                             </div>
                                         </div>
@@ -306,10 +314,106 @@
                                         </div>
                                     </div>
                                     <div class="text-end">
-                                        <button type="button" class="btn btn-secondary me-2">Cancelar</button>
+                                        <button id="profileResetBtn" type="button" class="btn btn-secondary me-2">Cancelar</button>
                                         <button type="submit" class="btn btn-forest-green">Guardar cambios</button>
                                     </div>
                                 </form>
+
+                                <hr class="my-4">
+
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="mb-0">Panel de plantas</h5>
+                                    <span class="badge bg-success-subtle text-success border">Visible en Inicio</span>
+                                </div>
+                                <p class="text-muted small mb-4">Carga aquí la planta, su imagen y los metadatos que deben aparecer en Inicio y alimentar el resto del sistema.</p>
+
+                                <div class="row g-4">
+                                    <div class="col-lg-5">
+                                        <div class="border rounded-3 p-3 bg-light h-100">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="mb-0">Plantas registradas</h6>
+                                                <button id="refreshPlantsBtn" type="button" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="fas fa-rotate"></i>
+                                                </button>
+                                            </div>
+                                            <div id="registeredPlantsList" class="vstack gap-3">
+                                                <p class="text-muted mb-0">Cargando plantas...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-7">
+                                        <form id="plantForm" class="border rounded-3 p-3 h-100 bg-white">
+                                            <input type="hidden" id="plantCropId">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label for="plantCropName" class="form-label">Cultivo</label>
+                                                    <input list="cropSuggestions" type="text" class="form-control" id="plantCropName" placeholder="Ej: chile, maiz, tomate">
+                                                    <datalist id="cropSuggestions">
+                                                        <option value="maiz"></option>
+                                                        <option value="frijol"></option>
+                                                        <option value="calabaza"></option>
+                                                        <option value="chile"></option>
+                                                        <option value="tomate"></option>
+                                                    </datalist>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="plantDisplayName" class="form-label">Nombre visible en Inicio</label>
+                                                    <input type="text" class="form-control" id="plantDisplayName" placeholder="Ej: Chile serrano del patio">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="plantVariety" class="form-label">Variedad</label>
+                                                    <input type="text" class="form-control" id="plantVariety" placeholder="Ej: Serrano">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="plantStatus" class="form-label">Estado</label>
+                                                    <select class="form-select" id="plantStatus">
+                                                        <option value="activo">Activo</option>
+                                                        <option value="cosechado">Cosechado</option>
+                                                        <option value="perdido">Perdido</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="plantPlantedAt" class="form-label">Fecha de siembra</label>
+                                                    <input type="date" class="form-control" id="plantPlantedAt">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="plantExpectedHarvestAt" class="form-label">Cosecha estimada</label>
+                                                    <input type="date" class="form-control" id="plantExpectedHarvestAt">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="plantGrowthStage" class="form-label">Etapa de crecimiento</label>
+                                                    <select class="form-select" id="plantGrowthStage">
+                                                        <option value="siembra">Siembra</option>
+                                                        <option value="establecimiento">Establecimiento</option>
+                                                        <option value="desarrollo">Desarrollo</option>
+                                                        <option value="floración">Floración</option>
+                                                        <option value="maduración">Maduración</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="plantProgress" class="form-label">Progreso (%)</label>
+                                                    <input type="number" class="form-control" id="plantProgress" min="0" max="100" step="1" value="0">
+                                                </div>
+                                                <div class="col-md-7">
+                                                    <label for="plantImage" class="form-label">Imagen de la planta</label>
+                                                    <input type="file" class="form-control" id="plantImage" accept="image/*">
+                                                    <small class="text-muted">Esta imagen se publicará automáticamente en Inicio.</small>
+                                                </div>
+                                                <div class="col-md-5 text-center">
+                                                    <img id="plantImagePreview" src="elementos/default.jpg" alt="Vista previa" class="img-fluid rounded border" style="max-height: 160px; object-fit: cover;">
+                                                </div>
+                                                <div class="col-12">
+                                                    <label for="plantNotes" class="form-label">Notas agronómicas</label>
+                                                    <textarea class="form-control" id="plantNotes" rows="4" placeholder="Describe observaciones, necesidades o contexto del cultivo."></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex justify-content-end gap-2 mt-3">
+                                                <button id="resetPlantFormBtn" type="button" class="btn btn-secondary">Limpiar</button>
+                                                <button type="submit" class="btn btn-forest-green">Guardar planta</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -319,7 +423,7 @@
                         <div class="card border-0 shadow-sm settings-card">
                             <div class="card-body">
                                 <h4 class="mb-4">Configuración de la cuenta</h4>
-                                <form>
+                                <form id="accountForm">
                                     <div class="row g-3 mb-4">
                                         <div class="col-md-6">
                                             <label for="email" class="form-label">Correo electrónico</label>
@@ -370,7 +474,7 @@
                         <div class="card border-0 shadow-sm settings-card">
                             <div class="card-body">
                                 <h4 class="mb-4">Preferencias de notificaciones</h4>
-                                <form>
+                                <form id="notificationsForm">
                                     <h5 class="mb-3">Alertas por correo electrónico</h5>
                                     <div class="mb-4">
                                         <div class="form-check form-switch mb-3">
@@ -444,50 +548,16 @@
                                                 <th>Acciones</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
+                                        <tbody id="sensorTableBody">
                                             <tr>
-                                                <td>Humedad suelo</td>
-                                                <td>Sector Norte</td>
-                                                <td><span class="badge bg-success">Activo</span></td>
-                                                <td>15 min</td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-outline-secondary">Editar</button>
-
-                                                                                                </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Temperatura aire</td>
-                                            <td>Sector Centro</td>
-                                            <td><span class="badge bg-success">Activo</span></td>
-                                            <td>30 min</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-secondary">Editar</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Luz solar</td>
-                                            <td>Sector Sur</td>
-                                            <td><span class="badge bg-warning text-dark">Inestable</span></td>
-                                            <td>1 hora</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-secondary">Editar</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Humedad aire</td>
-                                            <td>Sector Este</td>
-                                            <td><span class="badge bg-danger">Inactivo</span></td>
-                                            <td>N/A</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-secondary">Editar</button>
-                                            </td>
-                                        </tr>
+                                                <td colspan="5" class="text-muted text-center py-4">Cargando sensores vinculados a cultivos...</td>
+                                            </tr>
                                     </tbody>
                                 </table>
                             </div>
                             <div class="text-end">
-                                <button class="btn btn-forest-green">
-                                    <i class="fas fa-plus me-2"></i> Agregar sensor
+                                <button id="refreshSensorTableBtn" type="button" class="btn btn-forest-green">
+                                    <i class="fas fa-rotate me-2"></i> Actualizar sensores
                                 </button>
                             </div>
                         </div>
@@ -499,7 +569,7 @@
                     <div class="card border-0 shadow-sm settings-card">
                         <div class="card-body">
                             <h4 class="mb-4">Umbrales de alerta</h4>
-                            <form>
+                            <form id="alertsForm">
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-6">
                                         <label for="minSoilMoisture" class="form-label">Humedad mínima del suelo (%)</label>
@@ -578,7 +648,7 @@
                     <div class="card border-0 shadow-sm settings-card">
                         <div class="card-body">
                             <h4 class="mb-4">Privacidad y datos</h4>
-                            <form>
+                            <form id="privacyForm">
                                 <div class="mb-4">
                                     <div class="form-check form-switch mb-3">
                                         <input class="form-check-input" type="checkbox" id="dataCollection" checked>
@@ -597,13 +667,103 @@
                                 <h5 class="mb-3">Exportar datos</h5>
                                 <div class="mb-4">
                                     <p class="text-muted">Descarga todos tus datos en formato estándar para respaldo o análisis externo.</p>
-                                    <button type="button" class="btn btn-outline-forest-green me-2">
+                                    <button id="exportJsonBtn" type="button" class="btn btn-outline-forest-green me-2">
                                         <i class="fas fa-file-excel me-2"></i> Exportar a Excel
                                     </button>
-                                    <button type="button" class="btn btn-outline-forest-green">
+                                    <button id="exportPdfBtn" type="button" class="btn btn-outline-forest-green">
                                         <i class="fas fa-file-pdf me-2"></i> Exportar a PDF
                                     </button>
                                 </div>
+
+                                <h5 class="mb-3">Carga de dataset por usuario</h5>
+                                <!-- ── Carga rápida sintética ─────────────────────────────── -->
+                                <div class="card border-0 shadow-sm mb-4" style="background:linear-gradient(135deg,#e8f5e9,#f1f8e9);">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <span class="badge bg-success fs-6 px-3 py-2"><i class="fas fa-seedling me-1"></i>Carga rápida sintética</span>
+                                        </div>
+                                        <p class="text-muted small mb-3">Genera e importa automáticamente un conjunto de datos realistas (3 cultivos + lecturas semanales + edafología global) sin necesidad de preparar un archivo JSON.</p>
+                                        <div class="row g-2 align-items-center mb-3">
+                                            <div class="col-sm-4">
+                                                <label class="form-label small fw-semibold">Usuario destino</label>
+                                                <select id="syntheticUserSelect" class="form-select form-select-sm">
+                                                    <option value="">Cargando...</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <label class="form-label small fw-semibold">Semanas de datos</label>
+                                                <input id="syntheticWeeks" type="number" class="form-control form-control-sm" min="4" max="104" value="24">
+                                            </div>
+                                            <div class="col-sm-3">
+                                                <label class="form-label small fw-semibold">Intervalo (días)</label>
+                                                <input id="syntheticIntervalDays" type="number" class="form-control form-control-sm" min="1" max="30" value="7">
+                                            </div>
+                                            <div class="col-sm-2 d-flex align-items-end">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="syntheticClearExisting" checked>
+                                                    <label class="form-check-label small" for="syntheticClearExisting">Reemplazar</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Preview de cultivos que se cargarán -->
+                                        <div class="d-flex flex-wrap gap-2 mb-3">
+                                            <span class="badge rounded-pill" style="background:#2e7d32;font-size:0.75rem;"><i class="fas fa-corn me-1"></i>Maíz criollo</span>
+                                            <span class="badge rounded-pill" style="background:#558b2f;font-size:0.75rem;"><i class="fas fa-circle-dot me-1"></i>Frijol negro</span>
+                                            <span class="badge rounded-pill" style="background:#e65100;font-size:0.75rem;"><i class="fas fa-pepper-hot me-1"></i>Chile serrano</span>
+                                            <span class="badge rounded-pill bg-info text-dark" style="font-size:0.75rem;"><i class="fas fa-temperature-half me-1"></i>Edafología global</span>
+                                        </div>
+                                        <button id="datasetSyntheticBtn" type="button" class="btn btn-success px-4">
+                                            <i class="fas fa-bolt me-2"></i>Cargar datos sintéticos
+                                        </button>
+                                        <div id="syntheticResult" class="mt-3" style="display:none;"></div>
+                                    </div>
+                                </div>
+                                <!-- ── Importación avanzada (JSON) ─────────────────────────── -->
+                                <details class="mb-4">
+                                    <summary class="text-muted small fw-semibold" style="cursor:pointer;">Importación avanzada (JSON / archivo)</summary>
+                                <div class="border rounded-3 p-3 bg-light-subtle mt-2">
+                                    <p class="text-muted mb-3">Selecciona un usuario y carga un dataset JSON para inicializar o reemplazar su información de monitoreo.</p>
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label for="datasetUserSelect" class="form-label">Usuario destino</label>
+                                            <select id="datasetUserSelect" class="form-select">
+                                                <option value="">Cargando usuarios...</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="datasetWeeks" class="form-label">Semanas demo</label>
+                                            <input id="datasetWeeks" type="number" class="form-control" min="4" max="104" value="24">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="datasetIntervalDays" class="form-label">Intervalo (días)</label>
+                                            <input id="datasetIntervalDays" type="number" class="form-control" min="1" max="30" value="7">
+                                        </div>
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="datasetClearExisting" checked>
+                                        <label class="form-check-label" for="datasetClearExisting">Reemplazar datos existentes del usuario</label>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="datasetFileInput" class="form-label">Archivo JSON (opcional)</label>
+                                        <input id="datasetFileInput" type="file" class="form-control" accept="application/json,.json">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="datasetJsonInput" class="form-label">Dataset JSON</label>
+                                        <textarea id="datasetJsonInput" class="form-control" rows="8" placeholder='{"crops":[],"sensor_readings":[],"global_readings":[]}'></textarea>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button id="datasetLoadTemplateBtn" type="button" class="btn btn-outline-secondary">
+                                            <i class="fas fa-code me-2"></i>Cargar plantilla
+                                        </button>
+                                        <button id="datasetBootstrapBtn" type="button" class="btn btn-outline-forest-green">
+                                            <i class="fas fa-wand-magic-sparkles me-2"></i>Generar dataset demo
+                                        </button>
+                                        <button id="datasetImportBtn" type="button" class="btn btn-forest-green">
+                                            <i class="fas fa-upload me-2"></i>Importar dataset
+                                        </button>
+                                    </div>
+                                </div>
+                                </details>
                                 
                                 <h5 class="mb-3">Eliminar cuenta</h5>
                                 <div class="mb-4">
@@ -646,25 +806,8 @@
 
 <!-- Bootstrap Bundle con Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- JS personalizado -->
-<script>
-    // Habilitar botón de eliminar cuenta cuando se marca el checkbox
-    document.getElementById('confirmDelete').addEventListener('change', function() {
-        document.getElementById('deleteAccountBtn').disabled = !this.checked;
-    });
-
-    // Mostrar alerta al hacer clic en eliminar cuenta
-    document.getElementById('deleteAccountBtn').addEventListener('click', function() {
-        alert('Cuenta eliminada (esto es una simulación)');
-        const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteAccountModal'));
-        deleteModal.hide();
-    });
-
-    // Toggle para la sidebar
-    document.getElementById('sidebarToggle').addEventListener('click', function() {
-        document.getElementById('sidebar').classList.toggle('sidebar-collapsed');
-        document.getElementById('mainContent').classList.toggle('main-content-expanded');
-    });
-</script>
+<script src="js/milpa-api.js"></script>
+<script src="js/milpa-shell.js"></script>
+<script src="js/configuracion.js"></script>
 
 </body> </html>

@@ -7,6 +7,8 @@ import json
 from typing import Any, Optional
 from pathlib import Path
 
+from milpa_ai_backend.core.config import settings
+
 
 class FeatureFlags:
     """
@@ -14,8 +16,8 @@ class FeatureFlags:
     Permite cambiar configuración sin reiniciar servicios.
     """
     
-    def __init__(self, db_path: str = "data/main.db"):
-        self.db_path = db_path
+    def __init__(self, db_path: str | None = None):
+        self.db_path = db_path or settings.SQLITE_PATH
         self._cache: dict[str, dict] = {}
         self._load_flags()
     

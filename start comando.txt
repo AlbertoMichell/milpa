@@ -1,0 +1,13 @@
+# MILPA — arranque unificado (mismo efecto con cualquiera de estas):
+
+# Opción A: doble clic o consola
+start.bat
+
+# Opción B: PowerShell (misma lógica que A; Bypass evita bloqueo por ExecutionPolicy)
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force; cd C:\Users\Usuario\Downloads\milpa; .\start.ps1
+
+# Opción C: una sola línea
+powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Users\Usuario\Downloads\milpa\start.ps1"
+
+# Puertos: 8000 API | 8080 Presenter | 4000 MILPA Web
+# No hace falta: cd frontend + node server.js (start.ps1 ya lo hace)

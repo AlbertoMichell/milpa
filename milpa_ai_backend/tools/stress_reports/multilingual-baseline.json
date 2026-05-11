@@ -1,0 +1,547 @@
+{
+  "label": "multilingual-baseline",
+  "health": {
+    "ok": true
+  },
+  "ingest": {
+    "status": "ok",
+    "doc_id": "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+    "title": "MILPA stress test sintético",
+    "stored_path": "C:\\Users\\Usuario\\Downloads\\milpa\\milpa_ai_backend\\data\\documents\\1778088152__stress_pdf_milpa.pdf",
+    "pages": 5,
+    "fragments": 17,
+    "tables": 9,
+    "indexed": 17,
+    "_http_status": 200,
+    "_elapsed_ms": 12515
+  },
+  "db": {
+    "doc_id": "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+    "fragments_by_page": [
+      {
+        "page_start": 1,
+        "source": "native",
+        "n": 2,
+        "chars": 1476
+      },
+      {
+        "page_start": 1,
+        "source": "table",
+        "n": 3,
+        "chars": 2106
+      },
+      {
+        "page_start": 2,
+        "source": "native",
+        "n": 2,
+        "chars": 2069
+      },
+      {
+        "page_start": 2,
+        "source": "table",
+        "n": 1,
+        "chars": 2140
+      },
+      {
+        "page_start": 3,
+        "source": "native",
+        "n": 2,
+        "chars": 1942
+      },
+      {
+        "page_start": 3,
+        "source": "table",
+        "n": 1,
+        "chars": 1985
+      },
+      {
+        "page_start": 4,
+        "source": "native",
+        "n": 1,
+        "chars": 542
+      },
+      {
+        "page_start": 4,
+        "source": "table",
+        "n": 2,
+        "chars": 1076
+      },
+      {
+        "page_start": 5,
+        "source": "native",
+        "n": 1,
+        "chars": 635
+      },
+      {
+        "page_start": 5,
+        "source": "table",
+        "n": 2,
+        "chars": 836
+      }
+    ],
+    "fragment_summary": {
+      "n_frag": 17,
+      "chars": 14807,
+      "n_native": 8,
+      "n_ocr": 0
+    },
+    "tables": {
+      "n_tables": 9,
+      "csv_bytes": 7801
+    },
+    "canary_in_fragments": [
+      {
+        "id": "two_col",
+        "needle": "AGUACATILLO_DOSCOLUMNAS_CANARIO_4321",
+        "hits": [
+          {
+            "fragment_id": "e0cce8aabd694b2589951a47e5af6379",
+            "page_start": 2,
+            "chars": 1197,
+            "source": "native"
+          },
+          {
+            "fragment_id": "2b6ac3275aba440da8b2e74f674f46b1",
+            "page_start": 2,
+            "chars": 2140,
+            "source": "table"
+          }
+        ]
+      },
+      {
+        "id": "three_col",
+        "needle": "PETUNIA_TRESCOLUMNAS_CANARIO_8765",
+        "hits": [
+          {
+            "fragment_id": "d5ef6b6456cf43e887d6fe190ba8fd34",
+            "page_start": 3,
+            "chars": 1165,
+            "source": "native"
+          }
+        ]
+      },
+      {
+        "id": "table_yield",
+        "needle": "JITOMATE_TABLA_RENDIMIENTO_CANARIO_RBR42",
+        "hits": [
+          {
+            "fragment_id": "55a2827de885439ea682f9b1169a6497",
+            "page_start": 1,
+            "chars": 1196,
+            "source": "native"
+          },
+          {
+            "fragment_id": "44a4dc223e2c4f0cad853f09aba8d81d",
+            "page_start": 1,
+            "chars": 411,
+            "source": "table"
+          },
+          {
+            "fragment_id": "16cefe9b059d4896b5552b1ce8cdddbc",
+            "page_start": 1,
+            "chars": 506,
+            "source": "table"
+          }
+        ]
+      },
+      {
+        "id": "table_dense",
+        "needle": "PIPILA_TABLA_DENSA_CANARIO_QWQ73",
+        "hits": [
+          {
+            "fragment_id": "da35454bae9c42cfb12246977ced29bd",
+            "page_start": 4,
+            "chars": 542,
+            "source": "native"
+          },
+          {
+            "fragment_id": "847f93a2a4e642f6ae14e559b48006a1",
+            "page_start": 4,
+            "chars": 589,
+            "source": "table"
+          }
+        ]
+      },
+      {
+        "id": "chart_legend",
+        "needle": "CHIPILIN_FIGURA_CANARIO_LMN15",
+        "hits": [
+          {
+            "fragment_id": "6ecd2b3e6bb141039f0da45d25fab8d7",
+            "page_start": 5,
+            "chars": 635,
+            "source": "native"
+          },
+          {
+            "fragment_id": "54ce15babb564f53beb2e75911d66507",
+            "page_start": 5,
+            "chars": 775,
+            "source": "table"
+          }
+        ]
+      },
+      {
+        "id": "list_item",
+        "needle": "MEZQUITE_LISTA_CANARIO_KP9",
+        "hits": [
+          {
+            "fragment_id": "55a2827de885439ea682f9b1169a6497",
+            "page_start": 1,
+            "chars": 1196,
+            "source": "native"
+          },
+          {
+            "fragment_id": "0144be61ab084f3cac8a2109ca7ef4ac",
+            "page_start": 1,
+            "chars": 1189,
+            "source": "table"
+          },
+          {
+            "fragment_id": "16cefe9b059d4896b5552b1ce8cdddbc",
+            "page_start": 1,
+            "chars": 506,
+            "source": "table"
+          }
+        ]
+      },
+      {
+        "id": "footer_real",
+        "needle": "PIE_REAL_NO_REPETIDO_99",
+        "hits": [
+          {
+            "fragment_id": "6ecd2b3e6bb141039f0da45d25fab8d7",
+            "page_start": 5,
+            "chars": 635,
+            "source": "native"
+          },
+          {
+            "fragment_id": "54ce15babb564f53beb2e75911d66507",
+            "page_start": 5,
+            "chars": 775,
+            "source": "table"
+          }
+        ]
+      }
+    ]
+  },
+  "queries": [
+    {
+      "canary_id": "two_col",
+      "mode": "hybrid",
+      "elapsed_ms": 35,
+      "insufficient_evidence": false,
+      "rank_of_canary": 0,
+      "top_scores": [
+        0.0484,
+        0.04412,
+        0.04385,
+        0.04317,
+        0.03696
+      ],
+      "doc_id_in_top": [
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "two_col",
+      "mode": "lex",
+      "elapsed_ms": 26,
+      "insufficient_evidence": false,
+      "rank_of_canary": 2,
+      "top_scores": [
+        6.65316,
+        5.95569,
+        5.9495,
+        5.57581,
+        4.48103
+      ],
+      "doc_id_in_top": [
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "three_col",
+      "mode": "hybrid",
+      "elapsed_ms": 40,
+      "insufficient_evidence": false,
+      "rank_of_canary": 3,
+      "top_scores": [
+        0.0441,
+        0.04385,
+        0.04071,
+        0.04066,
+        0.04
+      ],
+      "doc_id_in_top": [
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "three_col",
+      "mode": "lex",
+      "elapsed_ms": 28,
+      "insufficient_evidence": false,
+      "rank_of_canary": 5,
+      "top_scores": [
+        6.65316,
+        5.95569,
+        5.9495,
+        5.57581,
+        4.48103
+      ],
+      "doc_id_in_top": [
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "table_yield",
+      "mode": "hybrid",
+      "elapsed_ms": 25,
+      "insufficient_evidence": false,
+      "rank_of_canary": 0,
+      "top_scores": [
+        0.04472,
+        0.03545,
+        0.03231,
+        0.03219,
+        0.03102
+      ],
+      "doc_id_in_top": [
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "table_yield",
+      "mode": "lex",
+      "elapsed_ms": 23,
+      "insufficient_evidence": false,
+      "rank_of_canary": 0,
+      "top_scores": [
+        7.05537,
+        6.97384,
+        6.17149,
+        3.36285,
+        2.86906
+      ],
+      "doc_id_in_top": [
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "table_dense",
+      "mode": "hybrid",
+      "elapsed_ms": 88,
+      "insufficient_evidence": false,
+      "rank_of_canary": 0,
+      "top_scores": [
+        0.04437,
+        0.04267,
+        0.0362,
+        0.03591,
+        0.03556
+      ],
+      "doc_id_in_top": [
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "table_dense",
+      "mode": "lex",
+      "elapsed_ms": 21,
+      "insufficient_evidence": false,
+      "rank_of_canary": 0,
+      "top_scores": [
+        12.07141,
+        8.95168,
+        2.84404,
+        2.82077,
+        2.69631
+      ],
+      "doc_id_in_top": [
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "chart_legend",
+      "mode": "hybrid",
+      "elapsed_ms": 81,
+      "insufficient_evidence": false,
+      "rank_of_canary": 0,
+      "top_scores": [
+        0.04878,
+        0.04004,
+        0.03124,
+        0.02459,
+        0.02031
+      ],
+      "doc_id_in_top": [
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "chart_legend",
+      "mode": "lex",
+      "elapsed_ms": 4,
+      "insufficient_evidence": false,
+      "rank_of_canary": 0,
+      "top_scores": [
+        10.26018,
+        9.89824,
+        4.16241,
+        4.05208,
+        2.82066
+      ],
+      "doc_id_in_top": [
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "list_item",
+      "mode": "hybrid",
+      "elapsed_ms": 54,
+      "insufficient_evidence": false,
+      "rank_of_canary": 0,
+      "top_scores": [
+        0.04918,
+        0.02419,
+        0.02063,
+        0.02031,
+        0.02
+      ],
+      "doc_id_in_top": [
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "list_item",
+      "mode": "lex",
+      "elapsed_ms": 29,
+      "insufficient_evidence": false,
+      "rank_of_canary": 0,
+      "top_scores": [
+        6.71606,
+        6.46957,
+        4.23868,
+        4.05777,
+        4.04044
+      ],
+      "doc_id_in_top": [
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "footer_real",
+      "mode": "hybrid",
+      "elapsed_ms": 70,
+      "insufficient_evidence": false,
+      "rank_of_canary": 0,
+      "top_scores": [
+        0.04464,
+        0.03263,
+        0.03098,
+        0.02322,
+        0.01776
+      ],
+      "doc_id_in_top": [
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "868aa94971fef04a03e87b79e579c3f3d69521b1f1b85124288b09ccd1ffa9c9"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "footer_real",
+      "mode": "lex",
+      "elapsed_ms": 24,
+      "insufficient_evidence": false,
+      "rank_of_canary": 0,
+      "top_scores": [
+        15.44403,
+        15.30962,
+        4.11199,
+        3.93638,
+        3.73028
+      ],
+      "doc_id_in_top": [
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+        "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2"
+      ],
+      "canary_in_top_doc": true
+    }
+  ],
+  "summary": {
+    "doc_id": "8091d23554a15551138bd1733d08003d3cfd6fa90631df25f89c8689120572b2",
+    "ingest_status": 200,
+    "ingest_elapsed_ms": 12515,
+    "pages": 5,
+    "fragments": 17,
+    "tables": 9,
+    "indexed": 17,
+    "canary_recall_in_top": "14/14"
+  }
+}

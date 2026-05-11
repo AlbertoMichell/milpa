@@ -18,6 +18,34 @@ def get_conn() -> sqlite3.Connection:
     conn.execute("PRAGMA synchronous=NORMAL;")
     return conn
 
+def _backfill_fragment_seq() -> None:
+    """
+    Asigna seq 0,1,2,… por documento en orden lógico (página, orden de inserción).
+    Antes seq existía, rowid aproxima el orden de inserción; UUID no lo preserva.
+    """
+    with get_conn() as conn:
+        cur = conn.cursor()
+        try:
+            cur.execute("PRAGMA table_info(fragments)")
+            if "seq" not in {r[1] for r in cur.fetchall()}:
+                return
+        except Exception:
+            return
+        cur.execute("SELECT COUNT(*) FROM fragments WHERE seq IS NULL")
+        if cur.fetchone()[0] == 0:
+            return
+        cur.execute(
+            "SELECT doc_id, fragment_id, rowid FROM fragments ORDER BY doc_id, page_start, rowid"
+        )
+        rows = cur.fetchall()
+        n_by_doc: dict = {}
+        for doc_id, fid, _ in rows:
+            n = n_by_doc.get(doc_id, 0)
+            cur.execute("UPDATE fragments SET seq = ? WHERE fragment_id = ?", (n, fid))
+            n_by_doc[doc_id] = n + 1
+        conn.commit()
+
+
 def run_migrations():
     """
     Ejecuta migraciones idempotentes con yoyo (sólo si hay cambios).
@@ -28,3 +56,4 @@ def run_migrations():
     migrations = read_migrations(str(migrations_path))
     with backend.lock():
         backend.apply_migrations(backend.to_apply(migrations))
+    _backfill_fragment_seq()

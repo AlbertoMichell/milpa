@@ -5,27 +5,42 @@
   },
   "segments": [
     {
-      "segment_id": "e4766281-e732-46db-9ced-676b9ca9589a",
+      "segment_id": "df62c0f4-9c09-4516-9a7c-9e37b84312ff",
+      "max_doc": 33,
+      "deletes": null
+    },
+    {
+      "segment_id": "45dc86ca-f796-4698-82d9-fd0756b9e034",
       "max_doc": 1,
       "deletes": null
     },
     {
-      "segment_id": "bd219475-2e1a-4c5e-8cb5-fd57a0b8c1db",
+      "segment_id": "d70c1d65-bade-4a87-9877-c28e43969a64",
       "max_doc": 1,
       "deletes": null
     },
     {
-      "segment_id": "866cb495-e7ca-4b01-bfb5-673c7d2f3375",
+      "segment_id": "bd223920-7bc5-412a-a36b-296748bdbebd",
       "max_doc": 1,
       "deletes": null
     },
     {
-      "segment_id": "21e78492-d7c1-4adf-8d9a-4eb58b38fa48",
+      "segment_id": "72738840-0a03-49e6-a299-bc40c82a1934",
       "max_doc": 1,
       "deletes": null
     },
     {
-      "segment_id": "604b4e05-02d3-44c0-a2dc-fbf121dd2166",
+      "segment_id": "881187b9-3c70-48ae-9003-0e2be41ca9f4",
+      "max_doc": 1,
+      "deletes": null
+    },
+    {
+      "segment_id": "53060bf7-f13e-435d-b7a7-118cf82291fc",
+      "max_doc": 1,
+      "deletes": null
+    },
+    {
+      "segment_id": "8a9ba3b4-e19c-47cb-8131-ba07d41934e2",
       "max_doc": 1,
       "deletes": null
     }
@@ -38,7 +53,7 @@
         "indexing": {
           "record": "position",
           "fieldnorms": true,
-          "tokenizer": "default"
+          "tokenizer": "raw"
         },
         "stored": true,
         "fast": false
@@ -51,7 +66,7 @@
         "indexing": {
           "record": "position",
           "fieldnorms": true,
-          "tokenizer": "default"
+          "tokenizer": "ml_es"
         },
         "stored": false,
         "fast": false
@@ -64,7 +79,7 @@
         "indexing": {
           "record": "position",
           "fieldnorms": true,
-          "tokenizer": "default"
+          "tokenizer": "raw"
         },
         "stored": true,
         "fast": false
@@ -77,12 +92,12 @@
         "indexing": {
           "record": "position",
           "fieldnorms": true,
-          "tokenizer": "default"
+          "tokenizer": "raw"
         },
         "stored": true,
         "fast": false
       }
     }
   ],
-  "opstamp": 10
+  "opstamp": 664
 }

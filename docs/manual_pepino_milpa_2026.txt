@@ -1,0 +1,303 @@
+MANUAL TÉCNICO DEL CULTIVO DE PEPINO EN PARCELAS DE MILPA
+Edición operativa 2026 — guía agronómica integral para acompañar al sistema MILPA
+Fuente curada para la biblioteca MILPA. Procesable por el extractor TXT del backend.
+
+────────────────────────────────────────────────────────────────────────────
+A. INFORMACIÓN GENERAL DEL CULTIVO
+────────────────────────────────────────────────────────────────────────────
+
+Nombre común: pepino
+Nombre científico: Cucumis sativus.
+La taxonomía MILPA puede mapear sinónimos como "cucumis", "pepinillo" y
+"cohombro" al término canónico "pepino" usando la tabla synonyms.json.
+
+Tipo de cultivo: cucurbitácea anual de hábito rastrero o trepador. Se
+cultiva por su fruto fresco para consumo humano, en parcelas a cielo
+abierto y en invernadero. Es generalmente cultivo de ciclo corto.
+
+Ciclo aproximado: 60 a 75 días desde siembra hasta primera cosecha,
+con cosechas escalonadas durante 30 a 45 días adicionales. El sistema
+guarda en `crop_profiles.cycle_days` un valor operativo de 75 días para
+pepino, valor que se puede ajustar con un UPDATE sin tocar código.
+
+Requerimientos generales: suelos sueltos, profundos, con materia orgánica
+y buen drenaje. Necesita riego frecuente y constante; la planta es muy
+sensible al estrés hídrico y al estrés térmico, especialmente durante
+floración y formación de frutos.
+
+────────────────────────────────────────────────────────────────────────────
+B. CONDICIONES CLIMÁTICAS IDEALES
+────────────────────────────────────────────────────────────────────────────
+
+Temperatura óptima diurna: 22 °C a 30 °C
+Temperatura mínima tolerable: 14 °C — por debajo se detiene la
+germinación y se daña la planta.
+Temperatura máxima crítica: 32 °C — por encima de 33 °C aparecen
+abortos florales, frutos deformes y golpe de sol; a 55 °C el daño es
+severo y debe activarse alerta de calor extremo y medidas de emergencia.
+Humedad relativa recomendada: 60 % a 80 %.
+
+Riesgos por calor extremo:
+  - Aborto floral.
+  - Marchitez foliar.
+  - Frutos amargos o deformes.
+  - Golpe de sol en frutos expuestos.
+  - Reducción de cuajado y rendimiento.
+
+Riesgos por frío:
+  - Detención de germinación.
+  - Daño por heladas en plántula.
+  - Pudrición radical en suelo frío y húmedo.
+
+Riesgos por exceso de lluvia:
+  - Mildiú, oidio, antracnosis y pudriciones.
+  - Lavado de nutrientes solubles.
+  - Encharcamiento y muerte radical.
+
+────────────────────────────────────────────────────────────────────────────
+C. CONDICIONES EDAFOLÓGICAS IDEALES
+────────────────────────────────────────────────────────────────────────────
+
+Tipo de suelo recomendado: franco a franco-arenoso, profundo, con buena
+estructura y drenaje. Evitar suelos pesados sin acondicionamiento.
+
+pH recomendado: 5.8 a 7.0.
+Drenaje: indispensable, no tolera encharcamientos prolongados.
+Materia orgánica: superior a 3 %, con incorporación de compost antes de
+siembra.
+
+Nitrógeno (N): demanda media-alta, 100 a 150 kg/ha.
+Fósforo (P): 60 a 80 kg/ha, importante para enraizamiento y floración.
+Potasio (K): 120 a 180 kg/ha, fundamental para calidad y firmeza de fruto.
+Conductividad eléctrica: por debajo de 2.5 dS/m. Salinidades altas
+reducen germinación y rendimiento.
+Humedad del suelo recomendada: 60 % a 85 % de capacidad de campo
+(rango operativo MILPA: optimal_soil_moisture_min=55, optimal_soil_moisture_max=80).
+
+────────────────────────────────────────────────────────────────────────────
+D. MANEJO DEL CULTIVO
+────────────────────────────────────────────────────────────────────────────
+
+Preparación del terreno: barbecho, rastreo y formación de surcos o camas
+elevadas. Incorporar materia orgánica al menos 15 días antes de siembra.
+
+Siembra: directa, una a dos semillas por golpe a 1.5 cm de profundidad,
+distancia 0.4 a 0.6 m entre plantas y 1.2 a 1.8 m entre surcos.
+
+Riego: alta frecuencia, mantener el suelo húmedo sin encharcar. El
+sistema por goteo es preferible para reducir mojado del follaje y
+prevenir hongos. En floración y fructificación, no permitir periodos
+prolongados de estrés hídrico.
+
+Fertilización: aplicar la base de N-P-K antes de siembra y fraccionar
+nitrógeno y potasio por fertirriego durante el ciclo, intensificando
+potasio en fructificación.
+
+Control de malezas: deshierbe manual o mecánico temprano. La cobertura
+con acolchado plástico u orgánico reduce malezas y conserva humedad.
+
+Manejo de plagas: monitoreo de mosca blanca, pulgones, minadores,
+trips, araña roja y diabrótica. Usar control biológico y trampas
+cromáticas; aplicar productos selectivos solo cuando se superen los
+umbrales de población.
+
+Manejo de enfermedades: prevenir mildiú, oidio, antracnosis y virosis
+mediante poda de aire, riego basal y rotación. En condiciones de alta
+humedad, intensificar el monitoreo y aplicar tratamientos preventivos.
+
+Poda o guía: el pepino se puede tutorar en espaldera para mejorar
+ventilación, sanidad y eficiencia de cosecha. Eliminar hojas viejas o
+enfermas.
+
+Polinización: requiere insectos polinizadores (abejas) salvo en
+variedades partenocárpicas. Cuidar las poblaciones de polinizadores.
+
+Cosecha: cuando el fruto alcanza tamaño comercial (15 a 25 cm según
+variedad), antes de que tome coloración amarilla. Cosechar cada 1 a 2
+días para mantener producción.
+
+────────────────────────────────────────────────────────────────────────────
+E. SOLUCIÓN A PROBLEMAS AMBIENTALES
+────────────────────────────────────────────────────────────────────────────
+
+Calor excesivo (temperatura > 33 °C):
+  - Programar riego en horas frescas (madrugada o atardecer).
+  - Aumentar la frecuencia y reducir el volumen por evento para evitar
+    estrés hídrico.
+  - Aplicar acolchado plástico blanco o cobertura orgánica para reducir
+    la temperatura del suelo y la evaporación.
+  - Instalar malla sombra del 30 a 50 % cuando el calor sea sostenido.
+  - Suspender fertilizaciones pesadas durante el evento térmico.
+  - Monitorear marchitez y golpe de sol.
+  - Reducir el estrés térmico, priorizar la protección del cultivo y
+    revisar daños en flores y frutos.
+
+Calor extremo (temperatura ≥ 55 °C):
+  - Activar alerta de calor extremo y medidas de emergencia.
+  - Suspender labores de campo no esenciales.
+  - Aplicar riego controlado en horarios frescos para evitar shock
+    térmico, pero sin saturar el suelo.
+  - Instalar sombreo temporal de emergencia.
+  - Evitar fertilización fuerte durante el estrés térmico severo.
+  - Documentar daño foliar, marchitez y aborto floral.
+  - Priorizar protección del cultivo, revisar humedad del suelo y
+    monitorear marchitez.
+
+Sequía y baja humedad del suelo (soil_moisture < 55 %):
+  - Programar riego inmediato en horarios frescos.
+  - Aumentar la frecuencia de riego.
+  - Aplicar acolchado para conservar humedad.
+  - Revisar el sistema de riego en busca de fugas y obstrucciones.
+  - Monitorear marchitez foliar como señal de estrés hídrico.
+  - Evitar encharcamiento al corregir el déficit.
+  - Reforzar el monitoreo de humedad del suelo.
+
+Baja humedad ambiental (air_humidity < 50 %):
+  - Reducir el estrés hídrico mediante riego suplementario y mantillo.
+  - Programar riego nocturno o en madrugada.
+  - Reforzar el monitoreo de evapotranspiración.
+  - Proteger el cultivo en horas de mayor radiación con malla sombra
+    temporal si está disponible.
+
+Humedad excesiva del suelo:
+  - Mejorar el drenaje, abrir zanjas si aplica.
+  - Suspender riego temporalmente.
+  - Vigilar pudrición de raíz y enfermedades fúngicas.
+
+Lluvia excesiva:
+  - Suspender riego.
+  - Reforzar drenaje y monitoreo fitosanitario.
+  - Aplicar fungicidas preventivos si la previsión meteorológica anuncia
+    persistencia de humedad alta.
+
+Riesgo de hongos:
+  - Mejorar ventilación con poda de hojas bajas.
+  - Reducir riego foliar.
+  - Aplicar tratamientos preventivos compatibles.
+
+Baja temperatura:
+  - Proteger con cobertura plástica o agrotextil.
+  - Suspender riego en las horas más frías.
+
+Viento fuerte:
+  - Instalar tutorado y barreras rompevientos.
+  - Verificar daños mecánicos y reforzar amarres.
+
+────────────────────────────────────────────────────────────────────────────
+F. SOLUCIÓN A PROBLEMAS NUTRICIONALES
+────────────────────────────────────────────────────────────────────────────
+
+Falta de nitrógeno: aplicar fuente nitrogenada (urea, sulfato amónico,
+té de composta o fuentes orgánicas equivalentes) y monitorear coloración
+de hojas nuevas.
+
+Exceso de nitrógeno: suspender aportes y aumentar fertilización
+potásica para reequilibrar relación N/K.
+
+Falta de fósforo: aplicar fuente fosfatada (superfosfato simple o
+roca fosfórica) cerca de la zona radical y monitorear coloración rojiza
+en hojas viejas.
+
+Falta de potasio: reforzar la fertilización potásica (sulfato o cloruro
+de potasio) durante fructificación; vigilar bordes foliares amarillos.
+
+pH bajo: aplicar enmienda con cal agrícola dolomítica.
+pH alto: aplicar azufre elemental o materia orgánica acidificante.
+
+Salinidad alta: lavar el perfil con riegos prolongados y mejorar
+drenaje; reducir uso de fertilizantes con alto índice salino.
+
+Baja materia orgánica: incorporar compost, estiércol bien curado y
+abonos verdes; promover rotación con leguminosas.
+
+────────────────────────────────────────────────────────────────────────────
+G. ACTIVIDADES RECOMENDADAS POR SITUACIÓN
+────────────────────────────────────────────────────────────────────────────
+
+Germinación (días 0 a 8): mantener humedad constante, vigilar plagas
+del suelo, evitar costras.
+
+Crecimiento vegetativo (días 9 a 25): primera fertilización
+nitrogenada, deshierbe, monitoreo de plagas.
+
+Floración (días 26 a 40): aporte de fósforo y potasio, monitorizar
+polinizadores, vigilar abortos por estrés térmico.
+
+Fructificación (días 41 a 60): reforzar potasio, mantener humedad
+estable, monitorear plagas y enfermedades, iniciar cosechas.
+
+Antes de cosecha: revisar madurez, calibrar tamaño, planear cosechas
+escalonadas cada 1 a 2 días.
+
+Actividades correctivas según condiciones del suelo:
+  - pH fuera de rango: corregir según F.
+  - Baja materia orgánica: incorporar compost en próximo ciclo.
+  - Alta salinidad: lavado y mejora de drenaje.
+
+Actividades correctivas según condiciones climáticas:
+  - Calor: ver E.
+  - Frío: cubierta plástica.
+  - Lluvia excesiva: suspender riego y mejorar drenaje.
+
+────────────────────────────────────────────────────────────────────────────
+H. REGLAS DE DECISIÓN
+────────────────────────────────────────────────────────────────────────────
+
+Las siguientes reglas son lineamientos genéricos que el sistema MILPA
+puede consumir como conocimiento. NO son código: son reglas en lenguaje
+natural recuperables por el motor RAG. Los umbrales se leen siempre
+desde `crop_profiles` o desde el documento, nunca desde código.
+
+IF temperatura > umbral_calor THEN aplicar_sombra_y_riego_controlado
+IF temperatura >= 55 THEN activar_alerta_calor_extremo_y_medidas_de_emergencia
+IF temperatura > optimal_temp_max THEN reducir_estres_termico_y_revisar_dano_floral_y_de_fruto
+IF humedad_suelo < humedad_suelo_minima THEN aumentar_riego_en_horarios_frescos
+IF humedad_suelo < (humedad_suelo_minima - 10) THEN activar_alerta_sequia_y_reforzar_monitoreo
+IF humedad_ambiental < humedad_ambiental_minima THEN reducir_estres_hidrico_y_proteger_de_radiacion
+IF humedad_suelo > humedad_suelo_maxima THEN mejorar_drenaje_y_suspender_riego
+IF lluvia_excesiva = TRUE THEN suspender_riego_y_prevenir_hongos
+IF nitrogeno_bajo = TRUE THEN aplicar_fuente_nitrogenada
+IF potasio_bajo = TRUE THEN reforzar_fertilizacion_potasica
+IF pH_fuera_de_rango = TRUE THEN corregir_suelo
+IF conductividad_alta = TRUE THEN lavar_perfil_y_mejorar_drenaje
+IF etapa = floracion AND temperatura > optimal_temp_max THEN proteger_polinizadores_y_evitar_aborto_floral
+IF etapa = fructificacion AND humedad_suelo < humedad_suelo_minima THEN priorizar_riego_y_proteger_fruto
+
+ACCIONES PREVENTIVAS CONTRA TEMPERATURA EXTREMA Y CALOR DE 55 °C:
+  - Activar alerta de calor extremo.
+  - Programar riego en horarios frescos.
+  - Aplicar sombreo temporal.
+  - Monitorear marchitez y daño en frutos.
+  - Reducir estrés térmico.
+  - Revisar daño en flores y frutos.
+  - Evitar fertilización fuerte durante estrés térmico severo.
+  - Priorizar la protección del cultivo y la integridad foliar.
+  - Suspender labores no esenciales en horas de mayor radiación.
+  - Documentar evidencia para ajustar el manejo en futuros ciclos.
+
+ACCIONES PREVENTIVAS CONTRA BAJA HUMEDAD AMBIENTAL Y BAJA HUMEDAD DEL SUELO:
+  - Programar riego en horarios frescos.
+  - Aumentar la frecuencia de riego sin causar encharcamiento.
+  - Revisar humedad del suelo en distintos puntos de la parcela.
+  - Aplicar acolchado para reducir evaporación.
+  - Monitorear marchitez foliar.
+  - Reducir el estrés hídrico mediante riego suplementario.
+  - Ajustar la frecuencia de riego según los datos del sensor.
+  - Reforzar el monitoreo de humedad del suelo.
+  - Priorizar el riego en horas frescas para mejorar absorción.
+  - Evitar encharcamiento al corregir déficit.
+  - Vigilar la recuperación del cultivo durante 48 horas posteriores
+    al inicio del riego correctivo.
+
+────────────────────────────────────────────────────────────────────────────
+NOTAS FINALES
+────────────────────────────────────────────────────────────────────────────
+
+Este documento se publica en la biblioteca MILPA como una de varias
+fuentes de conocimiento agronómico. El sistema NO depende de un
+documento específico: el motor RAG recupera evidencia por similitud
+semántica y lexical, y los umbrales operativos se leen desde
+`crop_profiles` y desde la taxonomía dinámica del sistema.
+
+Cualquier cultivo nuevo registrado en `crop_profiles` se beneficia
+del mismo flujo, sin necesidad de tocar código.

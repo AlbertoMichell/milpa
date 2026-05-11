@@ -57,6 +57,146 @@ def reciprocal_rank_fusion(vec_hits: List[Dict[str,Any]], bm25_hits: List[Dict[s
     return fused
 
 # -----------------------------
+# Re-ranking por coincidencia de términos
+# -----------------------------
+def rerank_by_term_coverage(query: str, hits: List[Dict[str,Any]], fragment_texts: Dict[str, str]) -> List[Dict[str,Any]]:
+    """
+    Aplica boost al score según cuántos términos únicos de la query aparecen en el fragmento.
+    Esto prioriza fragmentos con mayor cobertura de la pregunta.
+    """
+    import re
+    
+    # Extraer términos significativos de la query (sin stopwords básicos)
+    stopwords = {'de', 'el', 'la', 'los', 'las', 'un', 'una', 'es', 'en', 'del', 'al', 'por', 'para', 
+                 'que', 'qué', 'cuál', 'cuáles', 'cómo', 'a', 'y', 'o', 'u', 'e'}
+    query_lower = query.lower()
+    query_terms = [w for w in re.findall(r'\w+', query_lower) if len(w) > 2 and w not in stopwords]
+    
+    if not query_terms:
+        return hits
+    
+    # Calcular boost para cada hit
+    reranked = []
+    for hit in hits:
+        fid = hit["fragment_id"]
+        text = fragment_texts.get(fid, "").lower()
+        
+        # Contar términos que aparecen en el fragmento
+        matched_terms = sum(1 for term in query_terms if term in text)
+        coverage_ratio = matched_terms / len(query_terms)
+        
+        # Boost: multiplicar score original por (1 + coverage_ratio)
+        # Esto favorece fragmentos con más términos sin eliminar los que tienen pocos
+        original_score = hit.get("rrf_score", 0.0)
+        boosted_score = original_score * (1.0 + coverage_ratio * 0.5)  # Boost moderado del 50%
+        
+        reranked.append({
+            **hit,
+            "rrf_score": boosted_score,
+            "original_score": original_score,
+            "term_coverage": coverage_ratio,
+            "matched_terms": matched_terms
+        })
+    
+    # Re-ordenar por score boosted
+    reranked.sort(key=lambda x: x["rrf_score"], reverse=True)
+    return reranked
+
+
+def apply_crop_focus_to_hits(
+    hits: List[Dict[str, Any]],
+    fragment_texts: Dict[str, str],
+    fragment_entities_json: Dict[str, Optional[str]],
+    crop_focus_norm: Optional[str],
+    retrieval_scope: str,
+    enabled: bool = True,
+) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+    """
+    Anota cada hit con crop_hints / crop_multi y aplica factor multiplicativo si
+    hay foco y ámbito distinto de global.
+    """
+    from milpa_ai_backend.core.logic.crop_hints import (
+        infer_crop_hints,
+        adjustment_factor,
+        should_exclude_strict,
+    )
+
+    trace: Dict[str, Any] = {
+        "crop_focus": crop_focus_norm,
+        "retrieval_scope": retrieval_scope,
+        "enabled": enabled,
+        "per_fragment": [],
+    }
+
+    if not enabled or not crop_focus_norm or retrieval_scope == "global":
+        out: List[Dict[str, Any]] = []
+        for h in hits:
+            fid = h["fragment_id"]
+            hints, multi = infer_crop_hints(
+                fragment_texts.get(fid, ""),
+                fragment_entities_json.get(fid),
+            )
+            out.append(
+                {
+                    **h,
+                    "crop_hints": hints,
+                    "crop_multi": multi,
+                    "crop_adjust_factor": 1.0,
+                    "crop_adjust_reason": "global_scope",
+                }
+            )
+            trace["per_fragment"].append(
+                {
+                    "fragment_id": fid,
+                    "hints": hints,
+                    "multi_crop": multi,
+                    "factor": 1.0,
+                    "excluded": False,
+                }
+            )
+        return out, trace
+
+    adjusted: List[Dict[str, Any]] = []
+    for h in hits:
+        fid = h["fragment_id"]
+        text = fragment_texts.get(fid, "")
+        ents = fragment_entities_json.get(fid)
+        hints, multi = infer_crop_hints(text, ents)
+        factor, reason = adjustment_factor(
+            crop_focus_norm, hints, multi, text, retrieval_scope
+        )
+        excluded = (
+            retrieval_scope == "crop_strict"
+            and should_exclude_strict(crop_focus_norm, hints, multi)
+        )
+        trace["per_fragment"].append(
+            {
+                "fragment_id": fid,
+                "hints": hints,
+                "multi_crop": multi,
+                "factor": factor,
+                "reason": reason,
+                "excluded": excluded,
+            }
+        )
+        if excluded:
+            continue
+        new_score = float(h.get("rrf_score", 0.0)) * factor
+        adjusted.append(
+            {
+                **h,
+                "rrf_score": new_score,
+                "crop_hints": hints,
+                "crop_multi": multi,
+                "crop_adjust_factor": factor,
+                "crop_adjust_reason": reason,
+            }
+        )
+
+    adjusted.sort(key=lambda x: x["rrf_score"], reverse=True)
+    return adjusted, trace
+
+# -----------------------------
 # Retrieval híbrido
 # -----------------------------
 class HybridRetriever:
@@ -96,11 +236,14 @@ class HybridRetriever:
 # -----------------------------
 @dataclass
 class Thresholds:
-    k_min: int = 3  # BAJADO a 3 (antes 5)
-    min_sources: int = 1  # BAJADO a 1 (antes 2) para testing
-    entity_coverage_min: float = 0.10  # BAJADO a 0.10 temporalmente (muchos fragmentos sin entidades aún)
-    mean_score_min: float = 0.010  # BAJADO a 0.010 (antes 0.015)
-    min_fragment_score: float = 0.003  # BAJADO a 0.003 (antes 0.008) para permitir más fragmentos
+    # Mínimos pensados para queries muy específicas (ej. "Distancia siembra calabaza")
+    # donde BM25 puede sólo encontrar 1-2 hits muy buenos. Mejor responder con poca
+    # evidencia que dar "insuficiente" cuando hay un manual exacto.
+    k_min: int = 1
+    min_sources: int = 1
+    entity_coverage_min: float = 0.10
+    mean_score_min: float = 0.005
+    min_fragment_score: float = 0.001
 
 def _count_sources(hits: List[Dict[str,Any]]) -> int:
     docs = set()
@@ -140,36 +283,37 @@ def insufficient_evidence(query: str, hits: List[Dict[str,Any]], th: Optional[Th
     
     # Filtrar fragmentos con score RRF muy bajo (evita ruido)
     hits_filtered = [h for h in hits if h.get("rrf_score", 0.0) >= th.min_fragment_score]
-    
+
+    # Fallback tolerante: si el filtro por min_fragment_score nos deja sin nada y
+    # había hits arriba, conservamos los hits originales en orden actual. Esto
+    # evita que penalizaciones por crop_focus + scores RRF muy pequeños vacíen
+    # la respuesta cuando sí existe evidencia razonable (caso típico: querys con
+    # signos de interrogación que reducen el score absoluto pero mantienen orden).
+    if not hits_filtered and hits:
+        hits_filtered = list(hits)
+
     if len(hits_filtered) < th.k_min:
-        return True, {"reason":"k_min_after_filter", "k": len(hits_filtered), "k_min": th.k_min, "original_k": len(hits)}, hits_filtered
+        return True, {"reason": "k_min_after_filter", "k": len(hits_filtered), "k_min": th.k_min, "original_k": len(hits)}, hits_filtered
 
-    # Entidades de la consulta
     q_ents, _, tax_ver = extract_entities(query)
-    
-    # Si la query NO tiene entidades del dominio, es señal de fuera-de-dominio
-    if not q_ents:
-        return True, {"reason":"no_domain_entities", "query_entities": 0}, hits_filtered
-    
-    # Entidades de fragmentos top-k (usa hits_filtered)
-    f_ents_all = []
-    for h in hits_filtered:
-        f_ents_all.extend(_extract_frag_entities(h))
+    cov = 0.0
+    # No rechazamos por entity_coverage: con la nueva síntesis, los fragmentos
+    # se ordenan por crop_focus y la respuesta cita la mejor evidencia disponible
+    # incluso si las entidades cruzan cultivos. Mantenemos el cálculo en `cov`
+    # para diagnóstico/observabilidad sin abortar.
+    if q_ents:
+        f_ents_all: List[Dict[str, Any]] = []
+        for h in hits_filtered:
+            f_ents_all.extend(_extract_frag_entities(h))
+        cov = entity_coverage(q_ents, f_ents_all)
 
-    cov = entity_coverage(q_ents, f_ents_all)
-    if cov < th.entity_coverage_min:
-        return True, {"reason":"entity_coverage", "coverage": cov, "min": th.entity_coverage_min}, hits_filtered
-
-    # Fuentes distintas
     sources = _count_sources(hits_filtered)
-    # excepción: si todos los docs son 'normativos', podrías permitir min_sources=1.
     if sources < th.min_sources:
-        return True, {"reason":"min_sources", "sources": sources, "min": th.min_sources}, hits_filtered
+        return True, {"reason": "min_sources", "sources": sources, "min": th.min_sources}, hits_filtered
 
-    # Promedio de rrf_score (rudimentario; podrías normalizar por el top)
     mean_score = sum(h.get("rrf_score", 0.0) for h in hits_filtered) / max(len(hits_filtered), 1)
     if mean_score < th.mean_score_min:
-        return True, {"reason":"mean_score", "mean": mean_score, "min": th.mean_score_min}, hits_filtered
+        return True, {"reason": "mean_score", "mean": mean_score, "min": th.mean_score_min}, hits_filtered
 
     return False, {"coverage": cov, "sources": sources, "mean_score": mean_score, "taxonomy_version": tax_ver}, hits_filtered
 

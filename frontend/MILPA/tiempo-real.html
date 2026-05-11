@@ -11,6 +11,7 @@
     <!-- CSS personalizado -->
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/milpa-layout.css">
     <style>
 
  /* ————————— MODIFICADO: añadidos estilos para el sidebar ————————— */
@@ -207,7 +208,7 @@
         }
     </style>
 </head>
-<body>
+<body class="milpa-page" data-active-page="tiempo-real.html">
     <!-- Sidebar (igual que en recommendations.html) -->
 
      <!-- ————————— AGREGADO: Sidebar panel con menú de navegación ————————— -->
@@ -227,7 +228,7 @@
                 <a href="recomendaciones.html" class="sidebar-nav-link">
                     <i class="fas fa-lightbulb sidebar-icon"></i>
                     <span class="sidebar-text">Recomendaciones</span>
-                    <span class="badge bg-danger alert-badge">3</span>
+                    <span class="badge bg-danger alert-badge" style="display:none">0</span>
                 </a>
             </li>
             <li class="sidebar-nav-item">
@@ -265,9 +266,18 @@
 
     <!-- ————————— AGREGADO: inicio del contenedor principal que empuja el contenido al lado del sidebar ————————— -->
     <div class="main-content" id="mainContent">
-    <!-- Main Content (igual que en recommendations.html) -->
+        <nav class="navbar navbar-expand-lg navbar-light border-bottom milpa-top-navbar" aria-label="Barra superior">
+            <div class="container-fluid px-3">
+                <button class="btn btn-link text-secondary px-1" type="button" id="sidebarToggle" aria-label="Alternar menú lateral">
+                    <i class="fas fa-bars fs-5" aria-hidden="true"></i>
+                </button>
+                <div class="ms-auto d-flex align-items-center gap-2">
+                    <a href="dashboard.html" class="btn btn-sm btn-outline-secondary d-none d-md-inline">Inicio</a>
+                    <button type="button" class="btn btn-sm btn-outline-danger" id="milpaLogoutBtn">Salir</button>
+                </div>
+            </div>
+        </nav>
 
-    <!-- Page Content -->
     <div class="container-fluid px-4 py-4">
         <div class="row mb-4">
             <div class="col-12">
@@ -281,16 +291,42 @@
             </div>
         </div>
 
+        <div class="row align-items-end mb-4">
+            <div class="col-lg-4 mb-3 mb-lg-0">
+                <label for="sensorCropSelect" class="form-label">Vista: parcela o cultivo concreto</label>
+                <select id="sensorCropSelect" class="form-select">
+                    <option value="">Cargando cultivos...</option>
+                </select>
+            </div>
+            <div class="col-lg-4 mb-3 mb-lg-0">
+                <label class="form-label">Última sincronización</label>
+                <div id="sensorLastUpdate" class="form-control bg-light">Sin datos</div>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <button id="refreshSensorDataBtn" type="button" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-rotate me-2"></i>Actualizar
+                </button>
+                <button id="seedDatasetBtn" type="button" class="btn btn-outline-forest-green me-2 d-none">
+                    <i class="fas fa-database me-2"></i>Cargar datos demo
+                </button>
+                <span class="badge bg-success-subtle text-success border p-2">
+                    <i class="fas fa-robot me-1"></i>Recomendaciones automáticas activas
+                </span>
+            </div>
+        </div>
+
+        <div id="monitoringDataStatus" class="alert alert-info d-none" role="alert"></div>
+
         <!-- Sensores principales -->
         <div class="row mb-4">
             <div class="col-md-6 col-lg-3 mb-4">
                 <div class="card sensor-card bg-white border-0 shadow-sm">
-                    <span class="alert-status status-normal"></span>
+                    <span id="soilMoistureIndicator" class="alert-status status-normal"></span>
                     <div class="card-body">
                         <h6 class="text-muted mb-3">Humedad del suelo</h6>
                         <div class="d-flex align-items-end">
-                            <span class="sensor-value text-primary" id="soilMoistureValue">64%</span>
-                            <span class="ms-2 mb-2 text-muted">óptimo</span>
+                            <span class="sensor-value text-primary" id="soilMoistureValue">--</span>
+                            <span class="ms-2 mb-2 text-muted" id="soilMoistureStatus">—</span>
                         </div>
                         <i class="fas fa-tint sensor-icon text-primary"></i>
                     </div>
@@ -298,12 +334,12 @@
             </div>
             <div class="col-md-6 col-lg-3 mb-4">
                 <div class="card sensor-card bg-white border-0 shadow-sm">
-                    <span class="alert-status status-warning"></span>
+                    <span id="airTempIndicator" class="alert-status status-normal"></span>
                     <div class="card-body">
                         <h6 class="text-muted mb-3">Temperatura aire</h6>
                         <div class="d-flex align-items-end">
-                            <span class="sensor-value text-warning" id="airTempValue">32°C</span>
-                            <span class="ms-2 mb-2 text-muted">alta</span>
+                            <span class="sensor-value text-warning" id="airTempValue">--</span>
+                            <span class="ms-2 mb-2 text-muted" id="airTempStatus">—</span>
                         </div>
                         <i class="fas fa-temperature-high sensor-icon text-warning"></i>
                     </div>
@@ -311,12 +347,12 @@
             </div>
             <div class="col-md-6 col-lg-3 mb-4">
                 <div class="card sensor-card bg-white border-0 shadow-sm">
-                    <span class="alert-status status-normal"></span>
+                    <span id="lightIndicator" class="alert-status status-normal"></span>
                     <div class="card-body">
                         <h6 class="text-muted mb-3">Luz solar</h6>
                         <div class="d-flex align-items-end">
-                            <span class="sensor-value text-info" id="lightValue">78%</span>
-                            <span class="ms-2 mb-2 text-muted">ideal</span>
+                            <span class="sensor-value text-info" id="lightValue">--</span>
+                            <span class="ms-2 mb-2 text-muted" id="lightStatus">—</span>
                         </div>
                         <i class="fas fa-sun sensor-icon text-info"></i>
                     </div>
@@ -324,14 +360,44 @@
             </div>
             <div class="col-md-6 col-lg-3 mb-4">
                 <div class="card sensor-card bg-white border-0 shadow-sm">
-                    <span class="alert-status status-danger"></span>
+                    <span id="airHumidityIndicator" class="alert-status status-normal"></span>
                     <div class="card-body">
                         <h6 class="text-muted mb-3">Humedad aire</h6>
                         <div class="d-flex align-items-end">
-                            <span class="sensor-value text-danger" id="airHumidityValue">28%</span>
-                            <span class="ms-2 mb-2 text-muted">baja</span>
+                            <span class="sensor-value text-danger" id="airHumidityValue">--</span>
+                            <span class="ms-2 mb-2 text-muted" id="airHumidityStatus">—</span>
                         </div>
                         <i class="fas fa-cloud sensor-icon text-danger"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p class="small text-muted mb-3" id="monitoringBasisLine" style="display:none"></p>
+
+        <div class="row mb-4">
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card sensor-card bg-white border-0 shadow-sm">
+                    <span id="windIndicator" class="alert-status status-normal"></span>
+                    <div class="card-body">
+                        <h6 class="text-muted mb-3">Viento</h6>
+                        <div class="d-flex align-items-end">
+                            <span class="sensor-value text-secondary" id="windValue">--</span>
+                            <span class="ms-2 mb-2 text-muted" id="windStatus">—</span>
+                        </div>
+                        <i class="fas fa-wind sensor-icon text-secondary"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card sensor-card bg-white border-0 shadow-sm">
+                    <span id="precipIndicator" class="alert-status status-normal"></span>
+                    <div class="card-body">
+                        <h6 class="text-muted mb-3">Precipitación</h6>
+                        <div class="d-flex align-items-end">
+                            <span class="sensor-value text-secondary" id="precipValue">--</span>
+                            <span class="ms-2 mb-2 text-muted" id="precipStatus">—</span>
+                        </div>
+                        <i class="fas fa-cloud-rain sensor-icon text-secondary"></i>
                     </div>
                 </div>
             </div>
@@ -344,14 +410,11 @@
                     <div class="card-body">
                         <h5 class="mb-3">Ubicación de sensores</h5>
                         <div class="map-container">
-                            <button class="btn btn-forest-green refresh-btn">
+                            <button id="refreshSensorDataBtnMap" class="btn btn-forest-green refresh-btn">
                                 <i class="fas fa-sync-alt"></i>
                             </button>
-                            <!-- Mapa de sensores (simulado) -->
-                            <div class="sensor-marker" style="top: 30%; left: 25%;" data-sensor="1"></div>
-                            <div class="sensor-marker" style="top: 45%; left: 60%;" data-sensor="2"></div>
-                            <div class="sensor-marker" style="top: 70%; left: 40%;" data-sensor="3"></div>
-                            <div class="sensor-marker" style="top: 35%; left: 75%;" data-sensor="4"></div>
+                            <!-- Mapa de sensores (poblado desde user_crops.sensor_x_pct/sensor_y_pct) -->
+                            <div id="sensorMarkersLayer"></div>
                             <img src="elementos/mapa.jpg" alt="Mapa de la milpa" class="img-fluid w-100 h-100" style="object-fit: cover;">
                         </div>
                     </div>
@@ -362,56 +425,10 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="mb-0">Alertas recientes</h5>
-                            <span class="badge bg-danger">3 nuevas</span>
+                            <span id="alertsCountBadge" class="badge bg-danger">0 nuevas</span>
                         </div>
-                        <div class="alert-list">
-                            <!-- Alerta 1 -->
-                            <div class="alert alert-warning alert-dismissible fade show mb-2">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-temperature-high me-3 fs-4"></i>
-                                    <div>
-                                        <strong>Temperatura alta</strong>
-                                        <p class="mb-0 small">Sensor 2: 32°C a las 13:45</p>
-                                    </div>
-                                </div>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                            
-                            <!-- Alerta 2 -->
-                            <div class="alert alert-danger alert-dismissible fade show mb-2">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-tint me-3 fs-4"></i>
-                                    <div>
-                                        <strong>Humedad baja</strong>
-                                        <p class="mb-0 small">Sensor 4: 28% a las 13:30</p>
-                                    </div>
-                                </div>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                            
-                            <!-- Alerta 3 -->
-                            <div class="alert alert-info alert-dismissible fade show mb-2">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-wind me-3 fs-4"></i>
-                                    <div>
-                                        <strong>Viento fuerte</strong>
-                                        <p class="mb-0 small">15 km/h a las 12:50</p>
-                                    </div>
-                                </div>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                            
-                            <!-- Alerta 4 -->
-                            <div class="alert alert-success alert-dismissible fade show">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-check-circle me-3 fs-4"></i>
-                                    <div>
-                                        <strong>Riego completado</strong>
-                                        <p class="mb-0 small">Sector 1 a las 11:30</p>
-                                    </div>
-                                </div>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
+                        <div id="sensorAlertsList" class="alert-list">
+                            <div class="alert alert-light border text-muted mb-0">Cargando alertas derivadas de telemetría...</div>
                         </div>
                     </div>
                 </div>
@@ -423,7 +440,7 @@
             <div class="col-12">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body">
-                        <h5 class="mb-3">Histórico de datos (últimas 48 horas)</h5>
+                        <h5 class="mb-3">Histórico de datos (consolidado semanal)</h5>
                         <div class="chart-container" style="height: 300px;">
                             <canvas id="realtimeChart"></canvas>
                         </div>
@@ -435,123 +452,9 @@
 
     <!-- Bootstrap Bundle con Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- JS personalizado -->
-    <script>
-        // Gráfico en tiempo real
-        const realtimeCtx = document.getElementById('realtimeChart').getContext('2d');
-        const realtimeChart = new Chart(realtimeCtx, {
-            type: 'line',
-            data: {
-                labels: Array.from({length: 24}, (_, i) => `${i}:00`),
-                datasets: [{
-                    label: 'Humedad suelo (%)',
-                    data: [65, 64, 63, 62, 61, 60, 59, 58, 58, 60, 62, 64, 65, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54],
-                    borderColor: '#2E7D32',
-                    backgroundColor: 'rgba(46, 125, 50, 0.1)',
-                    borderWidth: 2,
-                    tension: 0.4,
-                    yAxisID: 'y'
-                }, {
-                    label: 'Temperatura (°C)',
-                    data: [18, 17, 16, 16, 16, 17, 18, 20, 22, 25, 28, 30, 32, 32, 31, 30, 28, 26, 24, 22, 21, 20, 19, 18],
-                    borderColor: '#dc3545',
-                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                    borderWidth: 2,
-                    tension: 0.4,
-                    yAxisID: 'y1'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: {
-                    mode: 'index',
-                    intersect: false
-                },
-                plugins: {
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false
-                    }
-                },
-                scales: {
-                    y: {
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
-                        title: {
-                            display: true,
-                            text: 'Humedad (%)'
-                        }
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        grid: {
-                            drawOnChartArea: false
-                        },
-                        title: {
-                            display: true,
-                            text: 'Temperatura (°C)'
-                        }
-                    }
-                }
-            }
-        });
-
-        // Simular actualización de datos en tiempo real
-        function updateSensorValues() {
-            // Humedad del suelo (variación ±2%)
-            const soilMoisture = 64 + (Math.random() * 4 - 2);
-            document.getElementById('soilMoistureValue').textContent = `${soilMoisture.toFixed(0)}%`;
-            
-            // Temperatura del aire (variación ±1°C)
-            const airTemp = 32 + (Math.random() * 2 - 1);
-            document.getElementById('airTempValue').textContent = `${airTemp.toFixed(0)}°C`;
-            
-            // Luz solar (variación ±3%)
-            const light = 78 + (Math.random() * 6 - 3);
-            document.getElementById('lightValue').textContent = `${light.toFixed(0)}%`;
-            
-            // Humedad del aire (variación ±2%)
-            const airHumidity = 28 + (Math.random() * 4 - 2);
-            document.getElementById('airHumidityValue').textContent = `${airHumidity.toFixed(0)}%`;
-            
-            // Actualizar gráfico
-            const newSoilData = realtimeChart.data.datasets[0].data.slice(1);
-            newSoilData.push(soilMoisture);
-            realtimeChart.data.datasets[0].data = newSoilData;
-            
-            const newTempData = realtimeChart.data.datasets[1].data.slice(1);
-            newTempData.push(airTemp);
-            realtimeChart.data.datasets[1].data = newTempData;
-            
-            realtimeChart.data.labels = realtimeChart.data.labels.slice(1);
-            const lastHour = parseInt(realtimeChart.data.labels[realtimeChart.data.labels.length - 1].split(':')[0]);
-            realtimeChart.data.labels.push(`${(lastHour + 1) % 24}:00`);
-            
-            realtimeChart.update();
-        }
-
-        // Actualizar cada 10 segundos
-        setInterval(updateSensorValues, 10000);
-
-        // Toggle para la sidebar
-        document.getElementById('sidebarToggle').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('sidebar-collapsed');
-            document.getElementById('mainContent').classList.toggle('main-content-expanded');
-        });
-
-        // Mostrar detalles del sensor al hacer clic en el marcador
-        document.querySelectorAll('.sensor-marker').forEach(marker => {
-            marker.addEventListener('click', function() {
-                const sensorId = this.getAttribute('data-sensor');
-                alert(`Mostrando detalles del Sensor ${sensorId}`);
-            });
-        });
-    </script>
+    <script src="js/milpa-api.js"></script>
+    <script src="js/milpa-shell.js"></script>
+    <script src="js/tiempo-real.js"></script>
 </body>
 </html>

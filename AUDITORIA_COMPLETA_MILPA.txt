@@ -1,0 +1,1881 @@
+AUDITORIA COMPLETA Y MAPEO DE ARQUITECTURA DEL SISTEMA MILPA
+Fecha de levantamiento: 2026-04-17
+Modalidad: auditoria de solo lectura
+
+IMPORTANTE
+- No se ejecuto el sistema.
+- No se ejecutaron scripts, pruebas ni servicios.
+- No se modifico codigo existente.
+- El documento se construyo leyendo la estructura, la documentacion y las definiciones de modulos, clases y funciones existentes.
+
+ALCANCE
+- Incluye codigo propio del repositorio: milpa_ai_backend, milpa_presenter, frontend legado, scripts Python de raiz, scripts operativos, Compose, Dockerfiles y documentacion principal.
+- El inventario funcional se basa en funciones y clases detectadas por lectura estatica del codigo.
+- Se excluyen de la auditoria funcional: node_modules, dist, .venv, __pycache__, binarios, PDFs, imagenes, bases SQLite, indices generados, JSON de salida y otros artefactos de datos.
+
+COBERTURA RELEVADA
+- Backend Python: 55 archivos .py dentro de milpa_ai_backend.
+- Presenter TypeScript: 13 archivos .ts en milpa_presenter/src.
+- Frontend legado JavaScript: 7 archivos .js en frontend.
+- Scripts Python de raiz: 48 archivos .py en la raiz del repo.
+- Infraestructura y operacion: docker-compose.yml, Dockerfiles, scripts PowerShell/Bash.
+
+======================================================================
+1. RESUMEN EJECUTIVO
+======================================================================
+
+La arquitectura real del sistema MILPA esta centrada en dos componentes principales:
+
+1. milpa_presenter
+   Capa de presentacion y proxy HTTP, escrita en TypeScript con Fastify.
+
+2. milpa_ai_backend
+   Capa de negocio e IA, escrita en Python con FastAPI, con pipeline RAG hibrido, OCR, extraccion, indexacion, embeddings y acceso a persistencia.
+
+Alrededor de ese nucleo existe una periferia grande de scripts de diagnostico, verificacion, indexacion, evaluacion y documentacion historica. Esa periferia no invalida la arquitectura central, pero si aumenta de forma importante la complejidad percibida del repositorio.
+
+La arquitectura observable es coherente a nivel logico:
+- presenter como punto de entrada web y proxy
+- backend como API y motor RAG
+- SQLite para metadatos y fragmentos
+- ChromaDB para almacenamiento vectorial
+- BM25 para recuperacion lexica
+- capas auxiliares de OCR, tablas, chunking, NER, feature flags, observabilidad y seguridad
+
+Los principales hallazgos de auditoria son:
+- Existe una arquitectura principal clara, pero el repositorio esta disperso.
+- El frontend realmente activo es milpa_presenter; la carpeta frontend es legado.
+- Hay inconsistencias de persistencia: coexisten referencias a main.db, milpa.db y milpa_knowledge.db.
+- El presenter concentra demasiada logica en un unico archivo grande: src/server.ts.
+- La documentacion no describe siempre el mismo estado del sistema.
+- Existen multiples rutas de acceso y scripts auxiliares que bypassan el camino principal presenter -> backend.
+
+======================================================================
+2. MAPA GENERAL DEL REPOSITORIO
+======================================================================
+
+RAIZ DEL PROYECTO
+- milpa_ai_backend/: backend principal Python/FastAPI.
+- milpa_presenter/: frontend/proxy principal TypeScript/Fastify.
+- frontend/: frontend legado Node/Express/MongoDB/Socket.IO.
+- docs/: documentacion de proceso y observabilidad.
+- data/: artefactos de datos e indices visibles en la raiz.
+- Instruccion/: especificaciones y documentos de avance.
+- clamav/: configuracion del servicio antivirus.
+- archivos .py de raiz: scripts de evaluacion, verificacion, extraccion, consultas y mantenimiento.
+- archivos .md/.txt de raiz: arquitectura, reportes, sprint notes y explicaciones del sistema.
+
+SUBSISTEMAS REALES
+- Capa web activa: milpa_presenter.
+- Capa API e IA activa: milpa_ai_backend.
+- Capa de datos: SQLite + vector_db + indices BM25 + filesystem documental.
+- Capa de seguridad y observabilidad: ClamAV + Prometheus + Grafana + headers/rate limiting/circuit breaker.
+- Capa legado: frontend Node/Express/Mongo.
+
+======================================================================
+3. FLUJO DE DATOS Y OPERACION REAL
+======================================================================
+
+FLUJO PRINCIPAL ESPERADO
+1. El usuario entra por el presenter en puerto 8080.
+2. El presenter sirve la UI y reenvia llamadas a /ai/* hacia el backend.
+3. El backend recibe consultas, uploads, extraccion, reconstruccion de indices y consultas de biblioteca.
+4. El backend consulta SQLite para metadatos/fragmentos, BM25 para ranking lexico y ChromaDB para similitud vectorial.
+5. El motor RAG fusiona resultados, aplica reranking/sintesis y devuelve respuesta estructurada.
+6. El presenter renderiza HTML o pasa JSON hacia la interfaz.
+
+PERSISTENCIA OBSERVABLE
+- milpa_ai_backend/data/documents/: documentos y copias persistidas.
+- milpa_ai_backend/data/milpa_knowledge.db: base SQLite referida por la configuracion principal.
+- milpa_ai_backend/data/main.db: base SQLite referida por migraciones y varios scripts.
+- milpa_ai_backend/data/milpa.db: otra base SQLite presente en el repo.
+- milpa_ai_backend/data/vector_db/: almacenamiento vectorial.
+- milpa_ai_backend/data/bm25_idx/ y milpa_ai_backend/data/bm25_index/: indices lexicos.
+- milpa_ai_backend/data/tmp/: temporales.
+- data/ en la raiz: tambien contiene db/indices, lo que agrega ambiguedad operacional.
+
+ORQUESTACION
+- docker-compose.yml define los servicios clamav, ai, presenter, prometheus y grafana.
+- La narrativa arquitectonica indica un punto de entrada principal en 8080, pero Compose tambien publica el backend en 8000.
+
+======================================================================
+4. INVENTARIO DETALLADO DE MODULOS, CODIGO Y FUNCIONES
+======================================================================
+
+4.1. BACKEND PRINCIPAL: milpa_ai_backend
+
+4.1.1. Entrypoints, empaquetado y utilitarios de nivel superior
+- milpa_ai_backend/__init__.py
+  Rol: modulo de paquete.
+  Definiciones detectadas: sin logica top-level relevante.
+
+- milpa_ai_backend/main.py
+  Rol: punto de entrada del backend.
+  Definiciones detectadas: modulo expositivo de app.
+  Responsabilidad: expone la instancia FastAPI para uvicorn/gunicorn.
+
+- milpa_ai_backend/setup.py
+  Rol: empaquetado e instalacion del backend.
+  Definiciones detectadas: no se relevaron funciones top-level relevantes.
+
+- milpa_ai_backend/index_documents.py
+  Rol: indexacion documental.
+  Funciones detectadas: calculate_sha256(), main().
+
+- milpa_ai_backend/extract_all_docs.py
+  Rol: extraccion masiva desde el backend.
+  Funciones detectadas: main().
+
+- milpa_ai_backend/check_docs.py
+  Rol: verificacion de documentos desde el backend.
+  Definiciones detectadas: script procedural.
+
+- milpa_ai_backend/check_fragments.py
+  Rol: verificacion de fragmentos desde el backend.
+  Definiciones detectadas: script procedural.
+
+- milpa_ai_backend/check_test_db.py
+  Rol: chequeo de base de prueba.
+  Definiciones detectadas: script procedural o de inspeccion.
+
+- milpa_ai_backend/process_txt_files.py
+  Rol: procesamiento de archivos TXT.
+  Funciones detectadas: main().
+
+- milpa_ai_backend/test_rag_directo.py
+  Rol: prueba directa del flujo RAG sin presenter.
+  Definiciones detectadas: script procedural.
+
+4.1.2. API HTTP del backend
+- milpa_ai_backend/api/__init__.py
+  Rol: modulo de paquete API.
+  Definiciones detectadas: sin logica top-level relevante.
+
+- milpa_ai_backend/api/server.py
+  Rol: fabrica de aplicacion FastAPI.
+  Funciones detectadas: _parse_allowed_origins(), build_app().
+  Responsabilidad: CORS, arranque de app, migraciones, instrumentacion y composicion del backend.
+
+- milpa_ai_backend/api/rag.py
+  Rol: capa API del motor RAG.
+  Clases detectadas: QueryRequest, FragmentResponse, QueryResponse.
+  Funciones detectadas: get_retriever(), query_rag(), rebuild_indexes().
+  Responsabilidad: endpoint de consulta RAG, reconstruccion de indices y acceso lazy al HybridRetriever.
+
+- milpa_ai_backend/api/endpoints.py
+  Rol: endpoints de documentos, biblioteca y feature flags.
+  Clases detectadas: ExtractOptions, FeatureFlagResponse.
+  Funciones detectadas: upload_document(), extract_endpoint(), list_library(), library_facets(), _parse_csv_to_rows(), library_detail(), list_feature_flags(), get_feature_flag(), update_feature_flag().
+  Responsabilidad: upload, extraccion, listado de biblioteca, detalle documental y administracion de flags.
+
+4.1.3. Configuracion y banderas
+- milpa_ai_backend/core/__init__.py
+  Rol: modulo de paquete core.
+  Definiciones detectadas: sin logica top-level relevante.
+
+- milpa_ai_backend/core/config.py
+  Rol: configuracion central del backend.
+  Clases detectadas: Settings.
+  Funciones detectadas: config_fingerprint().
+  Responsabilidad: rutas, limites, CORS, RAG, embeddings, antivirus y parametros operativos.
+
+- milpa_ai_backend/core/config_flags/__init__.py
+  Rol: modulo de paquete de feature flags.
+  Definiciones detectadas: sin logica top-level relevante.
+
+- milpa_ai_backend/core/config_flags/feature_flags.py
+  Rol: feature flags dinamicos basados en SQLite.
+  Clases detectadas: FeatureFlags.
+  Funciones/helpers detectadas: is_reranker_enabled(), get_embeddings_model(), get_rag_mode(), is_blue_green_v2_enabled().
+  Metodos relevantes observados en la clase: _load_flags(), is_enabled(), get_config(), reload(), set_flag().
+  Hallazgo asociado: por defecto usa data/main.db, no data/milpa_knowledge.db.
+
+4.1.4. Seguridad y observabilidad
+- milpa_ai_backend/core/security/__init__.py
+  Rol: modulo de paquete security.
+  Definiciones detectadas: sin logica top-level relevante.
+
+- milpa_ai_backend/core/security/av.py
+  Rol: integracion ClamAV.
+  Clases detectadas: AntivirusError.
+  Funciones detectadas: _connect_clamd(), _parse_scan_result(), _instream_file(), _scan_path(), scan_file_strict().
+  Responsabilidad: escaneo estricto de archivos contra clamd.
+
+- milpa_ai_backend/core/telemetry/__init__.py
+  Rol: instrumentacion de telemetria.
+  Funciones detectadas: instrument_fastapi(), add_rag_context_to_span(), create_rag_span().
+  Responsabilidad: observabilidad y spans de contexto RAG.
+
+4.1.5. Pipeline de extraccion de documentos
+- milpa_ai_backend/core/extract/__init__.py
+  Rol: modulo de paquete extract.
+  Definiciones detectadas: sin logica top-level relevante.
+
+- milpa_ai_backend/core/extract/pipeline.py
+  Rol: pipeline de extraccion de documentos de nivel alto.
+  Clases detectadas: ExtractOptions.
+  Funciones detectadas: _detect_lang_simple(), _read_txt(), _read_docx(), _pdf_to_pages(), _extract_tables_pdf(), _file_ext(), _compute_fragment_id(), extract_document().
+
+- milpa_ai_backend/core/extract/chunker.py
+  Rol: segmentacion basica durante extraccion.
+  Funciones detectadas: _approx_tokens(), split_into_sentences(), chunk_text(), chunk_pages().
+
+- milpa_ai_backend/core/extract/units.py
+  Rol: extraccion/normalizacion de unidades.
+  Funciones detectadas: _canonical(), extract_units().
+
+4.1.6. Nucleo de logica RAG y procesamiento
+- milpa_ai_backend/core/logic/__init__.py
+  Rol: modulo de paquete logic.
+  Definiciones detectadas: sin logica top-level relevante.
+
+- milpa_ai_backend/core/logic/db.py
+  Rol: acceso y migraciones SQLite.
+  Funciones detectadas: get_conn(), run_migrations().
+
+- milpa_ai_backend/core/logic/embeddings.py
+  Rol: carga/uso del modelo de embeddings.
+  Clases detectadas: EmbeddingModel.
+  Metodos relevantes reportados: encode(), get_vector_dim().
+
+- milpa_ai_backend/core/logic/vectordb.py
+  Rol: capa de acceso a ChromaDB.
+  Clases detectadas: VectorStore.
+  Metodos relevantes reportados: add(), upsert(), query(), reset(), delete_ids(), count().
+
+- milpa_ai_backend/core/logic/bm25.py
+  Rol: indice lexico y busqueda BM25.
+  Clases detectadas: _DocLite, BM25Index.
+  Metodos relevantes reportados: index_many(), add(), search(), reset().
+
+- milpa_ai_backend/core/logic/rag_engine.py
+  Rol: orquestacion del retrieval hibrido y criterios de evidencia.
+  Clases detectadas: HybridRetriever, Thresholds.
+  Funciones detectadas: reciprocal_rank_fusion(), rerank_by_term_coverage(), _count_sources(), _extract_frag_entities(), insufficient_evidence(), build_insufficient_response(), rerank_top_n().
+
+- milpa_ai_backend/core/logic/generation.py
+  Rol: generacion de respuesta textual.
+  Clases detectadas: AnswerGenerator.
+  Funciones detectadas: get_generator().
+  Metodo relevante reportado: generate().
+
+- milpa_ai_backend/core/logic/synthesis.py
+  Rol: sintesis final, citaciones y saneamiento HTML.
+  Funciones detectadas: extract_sentences(), compute_faithfulness(), build_citation(), compose_answer(), sanitize_html().
+
+- milpa_ai_backend/core/logic/chunking.py
+  Rol: chunking semantico con preservacion de unidades/ecuaciones.
+  Funciones detectadas: normalize_units(), _protect_equations(), _restore_equations(), _get_tokenizer(), _split_by_tokens(), _fragment_uid(), chunk_pages().
+
+- milpa_ai_backend/core/logic/ingestion.py
+  Rol: persistencia de originales y deduplicacion por hash.
+  Funciones detectadas: sha256_file(), _sanitize_filename(), persist_original().
+
+- milpa_ai_backend/core/logic/extract.py
+  Rol: extraccion clasica desde PDFs y persistencia de fragmentos/tablas.
+  Funciones detectadas: _uuid(), _read_page_text_native(), _page_needs_ocr(), _ocr_page_image(), _chunk_text(), _insert_fragment(), _insert_table(), _insert_table_cells(), extract_document().
+
+- milpa_ai_backend/core/logic/extraction.py
+  Rol: extraccion enriquecida con spans, cobertura y posicionamiento.
+  Clases detectadas: Span, PageExtraction, ExtractionResult.
+  Funciones detectadas: _heuristic_coverage_by_spans(), _heuristic_dsi(), extract_pdf(), extract_docx(), extract_txt(), extract_document(), build_fine_ref_from_spans(), to_serializable().
+
+- milpa_ai_backend/core/logic/ocr.py
+  Rol: OCR adaptativo con Tesseract.
+  Funciones detectadas: needs_ocr(), render_pdf_page_image(), run_tesseract_image(), ocr_pdf_pages().
+
+- milpa_ai_backend/core/logic/tables.py
+  Rol: deteccion y parseo de tablas.
+  Funciones detectadas: _try_camelot(), _fallback_detect_tables_pymupdf(), detect_and_parse_tables_pdf().
+
+- milpa_ai_backend/core/logic/enrichment.py
+  Rol: taxonomia, entidades, sinonimos y clasificacion de fragmentos.
+  Clases detectadas: Taxonomy, Entity.
+  Funciones detectadas: _norm(), _csv_load_names(), _json_load_synonyms(), load_taxonomy(), normalize_synonyms(), _dict_ner(), _augment_with_spacy(), extract_entities(), classify_fragment(), entity_coverage().
+
+- milpa_ai_backend/core/logic/translation.py
+  Rol: soporte de traduccion y consistencia terminologica.
+  Clases detectadas: Term.
+  Funciones detectadas: load_glossary(), load_tm(), _context_hash(), enforce_do_not_translate(), restore_do_not_translate(), _apply_glossary_post(), compute_consistency_score(), detect_lang(), translate_to_es().
+
+4.1.7. Evaluacion, herramientas y soporte del backend
+- milpa_ai_backend/eval/harness.py
+  Rol: harness de evaluacion cuantitativa.
+  Funciones detectadas: load_jsonl(), precision_at_k(), recall_at_k(), reciprocal_rank(), dcg_at_k(), ndcg_at_k(), entity_coverage(), evaluate(), print_summary(), parse_ks(), main().
+
+- milpa_ai_backend/tools/seed_library.py
+  Rol: siembra de biblioteca inicial.
+  Funciones detectadas: ensure_entry().
+
+- milpa_ai_backend/tools/generate_demo_pdf.py
+  Rol: generacion de PDF de demostracion.
+  Funciones detectadas: esc(), build_pdf(), main().
+
+4.1.8. Pruebas del backend
+- milpa_ai_backend/tests/__init__.py
+  Rol: modulo de paquete tests.
+
+- milpa_ai_backend/tests/conftest.py
+  Rol: fixtures y base de datos temporal de pruebas.
+  Funciones detectadas: _cleanup_vector_db_session(), _rand_id(), sample_fragments(), bm25_index(), embedder(), vector_store(), test_db_path(), setup_test_database().
+
+- milpa_ai_backend/tests/util_indexing.py
+  Rol: helpers de indexacion para tests.
+  Funciones detectadas: _iter_records_from_fragments(), index_in_bm25(), _embed_batch(), index_in_vector_store().
+
+- milpa_ai_backend/tests/test_bm25_rrf_hybrid.py
+  Rol: pruebas de retrieval hibrido.
+  Funciones detectadas: test_bm25_index_and_search(), test_hybrid_rrf_and_thresholds().
+
+- milpa_ai_backend/tests/test_contract_api.py
+  Rol: contrato API y snapshots.
+  Funciones detectadas: assert_schema(), test_health_contract(), test_library_list_contract(), test_library_list_with_filters_contract(), test_library_facets_contract(), test_library_detail_contract(), save_snapshot(), load_snapshot(), test_health_snapshot().
+
+- milpa_ai_backend/tests/test_embeddings_vectordb.py
+  Rol: pruebas embeddings/vector store.
+  Funciones detectadas: test_embedder_and_vector_store().
+
+- milpa_ai_backend/tests/test_enrichment_taxonomy.py
+  Rol: pruebas de taxonomia y entidades.
+  Funciones detectadas: test_extract_entities_and_synonyms(), test_entity_coverage_basic(), test_classify_fragment_labels().
+
+- milpa_ai_backend/tests/test_eval_harness.py
+  Rol: pruebas del harness.
+  Funciones detectadas: test_eval_harness_basic().
+
+- milpa_ai_backend/tests/test_golden_answers.py
+  Rol: regresion y calidad de respuestas.
+  Funciones detectadas: calculate_faithfulness(), calculate_citation_coverage(), test_golden_answer_quality(), test_golden_answers_regression().
+
+- milpa_ai_backend/tests/test_rerank_synthesis.py
+  Rol: pruebas de reranking, sintesis y citaciones.
+  Funciones detectadas: test_rerank_with_factors(), test_synthesis_with_citations(), test_faithfulness_calculation(), test_sanitize_html_blocks_external_urls(), test_build_citation_with_fine_refs().
+
+- milpa_ai_backend/tests/test_schemathesis_fuzzing.py
+  Rol: fuzzing/robustez de la API.
+  Funciones detectadas: before_case(), after_call(), test_ai_backend_fuzzing(), test_library_sql_injection_resistance(), test_no_sensitive_data_leak().
+
+
+4.2. PRESENTER ACTIVO: milpa_presenter
+
+VISION GENERAL
+- Stack: TypeScript + Fastify.
+- Rol: UI HTTP, proxy hacia backend, controles operativos, sanitizacion y metricas.
+- Hallazgo principal: gran parte del comportamiento y de la UI vive en un unico archivo extenso, src/server.ts.
+
+INVENTARIO
+- milpa_presenter/package.json
+  Rol: dependencias, scripts y configuracion de construccion.
+
+- milpa_presenter/tsconfig.json
+  Rol: configuracion TypeScript.
+
+- milpa_presenter/dockerfile
+  Rol: build del presenter en contenedor.
+
+- milpa_presenter/src/config.ts
+  Rol: configuracion y deteccion de entorno.
+  Funciones detectadas: runningInDocker().
+  Export relevante: config.
+
+- milpa_presenter/src/server.ts
+  Rol: servidor web principal, proxy y UI embebida.
+  Rutas detectadas: /health, /demo/sanitized, /doc/:id, /ai/health, /ai/*, /sanitize/preview, /ui/checks, /ui/library, /ui/library/:docId, /ui/query, /runtime/status.
+  Observacion: concentra middlewares, logica operativa, paginas HTML y JavaScript incrustado.
+
+- milpa_presenter/src/runtime/scheduler.ts
+  Rol: control de concurrencia y cola.
+  Clases detectadas: Scheduler.
+  Metodos reportados: enqueue(), dequeue(), stats().
+
+- milpa_presenter/src/runtime/circuit.ts
+  Rol: circuit breaker del proxy.
+  Clases detectadas: CircuitBreaker.
+  Metodos reportados: allow(), recordSuccess(), recordFailure(), stats().
+
+- milpa_presenter/src/security/headers.ts
+  Rol: headers de seguridad.
+  Export relevante: securityHeaders.
+
+- milpa_presenter/src/security/sanitize.ts
+  Rol: sanitizacion de HTML.
+  Funciones detectadas: sanitizeHtmlSafe().
+  Export relevante reportado: sanitizePlugin.
+
+- milpa_presenter/src/telemetry/metrics.ts
+  Rol: metricas Prometheus del presenter.
+  Exports relevantes reportados: queueInFlight, queueDepth, proxyTotal, proxy429, proxyTimeout, circuitOpenTotal, proxyLatency, ragInsufficientEvidenceRate, retrievalRecallDrop, recommendationsAppliedRate, topCropsConsulted, topPestsConsulted, taxonomyVersionGauge.
+
+- milpa_presenter/src/services/blue_green.ts
+  Rol: soporte de blue-green/canary.
+  Funciones detectadas: updateBlueGreenConfig(), shouldRouteToV2(), blueGreenMiddleware(), simpleHash(), generateSessionId(), getBlueGreenConfig().
+  Hallazgo asociado: existe soporte de blue-green, pero no se observo integracion dominante en el flujo principal.
+
+- milpa_presenter/src/types/fastify.d.ts
+  Rol: declaraciones de tipos.
+  Runtime: sin logica.
+
+- milpa_presenter/src/types/fastify-cors.d.ts
+  Rol: declaraciones de tipos.
+  Runtime: sin logica.
+
+- milpa_presenter/src/types/fastify-rate-limit.d.ts
+  Rol: declaraciones de tipos.
+  Runtime: sin logica.
+
+- milpa_presenter/src/types/fastify-sensible.d.ts
+  Rol: declaraciones de tipos.
+  Runtime: sin logica.
+
+- milpa_presenter/src/types/sanitize-html.d.ts
+  Rol: declaraciones de tipos.
+  Runtime: sin logica.
+
+
+4.3. FRONTEND LEGADO: frontend
+
+VISION GENERAL
+- Stack: Node.js + Express + MongoDB + Mongoose + Socket.IO.
+- Estado arquitectonico: no corresponde al flujo principal actual presenter + backend.
+- Impacto: agrega ruido tecnico y hace pensar que existe otro frontend activo.
+
+INVENTARIO
+- frontend/server.js
+  Rol: servidor Express, sockets y autenticacion.
+  Funciones detectadas: iniciarServidor(), responderComoBot().
+
+- frontend/routes/api.js
+  Rol: router API legado para autenticacion.
+  Endpoints/funciones detectadas: POST /auth/register, POST /auth/login, verificarToken.
+
+- frontend/models/user.js
+  Rol: esquema/modelo de usuario.
+  Definiciones detectadas: esquema Mongoose, sin funciones top-level relevantes.
+
+- frontend/models/message.js
+  Rol: esquema/modelo de mensajes.
+  Definiciones detectadas: esquema Mongoose, sin funciones top-level relevantes.
+
+- frontend/models/notification.js
+  Rol: esquema/modelo de notificaciones.
+  Definiciones detectadas: esquema Mongoose, sin funciones top-level relevantes.
+
+- frontend/MILPA/js/client.js
+  Rol: logica de cliente del frontend legado.
+  Funciones detectadas: setupEventListeners(), handleChatMessage(), appendChatMessage(), appendNotification(), updateNotificationBadge(), showToast(), updateUserUI(), logout(), redirectToLogin().
+
+- frontend/test-socket.js
+  Rol: prueba o cliente de socket legado.
+  Definiciones detectadas: script de soporte.
+
+- frontend/MILPA/
+  Rol: assets y vistas legacy.
+  Observacion: se relevaron templates/paginas como dashboard, login, registro, calendario y vistas varias del frontend antiguo.
+
+
+4.4. SCRIPTS PYTHON DE RAIZ
+
+4.4.1. Evaluacion, analitica y reportes
+- analisis_ranking.py
+  Rol: analisis de ranking de resultados.
+  Definiciones detectadas: no se detectaron def/class top-level en el relevamiento resumido; probable script procedural de analisis.
+
+- compare_search_modes.py
+  Rol: comparacion de modos de busqueda.
+  Funciones detectadas: load_evaluation_dataset(), query_rag_system(), calculate_mrr(), calculate_precision_at_5(), evaluate_mode(), compare_modes().
+
+- evaluate_rag_metrics.py
+  Rol: evaluacion cuantitativa del sistema RAG.
+  Funciones detectadas: load_evaluation_dataset(), query_rag_system(), is_fragment_relevant(), calculate_precision_at_k(), calculate_recall_at_k(), calculate_mrr(), calculate_faithfulness(), evaluate_query(), run_full_evaluation().
+
+- executive_summary.py
+  Rol: resumen ejecutivo de resultados.
+  Funciones detectadas: load_results(), print_executive_summary().
+
+- dashboard_ascii.py
+  Rol: dashboard ASCII de metricas.
+  Funciones detectadas: load_results(), print_dashboard().
+
+- generate_metrics_report.py
+  Rol: reporte formateado de metricas.
+  Funciones detectadas: print_bar(), load_results(), print_metrics_report().
+
+- test_evaluacion_completa.py
+  Rol: prueba/evaluacion integral.
+  Definiciones detectadas: script de prueba; no se detectaron funciones top-level en el relevamiento resumido.
+
+4.4.2. Debug y diagnostico
+- debug_query.py
+  Rol: depuracion interactiva de consultas.
+  Funciones detectadas: analyze_query(), interactive_mode().
+
+- debug_scores.py
+  Rol: depuracion de puntajes/scoring.
+  Definiciones detectadas: script procedural o de inspeccion.
+
+- diagnose_bm25.py
+  Rol: diagnostico del indice BM25.
+  Definiciones detectadas: script procedural o de diagnostico.
+
+- diagnose_endpoint.py
+  Rol: diagnostico de endpoints HTTP.
+  Definiciones detectadas: script procedural o de diagnostico.
+
+4.4.3. Verificacion e inspeccion del estado de datos
+- check_db.py
+  Rol: inspeccion de la base SQLite.
+  Definiciones detectadas: script procedural.
+
+- check_docs.py
+  Rol: inspeccion de documentos.
+  Definiciones detectadas: script procedural.
+
+- check_fragments.py
+  Rol: inspeccion de fragmentos.
+  Definiciones detectadas: script procedural.
+
+- check_fragments_simple.py
+  Rol: inspeccion simplificada de fragmentos.
+  Definiciones detectadas: script procedural.
+
+- check_fragments_db.py
+  Rol: verificacion de fragmentos apuntando a otra DB.
+  Definiciones detectadas: script procedural.
+  Hallazgo asociado: usa milpa_ai_backend/data/milpa.db.
+
+- check_nutrientes.py
+  Rol: chequeo de nutrientes en la base.
+  Definiciones detectadas: script procedural.
+
+- ver_fragmentos_guia.py
+  Rol: visualizacion de fragmentos de una guia.
+  Definiciones detectadas: script procedural.
+
+- verify_entities.py
+  Rol: verificacion de entidades extraidas.
+  Definiciones detectadas: script procedural.
+
+- verificar_sistema.py
+  Rol: verificacion global de salud y operacion.
+  Funciones detectadas: print_header(), print_success(), print_error(), print_info(), test_health(), test_feature_flags(), test_library(), test_rag_query(), test_index_stats(), test_admin_interface(), print_summary(), main().
+
+4.4.4. Extraccion, indexacion y mantenimiento de datos
+- extract_all_docs.py
+  Rol: extraccion masiva de documentos desde la raiz.
+  Funciones detectadas: get_all_docs(), extract_document(), rebuild_indexes(), main().
+
+- extract_all_docker.py
+  Rol: extraccion masiva en contexto Docker.
+  Definiciones detectadas: script procedural.
+
+- extract_all_pending.py
+  Rol: procesamiento de pendientes.
+  Definiciones detectadas: script procedural.
+
+- extract_key_docs.py
+  Rol: extraccion de documentos clave.
+  Definiciones detectadas: script procedural.
+
+- upload_and_extract.py
+  Rol: upload y extraccion encadenada.
+  Definiciones detectadas: script procedural.
+
+- reindexar_documentos.py
+  Rol: reconstruccion de indices.
+  Definiciones detectadas: script procedural.
+
+- reset_db.py
+  Rol: limpieza o reseteo de la DB.
+  Definiciones detectadas: script procedural.
+
+- crear_bd_tests.py
+  Rol: creacion de base para pruebas.
+  Funciones detectadas: crear_bd_tests().
+
+4.4.5. Consultas tematicas y pruebas de recuperacion
+- buscar_color_docker.py
+  Rol: consulta tematica de color en contexto Docker.
+  Definiciones detectadas: script procedural.
+
+- buscar_color_maiz.py
+  Rol: consulta tematica maiz/color.
+  Definiciones detectadas: script procedural.
+
+- buscar_dosis_fosforo.py
+  Rol: consulta tematica de dosis de fosforo.
+  Definiciones detectadas: script procedural.
+
+- buscar_fragmento_color.py
+  Rol: busqueda de fragmentos por color.
+  Definiciones detectadas: script procedural.
+
+- buscar_maiz_nitrogeno.py
+  Rol: consulta de maiz/nitrogeno.
+  Definiciones detectadas: script procedural.
+
+- buscar_nutrientes_completos.py
+  Rol: consulta ampliada de nutrientes.
+  Definiciones detectadas: script procedural.
+
+- find_nitro.py
+  Rol: consulta puntual sobre nitrogeno.
+  Definiciones detectadas: script procedural.
+
+- test_search_maiz.py
+  Rol: prueba de busqueda sobre maiz.
+  Definiciones detectadas: script procedural.
+
+- test_query_color.py
+  Rol: prueba de query por color.
+  Definiciones detectadas: script procedural.
+
+- test_query_debug.py
+  Rol: prueba/depuracion de queries.
+  Definiciones detectadas: script procedural.
+
+- test_query_lexica.py
+  Rol: prueba de recuperacion lexica.
+  Definiciones detectadas: script procedural.
+
+- test_rag_query.py
+  Rol: prueba de endpoint/flujo RAG.
+  Definiciones detectadas: script procedural.
+
+- test_retriever_direct.py
+  Rol: prueba directa del retriever.
+  Definiciones detectadas: script procedural.
+
+- test_generator.py
+  Rol: prueba del generador de respuestas.
+  Definiciones detectadas: script procedural.
+
+- test_extract_guia.py
+  Rol: prueba de extraccion de guia.
+  Definiciones detectadas: script procedural.
+
+- test_busqueda_amarillo.py
+  Rol: prueba tematica de busqueda color amarillo.
+  Definiciones detectadas: script procedural.
+
+- test_rag_funcional.py
+  Rol: prueba funcional de punta a punta.
+  Funciones detectadas: check_backend_health(), check_database(), insert_test_data(), rebuild_indexes(), test_rag_query(), main().
+
+4.4.6. Normalizacion, expresiones y utilidades puntuales
+- test_regex.py
+  Rol: pruebas de expresiones regulares.
+  Definiciones detectadas: script procedural.
+
+- test_sin_acentos.py
+  Rol: validacion de normalizacion sin acentos.
+  Definiciones detectadas: script procedural.
+
+- Apisoilgrids.py
+  Rol: integracion con SoilGrids y salida tabular.
+  Funciones detectadas: depth_to_soilgrids_layer(), sniff_delimiter(), normalize_headers(), fetch_soilgrids_point(), parse_soilgrids_json(), set_column_widths(), main().
+
+
+4.5. INFRAESTRUCTURA, OPERACION Y DOCUMENTACION
+
+4.5.1. Infraestructura de despliegue
+- docker-compose.yml
+  Rol: orquestacion del stack principal.
+  Servicios declarados: clamav, ai, presenter, prometheus, grafana.
+  Observaciones:
+  - presenter publica 8080.
+  - ai publica 8000.
+  - clamav publica 3310.
+  - prometheus publica 9090.
+  - grafana publica 3000.
+  - se observan hardening options: read_only, no-new-privileges, seccomp, cap_drop y tmpfs.
+
+- milpa_ai_backend/dockerfile
+  Rol: build de backend Python.
+
+- milpa_presenter/dockerfile
+  Rol: build de presenter Node/TypeScript.
+
+- milpa_ai_backend/yoyo.ini
+  Rol: configuracion de migraciones.
+  Hallazgo asociado: define sqlite:///data/main.db como base de migracion.
+
+- docs/observability/prometheus.yml
+  Rol: scraping/configuracion Prometheus.
+
+- docs/observability/grafana/
+  Rol: dashboards y provisioning Grafana.
+
+4.5.2. Scripts operativos
+- run_all.ps1
+  Rol: arranque/verificacion integral automatizada.
+
+- simple_verify.ps1
+  Rol: verificacion rapida del estado del stack.
+
+- organize_and_reindex.ps1
+  Rol: reorganizacion e indexacion.
+
+- cleanup_docker_data.ps1
+  Rol: limpieza de artefactos Docker.
+
+- compact_docker_disk.ps1
+  Rol: compactacion de almacenamiento Docker.
+
+- docker_maintenance.ps1
+  Rol: mantenimiento de Docker.
+
+- setup_git.ps1
+  Rol: configuracion del repositorio git.
+
+- check_frags.sh
+  Rol: verificacion de fragmentos desde shell.
+
+4.5.3. Documentacion arquitectonica y operativa relevante
+- README.md
+  Rol: entrada general al proyecto.
+
+- ARQUITECTURA_UNIFICADA.md
+  Rol: documento de arquitectura de dos capas presenter + backend.
+
+- INFORME_TECNICO_ARQUITECTURA_Y_OPERACION_MILPA.md
+  Rol: analisis critico del estado real del sistema y sus deudas.
+
+- ARQUITECTURA_Y_PROCESAMIENTO_DATOS.md
+  Rol: detalle tecnico del procesamiento de datos y RAG.
+
+- EXPLICACION_ALGORITMOS_IA.md
+  Rol: explicacion de BM25, embeddings, RRF, NER y componentes de IA.
+
+- INDICE_DOCUMENTACION.md
+  Rol: guia de navegacion documental.
+
+- PROCESO_COMPLETO_SISTEMA_MILPA.md
+  Rol: flujo integral del sistema.
+
+- README_AUDITORIA_IA.md
+  Rol: documentacion de auditoria/observabilidad IA.
+
+- GUIA_EVALUACION.md y README_EVALUACION.md
+  Rol: metodologia y material de evaluacion.
+
+- SPRINT_17_20_README.md y SPRINT_17_20_COMPLETADO.md
+  Rol: registro de sprint, observabilidad, seguridad, feature flags y migraciones.
+
+- Instruccion/instruccion.txt
+  Rol: especificacion funcional y tecnica amplia del proyecto.
+
+- Instruccion/calcular_awc.py
+  Rol: utilidad tecnica dentro del area de instruccion.
+  Funciones detectadas: calcular_cc(), calcular_pm().
+
+======================================================================
+5. HALLAZGOS DE AUDITORIA
+======================================================================
+
+5.1. Hallazgo principal: el nucleo esta claro, el repositorio no.
+La arquitectura central presenter + backend + persistencia hibrida es reconocible y defendible. La complejidad mayor viene de la periferia: scripts, rutas de datos alternativas, documentacion historica y componentes heredados.
+
+5.2. Hallazgo estructural: frontend activo vs frontend legado.
+- Activo: milpa_presenter.
+- Legado: frontend.
+La carpeta frontend contiene un stack distinto (Express, MongoDB, Socket.IO, JWT, Mongoose) que ya no coincide con la arquitectura principal actual. Su presencia aumenta el ruido tecnico.
+
+5.3. Hallazgo de persistencia: multiples bases SQLite coexistiendo.
+Se detectaron referencias a:
+- data/milpa_knowledge.db
+- data/main.db
+- data/milpa.db
+
+Evidencia observada:
+- core/config.py usa por defecto data/milpa_knowledge.db.
+- yoyo.ini apunta a data/main.db.
+- core/config_flags/feature_flags.py inicializa por defecto contra data/main.db.
+- varios scripts de raiz consultan milpa_knowledge.db.
+- otros scripts/documentos refieren milpa.db.
+- dentro de milpa_ai_backend/data existen fisicamente main.db, milpa.db y milpa_knowledge.db.
+
+Impacto:
+- posibilidad de leer/escribir estados distintos segun el script.
+- migraciones y feature flags pueden no residir en la misma base que usa el runtime principal.
+- debugging mas confuso.
+
+5.4. Hallazgo de modularidad: presenter monolitico.
+milpa_presenter/src/server.ts concentra muchas responsabilidades:
+- arranque del servidor
+- proxy al backend
+- paginas HTML
+- JavaScript embebido
+- colas/concurrencia
+- chequeos de runtime
+- sanitizacion y utilidades de interfaz
+
+Impacto:
+- alto acoplamiento
+- mantenimiento mas costoso
+- baja separacion de concerns en la capa web
+
+5.5. Hallazgo operativo: la narrativa de punto de entrada unico no esta completamente cerrada.
+Aunque la documentacion presenta al presenter como punto de entrada unico, Compose publica tambien el backend en 8000 y muchos scripts trabajan directamente contra el backend. Esto genera dos rutas de uso reales: via presenter o via backend directo.
+
+5.6. Hallazgo documental: deriva de documentacion.
+Hay abundante documentacion, pero no toda describe el mismo estado del sistema. Esto obliga a leer varias piezas y reconciliarlas manualmente.
+
+5.7. Hallazgo de datos: persistencia duplicada en la raiz y dentro del backend.
+Se observan artefactos de datos tanto en data/ (raiz) como en milpa_ai_backend/data/. Esto agrega ambiguedad sobre que snapshot o ubicacion es la operativa/canonica en cada contexto.
+
+5.8. Hallazgo de deuda tecnica: blue-green parcialmente integrado.
+Existe un modulo blue_green.ts con logica de canary/blue-green, pero no emerge como eje dominante del flujo principal observado. Eso sugiere funcionalidad planificada o parcialmente incorporada.
+
+5.9. Hallazgo de empaquetado: backend con senales de fragilidad operativa.
+La coexistencia de varios scripts que operan por ruta directa, mas configuraciones de DB no unificadas, sugiere que parte del funcionamiento depende de convenciones del entorno y no de una unica capa de composicion rigurosa.
+
+======================================================================
+6. CONCLUSION TECNICA
+======================================================================
+
+Conclusion principal
+El sistema MILPA si tiene una arquitectura principal identificable y relativamente bien separada en lo conceptual:
+- presenter para web/proxy
+- backend para IA y negocio
+- SQLite + BM25 + ChromaDB + filesystem para persistencia/retrieval
+
+Sin embargo, la experiencia de mantenimiento del repositorio queda deteriorada por:
+- coexistencia de codigo legado
+- proliferacion de scripts auxiliares
+- varias rutas de base de datos
+- documentacion de etapas diferentes
+- concentracion de UI y proxy en un archivo grande
+
+Si se toma solo el nucleo operativo, la arquitectura es de dos capas con retrieval hibrido. Si se toma el repositorio completo como producto de ingenieria, el principal problema no es la ausencia de arquitectura, sino la falta de consolidacion.
+
+======================================================================
+7. SINTESIS CORTA PARA DECISION
+======================================================================
+
+- Arquitectura activa real: milpa_presenter + milpa_ai_backend.
+- Motor central: RAG hibrido con BM25 + embeddings + enriquecimiento por entidades.
+- Persistencia real observada: varias DB SQLite coexistentes, vector store y filesystem documental.
+- Mayor riesgo tecnico: inconsistencia de rutas/DB y dispersion del repositorio.
+- Mayor riesgo de mantenimiento: presenter monolitico y legado frontend no removido.
+- Estado general: nucleo funcional coherente, repositorio operativamente heterogeneo.
+
+
+======================================================================
+8. ESQUEMA DE BASE DE DATOS (SQLite)
+======================================================================
+
+8.1. Configuracion de conexion
+- Archivo fuente: milpa_ai_backend/core/logic/db.py
+- Ruta por defecto (config.py): data/milpa_knowledge.db
+- PRAGMAs aplicados al conectar:
+    PRAGMA journal_mode = WAL;   (Write-Ahead Logging para concurrencia)
+    PRAGMA synchronous = NORMAL; (balance entre velocidad y durabilidad)
+- Migraciones gestionadas con yoyo-migrations.
+- Directorio de migraciones: milpa_ai_backend/core/logic/migrations/
+
+8.2. Migraciones registradas
+  0001_init.sql             -> Esquema inicial completo.
+  0002_add_stored_path.sql  -> Agrega stored_path a docs.
+  0003_indexes_extraction.sql -> Indices de rendimiento.
+  0004_add_feature_flags_table.sql -> Tabla feature_flags con datos semilla.
+  0004_feature_flags.sql    -> Variante/duplicado de feature flags.
+  0005_add_entities_column.sql -> Agrega entities (JSON) a fragments.
+
+8.3. Tablas, columnas y tipos
+
+TABLA: docs
+  doc_id          TEXT  PRIMARY KEY  (SHA-256 del archivo original)
+  title           TEXT
+  author          TEXT
+  year            INTEGER
+  source          TEXT
+  hash            TEXT
+  license         TEXT
+  lang_original   TEXT
+  classification  TEXT  (Publico | Interno | Restringido)
+  created_at      TEXT  (ISO timestamp)
+  stored_path     TEXT  (ruta canonica en data/documents/)
+
+TABLA: fragments
+  fragment_id     TEXT  PRIMARY KEY  (UUID)
+  doc_id          TEXT  FK -> docs.doc_id
+  fragment_uid    TEXT  (hash determinista doc+seccion+pagina+texto)
+  section_id      TEXT
+  page_start      INTEGER
+  page_end        INTEGER
+  text            TEXT  (contenido del fragmento)
+  text_es         TEXT  (traduccion al espanol si aplica)
+  source          TEXT  ("native" | "ocr")
+  entities        TEXT  (JSON: lista de entidades extraidas por NER)
+  created_at      TEXT
+
+TABLA: fine_refs
+  fragment_id     TEXT  FK -> fragments.fragment_id
+  page            INTEGER
+  x1              REAL
+  y1              REAL
+  x2              REAL
+  y2              REAL
+  click_href      TEXT  (URL interna para click-through en el viewer)
+
+TABLA: tables
+  table_id        TEXT  PRIMARY KEY
+  doc_id          TEXT  FK -> docs.doc_id
+  page            INTEGER
+  bbox            TEXT  (JSON: coordenadas del area de la tabla)
+  csv             TEXT  (contenido CSV de la tabla)
+  schema          TEXT  (JSON: descripcion del esquema detectado)
+
+TABLA: table_cells
+  table_id        TEXT  FK -> tables.table_id
+  row             INTEGER
+  col             INTEGER
+  text            TEXT
+  bbox            TEXT
+
+TABLA: feature_flags
+  flag_name       TEXT  PRIMARY KEY
+  enabled         INTEGER  (0 | 1)
+  config_json     TEXT  (JSON de configuracion del flag)
+  description     TEXT
+  updated_at      TEXT
+
+8.4. Indices de rendimiento
+  idx_frag_doc    ON fragments(doc_id)
+  idx_frag_page   ON fragments(page_start, page_end)
+  idx_tables_doc  ON tables(doc_id)
+
+8.5. Flags semilla insertados por la migracion 0004
+  RERANKER_ENABLED         enabled=1  config: {model: cross-encoder/ms-marco-MiniLM-L-6-v2}
+  EMBEDDINGS_MODEL         enabled=1  config: {model: BAAI/bge-m3, dim: 1024}
+  RAG_MODE                 enabled=1  config: {mode: hybrid, bm25_weight: 0.4, vector_weight: 0.6}
+  TAXONOMY_VERSION         enabled=1  config: {version: 2025.09.10}
+  BLUE_GREEN_V2_ENABLED    enabled=0  config: {rollout_percent: 0}
+  TABLE_EXTRACTION_MODE    enabled=1  config: {mode: auto, lattice: true, stream: true}
+  ENRICHMENT_ENABLED       enabled=1  config: {extract_entities: true, classify_labels: true}
+  AV_STRICT_MODE           enabled=1  config: {scan_uploads: true, scan_instream: true}
+  OCR_ENABLED              enabled=1  config: {tesseract_lang: spa+eng, min_text_threshold: 50}
+
+8.6. Hallazgo critico de persistencia
+El runtime principal (config.py) usa data/milpa_knowledge.db, pero:
+- yoyo.ini apunta a sqlite:///data/main.db
+- feature_flags.py abre data/main.db por defecto
+- Consecuencia real: las migraciones se aplican en main.db, los feature flags se leen de main.db, pero el runtime del backend lee/escribe fragments y docs en milpa_knowledge.db. Esto significa que las tablas creadas por migraciones y los feature flags pueden existir en una base distinta a la que usa el motor RAG en produccion.
+
+
+======================================================================
+9. FLUJO COMPLETO DE INGESTA DE DATOS (upload -> indice)
+======================================================================
+
+Este apartado traza la cadena de llamadas real desde que un usuario sube un archivo hasta que queda indexado y buscable.
+
+9.1. Paso 1: Upload del documento
+  Punto de entrada: POST /api/documents/upload
+  Archivo: milpa_ai_backend/api/endpoints.py -> upload_document()
+  Validaciones antes de persistir:
+    - Tipo MIME permitido: application/pdf, .docx, text/plain.
+    - Clasificacion obligatoria: Publico, Interno o Restringido.
+    - Licencia obligatoria: institutional, public_domain, permitted, normative.
+    - Tamano maximo: MAX_UPLOAD_MB (por defecto 25 MB).
+
+9.2. Paso 2: Persistencia del original
+  Llamada: persist_original(file, filename) en core/logic/ingestion.py
+  Proceso:
+    1. Resuelve la ruta absoluta de data/documents/.
+    2. Sanitiza el nombre del archivo (_sanitize_filename).
+    3. Antepone un timestamp para unicidad.
+    4. Escribe el archivo a disco en streaming (no carga todo en memoria).
+    5. Calcula el SHA-256 del archivo guardado -> este hash se usa como doc_id.
+  Salida: (doc_id, stored_path)
+
+9.3. Paso 3: Escaneo antivirus
+  Llamada: scan_file_strict(stored_path) en core/security/av.py
+  Proceso:
+    1. Conecta a ClamAV por TCP (clamav:3310) via clamd.ClamdNetworkSocket.
+    2. Ejecuta SCAN por ruta del filesystem (clamd accede al archivo via volumen compartido).
+    3. Ejecuta INSTREAM enviando el contenido del archivo por stream TCP.
+    4. Si cualquiera de los dos metodos detecta malware -> raise AntivirusError.
+    5. Si ClamAV no esta disponible y AV_OPTIONAL=true -> continua con warning.
+  Razon de la doble verificacion: SCAN puede fallar si /tmp es read-only; INSTREAM es independiente del filesystem. Juntos cubren ambos vectores.
+
+9.4. Paso 4: Registro en base de datos
+  Ubicacion: endpoints.py, despues del escaneo exitoso.
+  Operaciones SQL:
+    INSERT INTO docs (doc_id, title, author, year, source, hash, license, lang_original, classification, created_at, stored_path)
+    INSERT INTO licenses (si aplica, segun el flujo de metadatos)
+  Retorna al cliente: {doc_id, stored_path, license, classification, title, author, year}
+
+9.5. Paso 5: Extraccion de contenido
+  Punto de entrada: POST /api/documents/{doc_id}/extract
+  Archivo: milpa_ai_backend/api/endpoints.py -> extract_endpoint()
+  Llamada interna: extract_document(conn, doc_id, pdf_path, ...) en core/logic/extract.py
+  Proceso por pagina:
+    1. Abre el PDF con PyMuPDF (fitz.open).
+    2. Extrae texto nativo: page.get_text("text").
+    3. Evalua si necesita OCR: _page_needs_ocr(text, threshold=40).
+       Criterio: si el texto nativo tiene menos de 40 caracteres utiles, se considera escaneado.
+    4. Si necesita OCR: renderiza la pagina como imagen y ejecuta pytesseract.image_to_string(img, lang="spa+eng").
+    5. Resultado: texto por pagina con fuente marcada ("native" u "ocr").
+
+9.6. Paso 6: Fragmentacion (chunking)
+  Llamada: _chunk_text(text, chunk_size=1200) en core/logic/extract.py
+  Proceso:
+    1. Divide el texto por doble salto de linea (parrafos).
+    2. Si un parrafo excede chunk_size, lo subdivide por palabras.
+    3. Genera fragmentos de ~1200 caracteres con limites semanticos.
+  Resultado: lista de fragmentos (strings).
+
+9.7. Paso 7: Enriquecimiento de entidades (NER)
+  Llamada: extract_entities(text) en core/logic/enrichment.py
+  Proceso:
+    1. Normaliza el texto (acentos, minusculas).
+    2. Carga la taxonomia agricola (CSV de cultivos, plagas, nutrientes + JSON de sinonimos).
+    3. Ejecuta NER por diccionario (_dict_ner): busca coincidencias exactas de terminos del dominio.
+    4. Aumenta con spaCy (_augment_with_spacy): extrae entidades adicionales con modelo NLP.
+    5. Normaliza sinonimos (e.g., "elote" -> "maiz").
+    6. Clasifica el fragmento por tipo: RECOMENDACION, ADVERTENCIA, DATO, etc.
+  Resultado: (lista de Entity, dict de sinonimos aplicados, texto normalizado)
+
+9.8. Paso 8: Insercion de fragmentos en SQLite
+  Llamada: _insert_fragment(cur, doc_id, page_no, chunk, source) en core/logic/extract.py
+  Proceso:
+    1. Genera un fragment_id con uuid().
+    2. Ejecuta extract_entities(text) para obtener entidades JSON.
+    3. INSERT INTO fragments (fragment_id, doc_id, fragment_uid, page_start, page_end, text, source, entities, created_at).
+
+9.9. Paso 9: Extraccion de tablas
+  Llamada: _try_camelot(pdf_path) en core/logic/tables.py
+  Proceso:
+    1. Intenta Camelot con flavor="lattice" (tablas con bordes visibles).
+    2. Si falla o no encuentra tablas, intenta flavor="stream" (tablas sin bordes).
+    3. Si Camelot no esta disponible, usa _fallback_detect_tables_pymupdf() (heuristica por lineas/formas).
+    4. Para cada tabla detectada:
+       - _insert_table(cur, doc_id, page, csv_text, bbox, schema_obj)
+       - _insert_table_cells(cur, table_id, dataframe)
+
+9.10. Paso 10: Indexacion en BM25 y vector store
+  Punto de entrada: POST /api/index/rebuild  o  rebuild_indexes() en api/rag.py
+  Proceso:
+    1. Lee todos los fragmentos de SQLite.
+    2. Para BM25 (core/logic/bm25.py):
+       - BM25Index.index_many(records): indexa texto + labels + entidades de cada fragmento.
+       - Backends en cascada: Tantivy (preferido) -> Whoosh -> memoria.
+    3. Para vector store (core/logic/vectordb.py):
+       - EmbeddingModel.encode(textos) -> vectores de 384 dims (MiniLM) o 1024 dims (BGE-m3 segun flag).
+       - VectorStore.upsert(ids, embeddings, metadatas): persiste en ChromaDB.
+    4. Al finalizar, el sistema puede responder consultas hibridas.
+
+9.11. Diagrama de conexiones de ingesta
+
+  Usuario (navegador)
+      |
+      | POST /api/documents/upload (via presenter /ai/*)
+      v
+  milpa_presenter (Fastify :8080)
+      |
+      | fetch("http://ai:8000/api/documents/upload", {method:"POST", body: FormData})
+      v
+  milpa_ai_backend (FastAPI :8000)
+      |
+      +---> ingestion.py: persist_original() ---> data/documents/ (filesystem)
+      |
+      +---> av.py: scan_file_strict() ---> ClamAV (TCP :3310) ---> SCAN + INSTREAM
+      |
+      +---> endpoints.py: INSERT INTO docs ---> SQLite (milpa_knowledge.db)
+      |
+      v
+  Usuario llama POST /api/documents/{doc_id}/extract
+      |
+      v
+  milpa_ai_backend
+      |
+      +---> extract.py: fitz.open(pdf) -> texto nativo por pagina
+      |     |
+      |     +---> si texto < 40 chars -> pytesseract OCR (spa+eng)
+      |
+      +---> extract.py: _chunk_text() -> fragmentos de ~1200 chars
+      |
+      +---> enrichment.py: extract_entities() -> NER taxonomia agricola + spaCy
+      |
+      +---> extract.py: INSERT INTO fragments -> SQLite
+      |
+      +---> tables.py: Camelot/PyMuPDF -> INSERT INTO tables, table_cells -> SQLite
+      |
+      v
+  Usuario o script llama POST /api/index/rebuild
+      |
+      v
+  milpa_ai_backend
+      |
+      +---> bm25.py: BM25Index.index_many() -> Tantivy/Whoosh/memoria (data/bm25_idx/)
+      |
+      +---> vectordb.py: VectorStore.upsert() -> ChromaDB (data/vector_db/)
+      |
+      v
+  Sistema listo para consultas RAG
+
+
+======================================================================
+10. FLUJO COMPLETO DE CONSULTA RAG (query -> respuesta)
+======================================================================
+
+10.1. Punto de entrada
+  POST /api/query
+  Archivo: milpa_ai_backend/api/rag.py -> query_rag()
+  Parametros de entrada (QueryRequest):
+    query:          texto de la consulta del usuario (obligatorio)
+    k:              numero de fragmentos a devolver (defecto 8)
+    mode:           "hybrid" | "dense" | "lex" (defecto "hybrid")
+    labels_filter:  lista opcional de etiquetas para filtrar
+
+10.2. Inicializacion lazy de componentes
+  Llamada: get_retriever() en rag.py
+  Proceso:
+    1. Si no existen, instancia los singletons globales:
+       _embedder    = EmbeddingModel()     -> carga paraphrase-multilingual-MiniLM-L12-v2
+       _vector_store = VectorStore()       -> conecta a ChromaDB persistente
+       _bm25_index  = BM25Index()          -> carga indice Tantivy/Whoosh
+       _retriever   = HybridRetriever(vector_store, bm25_index, embedder)
+    2. Los singletons se reusan en consultas posteriores.
+
+10.3. Busqueda segun modo
+
+  MODO "dense" (solo vectorial):
+    retriever.dense_search(query, k)
+      -> embedder.encode(query) -> vector de consulta
+      -> vector_store.query(query_emb=vector, k=k)
+      -> ChromaDB cosine similarity
+      -> retorna [{fragment_id, score, metadata}]
+
+  MODO "lex" (solo lexico):
+    retriever.lex_search(query, topk=k*10, labels_filter)
+      -> bm25_index.search(query, topk, labels_filter)
+      -> Tantivy/Whoosh BM25 scoring
+      -> retorna top-k fragmentos
+
+  MODO "hybrid" (defecto, combinado):
+    1. vec_hits = dense_search(query, k=K_RETRIEVE)
+    2. bm25_hits = lex_search(query, topk=BM25_TOPK)
+       Donde BM25_TOPK = 100 por defecto
+    3. fused = reciprocal_rank_fusion(vec_hits, bm25_hits, K=RRF_K)
+       Formula: RRF_score(d) = sum( 1 / (K + rank_i) ) para cada ranking donde aparece d
+       K = 60 (parametro de suavizado)
+    4. Resultado: lista fusionada ordenada por score RRF
+
+10.4. Reranking (solo en modo hybrid)
+  Llamada: rerank_by_term_coverage(query, hits, fragment_texts)
+  Proceso:
+    1. Extrae terminos del query (longitud > 2, excluye stopwords).
+    2. Para cada hit: coverage_ratio = terminos_matcheados / total_terminos_query.
+    3. boosted_score = score_original * (1 + coverage_ratio * 0.5).
+    4. Reordena por boosted_score.
+    5. Limita a k resultados finales.
+
+10.5. Evaluacion de evidencia insuficiente
+  Llamada: insufficient_evidence(query, hits) en rag_engine.py
+  Umbrales aplicados (clase Thresholds):
+    k_min                = 3      (minimo de fragmentos tras filtrado)
+    min_sources          = 1      (minimo de documentos distintos)
+    entity_coverage_min  = 0.10   (cobertura minima de entidades query vs fragmentos)
+    mean_score_min       = 0.010  (puntaje promedio minimo de fragmentos)
+    min_fragment_score   = 0.003  (puntaje minimo individual por fragmento)
+  Proceso:
+    1. Filtra fragmentos con score < min_fragment_score.
+    2. Si quedan < k_min fragmentos -> evidencia insuficiente.
+    3. Extrae entidades del query y calcula entity_coverage vs fragmentos recuperados.
+    4. Si entity_coverage < entity_coverage_min -> evidencia insuficiente.
+    5. Si evidencia insuficiente:
+       - build_insufficient_response(query, diagnostics) genera respuesta de fallback.
+       - Retorna QueryResponse con insufficient_evidence=True.
+
+10.6. Carga de metadatos de fragmentos
+  Consulta SQL:
+    SELECT f.text, f.doc_id, f.page_start, f.page_end, f.entities, d.title
+    FROM fragments f LEFT JOIN docs d ON f.doc_id = d.doc_id
+    WHERE f.fragment_id IN (...)
+  Construye objetos FragmentResponse con texto, metadata y ubicacion.
+
+10.7. Generacion de respuesta y citaciones
+  Llamada: compose_answer(query, fragments, max_length=500) en synthesis.py
+  Proceso:
+    1. extract_sentences(texto): tokeniza el texto de cada fragmento en oraciones.
+    2. Concatena los fragmentos relevantes como contexto.
+    3. compute_faithfulness(respuesta, fragmentos): calcula que proporcion de la respuesta esta soportada por los fragmentos.
+    4. build_citation(fragment, idx): para cada fragmento, construye un objeto citacion con:
+       - doc_id, page, bbox (coordenadas PDF), table_id (si aplica)
+       - link href para click-through en el viewer (/doc/:id?page=N)
+    5. sanitize_html(respuesta_html): limpia HTML de la respuesta.
+  Resultado: {respuesta_html, citas[], faithfulness}
+
+10.8. Respuesta final al cliente
+  Estructura QueryResponse:
+    query:                texto original de la consulta
+    fragments:            lista de FragmentResponse (texto, doc_id, page, score)
+    total_retrieved:      total de fragmentos considerados
+    mode:                 modo usado (hybrid/dense/lex)
+    answer:               texto/HTML de la respuesta generada
+    answer_mode:          modo de generacion (local/concat)
+    citations:            lista de citaciones con metadata
+    insufficient_evidence: bool indicando si la evidencia fue insuficiente
+
+10.9. Diagrama de conexiones de consulta
+
+  Usuario (navegador)
+      |
+      | POST /ai/api/query  {query: "fertilizacion de maiz", k: 5, mode: "hybrid"}
+      v
+  milpa_presenter (Fastify :8080)
+      |
+      | Scheduler.enqueue() -> CircuitBreaker.allow()
+      | fetch("http://ai:8000/api/query", {method: "POST", body: JSON})
+      v
+  milpa_ai_backend (FastAPI :8000)
+      |
+      +---> get_retriever() -> HybridRetriever (singleton)
+      |
+      +---> dense_search(query, k=8)
+      |     |
+      |     +---> EmbeddingModel.encode(query) -> vector 384d
+      |     +---> ChromaDB.query(vector, n_results=8) -> vec_hits
+      |
+      +---> lex_search(query, topk=100)
+      |     |
+      |     +---> BM25Index.search(query, 100) -> bm25_hits (Tantivy/Whoosh)
+      |
+      +---> reciprocal_rank_fusion(vec_hits, bm25_hits, K=60) -> fused_hits
+      |
+      +---> rerank_by_term_coverage(query, fused_hits) -> reranked_hits[:k]
+      |
+      +---> insufficient_evidence(query, hits) -> (is_insuf, diag, filtered)
+      |     |
+      |     +---> Si insuficiente: build_insufficient_response() -> respuesta fallback
+      |
+      +---> SELECT fragments + docs metadata FROM SQLite
+      |
+      +---> compose_answer(query, fragments)
+      |     |
+      |     +---> extract_sentences() + compute_faithfulness()
+      |     +---> build_citation() por cada fragmento
+      |     +---> sanitize_html()
+      |
+      +---> return QueryResponse JSON
+      |
+      v
+  milpa_presenter
+      |
+      | Renderiza en la pagina /ui/query o devuelve JSON crudo
+      v
+  Usuario (navegador)
+
+
+======================================================================
+11. PAGINAS WEB DEL PRESENTER (interfaz de usuario activa)
+======================================================================
+
+El presenter (milpa_presenter/src/server.ts) sirve paginas HTML completas generadas como strings dentro del propio TypeScript. No usa templates externos ni archivos HTML separados. Todo el HTML, CSS y JavaScript del cliente esta embebido en server.ts.
+
+11.1. GET /ui/checks - Pagina de verificacion del sistema
+  Proposito: muestra el estado de salud del stack completo.
+  Contenido HTML:
+    - Encabezado con logo y titulo "MILPA - Verificaciones del Sistema".
+    - Panel de chequeos automaticos que evalua:
+      - Conectividad con el backend (/ai/health)
+      - Estado de la base de datos
+      - Disponibilidad de indices
+    - Estilo CSS embebido: paleta verde (#2E7D32), tipografia Inter, cards con sombra suave.
+    - JavaScript embebido que ejecuta fetch() contra /ai/health y actualiza el DOM.
+  Llamadas fetch() del cliente:
+    - fetch("/ai/health")  -> verifica backend
+    - fetch("/ai/library") -> lista documentos
+
+11.2. GET /ui/library - Biblioteca de documentos
+  Proposito: muestra el catalogo de documentos cargados con filtros.
+  Contenido HTML:
+    - Barra de busqueda y filtros (anio, autor, clasificacion).
+    - Grid de cards con titulo, autor, anio, clasificacion.
+    - Paginacion.
+    - Boton de detalle por documento.
+  Llamadas fetch() del cliente:
+    - fetch("/ai/library?page=N&q=texto&year=Y&classification=C") -> lista filtrada
+    - fetch("/ai/library/facets") -> opciones de filtro (anios, autores)
+
+11.3. GET /ui/library/:docId - Detalle de documento
+  Proposito: muestra los metadatos, fragmentos y tablas de un documento especifico.
+  Contenido HTML:
+    - Cabecera con titulo, autor, anio, clasificacion, licencia.
+    - Pestanas (tabs): Fragmentos | Tablas | Metadatos.
+    - Lista de fragmentos con texto, pagina, fuente (native/ocr) y entidades detectadas.
+    - Tablas renderizadas como HTML <table> con datos parseados del CSV almacenado.
+    - Links click-through al viewer (/doc/:id?page=N).
+  Llamadas fetch() del cliente:
+    - fetch("/ai/library/{docId}") -> detalle con fragmentos y tablas
+
+11.4. GET /ui/query - Interfaz de consulta RAG
+  Proposito: formulario de busqueda y visualizacion de resultados RAG.
+  Contenido HTML:
+    - Campo de texto para la consulta.
+    - Selector de modo (hybrid, bm25, vector).
+    - Selector de k (numero de resultados).
+    - Area de resultados: respuesta generada + citaciones + fragmentos recuperados.
+    - Indicador de faithfulness (fidelidad de la respuesta).
+    - Indicador de evidencia insuficiente (si aplica).
+  Llamadas fetch() del cliente:
+    - fetch("/ai/api/query", {method:"POST", body: JSON.stringify({query, k, mode})})
+
+11.5. GET /health - Healthcheck del presenter
+  Proposito: endpoint de salud.
+  Retorna: {ok: true}
+
+11.6. GET /runtime/status - Estado operativo del presenter
+  Proposito: muestra metricas del runtime.
+  Retorna JSON con:
+    - Estado del circuit breaker (CLOSED/OPEN/HALF_OPEN)
+    - Metricas del scheduler (in_flight, queued)
+    - Configuracion activa
+
+11.7. ALL /ai/* - Proxy transparente al backend
+  Mecanica detallada en la seccion 12.
+
+11.8. Observaciones sobre la interfaz
+  - Toda la UI es server-side rendered (SSR) como strings HTML.
+  - No hay framework frontend (React, Vue, Angular). Es HTML + CSS + JS vanilla embebido.
+  - La paleta visual es verde (#2E7D32 primario, #1b5e20 oscuro, #81c784 claro, #10b981 acento).
+  - Tipografia: Inter con fallback a system fonts.
+  - Diseno responsive con CSS grid/flexbox.
+  - Sin emojis ni iconos externos (diseno profesional limpio).
+
+
+======================================================================
+12. MECANICA DEL PROXY PRESENTER -> BACKEND
+======================================================================
+
+El presenter actua como proxy inverso para todas las rutas /ai/*. La implementacion esta en milpa_presenter/src/server.ts.
+
+12.1. Ruta: ALL /ai/*
+  Captura cualquier metodo HTTP (GET, POST, PUT, DELETE, PATCH) hacia cualquier subruta de /ai/.
+
+12.2. Proceso paso a paso
+  1. Extrae el sufijo: quita el prefijo "/ai/" de la URL y conserva path + query string.
+     Ejemplo: /ai/library?page=2 -> sufijo = "library?page=2"
+
+  2. Construye la URL destino: new URL(sufijo, config.IA_URL)
+     Donde config.IA_URL = "http://ai:8000" en Docker (nombre DNS del servicio).
+     Resultado: "http://ai:8000/library?page=2"
+
+  3. Clona headers: copia headers del request original, elimina hop-by-hop (host, content-length).
+
+  4. Prepara el cuerpo:
+     - GET/HEAD: sin cuerpo.
+     - POST/PUT/PATCH: si es string/Buffer, lo usa directo. Si es objeto, lo serializa con JSON.stringify y agrega Content-Type: application/json.
+
+  5. Control de concurrencia (Scheduler):
+     - Verifica que la cola no este llena (QUEUE_CAPACITY = 64).
+     - Si esta llena -> retorna HTTP 429 con header Retry-After: 2.
+     - Si hay espacio, encola la peticion.
+     - Maximo de peticiones simultaneas: MAX_CONCURRENCY = 8.
+
+  6. Circuit breaker (CircuitBreaker):
+     - Si el circuito esta OPEN -> retorna HTTP 503.
+     - Si esta CLOSED o HALF_OPEN -> permite la peticion.
+     - Tras exito: recordSuccess().
+     - Tras fallo: recordFailure(). Si acumula suficientes fallos -> abre el circuito por CIRCUIT_OPEN_SECS = 30s.
+
+  7. Ejecuta fetch() hacia el backend con timeout (AbortController + signal).
+
+  8. Copia la respuesta:
+     - Codigo HTTP del backend.
+     - Headers del backend (excepto content-length y content-encoding).
+     - Cuerpo como stream.
+
+  9. Manejo de errores:
+     - Timeout del fetch -> HTTP 504 Gateway Timeout.
+     - Error de red/conexion -> HTTP 502 Bad Gateway.
+
+12.3. Metricas registradas en cada request de proxy
+  - milpa_proxy_total: incrementa en cada request.
+  - milpa_proxy_429_total: incrementa si la cola esta llena.
+  - milpa_proxy_timeout_total: incrementa en timeout.
+  - milpa_circuit_open_total: incrementa cuando el circuito se abre.
+  - milpa_proxy_latency_ms: registra latencia en histograma.
+  - milpa_queue_in_flight: gauge de peticiones en vuelo.
+  - milpa_queue_depth: gauge de peticiones esperando.
+
+
+======================================================================
+13. RED DOCKER Y COMUNICACION ENTRE SERVICIOS
+======================================================================
+
+13.1. Red
+  Nombre: milpa_net (declarada explicitamente en docker-compose.yml).
+  Tipo: bridge (default de Docker Compose).
+  DNS interno: cada servicio se resuelve por su nombre (ai, presenter, clamav, prometheus, grafana).
+
+13.2. Servicios, puertos y comunicacion
+
+  +------------------+     +------------------+     +------------------+
+  |    presenter     |     |       ai         |     |     clamav       |
+  |  Fastify :8080   |---->|  FastAPI :8000    |---->|  clamd :3310     |
+  |  (Node 20)       |     |  (Python 3.11)   |     |  (TCP socket)    |
+  +------------------+     +------------------+     +------------------+
+         |                        |
+         |                        |
+         v                        v
+  +------------------+     +------------------+
+  |   prometheus     |     |     grafana      |
+  |    :9090         |     |     :3000        |
+  +------------------+     +------------------+
+
+  presenter -> ai:  HTTP via IA_URL=http://ai:8000 (variable de entorno)
+  ai -> clamav:     TCP via CLAMAV_HOST=clamav, CLAMAV_PORT=3310
+  prometheus -> ai: Scrape HTTP GET http://ai:8000/metrics
+  prometheus -> presenter: Scrape HTTP GET http://presenter:8080/metrics
+  grafana -> prometheus: Datasource HTTP http://prometheus:9090
+
+13.3. Volumenes compartidos
+
+  Volumen bind: ./milpa_ai_backend/data -> /app/data
+    - Montado RW en servicio ai (backend escribe documentos, DB, indices).
+    - Montado RO en servicio clamav (solo lee archivos para escaneo).
+    - Contiene: documents/, milpa_knowledge.db, main.db, vector_db/, bm25_idx/, tmp/.
+
+  Volumen tmpfs (todos los servicios):
+    /tmp: rw, noexec, nosuid. Tamanos: clamav=512m, ai=1g, presenter=256m.
+    /app/data/tmp (solo ai): 2g para uploads temporales.
+    /home/appuser/.cache (solo ai): 3g para cache de modelos Hugging Face.
+
+  Volumenes nombrados:
+    prometheus_data: persistencia de metricas (retencion 15 dias).
+    grafana_data: dashboards y configuraciones.
+
+13.4. Variables de entorno clave
+
+  Servicio ai:
+    ALLOWED_ORIGIN    = http://localhost:8080
+    CLAMAV_HOST       = clamav
+    CLAMAV_PORT       = 3310
+    AV_OPTIONAL       = true
+    MAX_UPLOAD_MB     = 25
+    TMPDIR            = /app/data/tmp
+
+  Servicio presenter:
+    PORT              = 8080
+    IA_URL            = http://ai:8000
+    ALLOWED_ORIGINS   = http://localhost:8080
+
+  Servicio grafana:
+    GF_SECURITY_ADMIN_USER     = admin
+    GF_SECURITY_ADMIN_PASSWORD = milpa_grafana_2025
+    GF_USERS_ALLOW_SIGN_UP     = false
+    GF_AUTH_ANONYMOUS_ENABLED   = false
+
+13.5. Hardening de seguridad Docker
+  Todos los servicios aplican:
+    - user: no-root (clamav:clamav, 1000:1000, node:node, 65534:65534, 472:472).
+    - security_opt: no-new-privileges:true, seccomp=default.json.
+    - cap_drop: ALL (elimina todas las capabilities de Linux).
+    - read_only: true (filesystem de solo lectura + tmpfs para escritura temporal).
+    - tmpfs con noexec y nosuid (previene ejecucion de binarios en temporales).
+
+13.6. Puertos publicados (host -> contenedor)
+    8080 -> presenter:8080   (punto de entrada principal para usuarios)
+    8000 -> ai:8000          (acceso directo al backend, tambien publicado)
+    3310 -> clamav:3310      (antivirus, expuesto para debug)
+    9090 -> prometheus:9090  (metricas)
+    3000 -> grafana:3000     (dashboards)
+
+
+======================================================================
+14. CAPA DE SEGURIDAD DETALLADA
+======================================================================
+
+14.1. Backend: antivirus ClamAV
+  Archivo: milpa_ai_backend/core/security/av.py
+  Protocolo: doble verificacion SCAN + INSTREAM.
+    SCAN: ClamAV accede al archivo directamente por ruta del filesystem (volumen compartido).
+    INSTREAM: el backend envia el contenido del archivo por TCP stream a ClamAV.
+    Si cualquiera detecta malware -> AntivirusError -> HTTP 400 al cliente.
+    Si ClamAV no esta disponible y AV_OPTIONAL=true -> el upload continua con warning en log.
+  Configuracion de ClamAV:
+    - clamd.conf montado desde ./clamav/clamd.conf
+    - TCPSocket en 3310, sin LocalSocket
+    - /tmp montado como tmpfs RW (necesario para working dir de clamd)
+
+14.2. Presenter: headers HTTP de seguridad
+  Archivo: milpa_presenter/src/security/headers.ts
+  Headers inyectados en cada respuesta:
+    X-Content-Type-Options:    nosniff
+    X-Frame-Options:           DENY
+    Referrer-Policy:           no-referrer
+    Strict-Transport-Security: max-age=31536000; includeSubDomains
+    Content-Security-Policy:
+      default-src 'none';
+      script-src 'unsafe-inline';
+      img-src 'self' data:;
+      style-src 'self' 'unsafe-inline';
+      font-src 'self';
+      connect-src 'self';
+      frame-ancestors 'none';
+      base-uri 'none';
+      form-action 'self'
+
+14.3. Presenter: sanitizacion de HTML
+  Archivo: milpa_presenter/src/security/sanitize.ts
+  Tags permitidos: a, em, strong, ul, ol, li, p, br, code, pre.
+  Atributos permitidos en <a>: href, data-cite, data-page, data-bbox, data-table, data-row, data-col.
+  Esquemas bloqueados: todos (http, https, mailto, etc.).
+  Solo se preservan URLs internas (prefijos: /, #, ?, ./, ../).
+  URLs externas se reemplazan por "#".
+  Tags no permitidos: se descartan (no se escapan).
+
+14.4. Presenter: rate limiting
+  Configurado en server.ts al registrar fastify-rate-limit.
+  Limite: 60 requests por minuto por IP.
+  Respuesta al exceder: HTTP 429 Too Many Requests.
+
+14.5. Presenter: circuit breaker
+  Archivo: milpa_presenter/src/runtime/circuit.ts
+  Estados: CLOSED (normal) -> OPEN (fallo) -> HALF_OPEN (prueba).
+  Abre despues de N fallos consecutivos o latencia excesiva.
+  Periodo abierto: CIRCUIT_OPEN_SECS = 30 segundos.
+  Permite una request de prueba en HALF_OPEN; si tiene exito, vuelve a CLOSED.
+
+14.6. Frontend legado: seguridad (observacion)
+  Archivo: frontend/routes/api.js
+  JWT_SECRET = '12345' (hardcodeado en el codigo fuente).
+  Hallazgo: secreto JWT trivial. Si el frontend legado llegara a reactivarse, seria una vulnerabilidad critica.
+
+
+======================================================================
+15. OBSERVABILIDAD Y METRICAS
+======================================================================
+
+15.1. Backend: OpenTelemetry
+  Archivo: milpa_ai_backend/core/telemetry/__init__.py
+  Configuracion:
+    Nombre del servicio: "milpa-ai-backend"
+    Sampling: 10% (ParentBasedTraceIdRatio 0.10)
+    Exportador: OTLP (si OTLP_ENDPOINT esta definido) o consola (fallback).
+  Instrumentacion automatica: FastAPIInstrumentor.instrument_app(app)
+    -> captura trazas de todos los endpoints automaticamente.
+  Enriquecimiento RAG (add_rag_context_to_span):
+    Atributos custom en cada span:
+      milpa.doc_id, milpa.fragment_ids, milpa.num_fragments,
+      milpa.taxonomy_version, milpa.query_length, milpa.query_preview
+  Span helper: create_rag_span(name) para trazar pasos internos del pipeline.
+
+15.2. Backend: metricas Prometheus
+  Endpoint: GET /metrics (auto-instrumentado por prometheus_fastapi_instrumentator o similar).
+  Metricas de FastAPI: latencia por endpoint, requests totales, errores.
+
+15.3. Presenter: metricas Prometheus
+  Archivo: milpa_presenter/src/telemetry/metrics.ts
+  Endpoint: GET /metrics
+  Metricas de runtime (auto de prom-client): CPU, memoria, file descriptors, GC.
+  Metricas de proxy:
+    milpa_queue_in_flight      (Gauge)     tareas ejecutandose ahora
+    milpa_queue_depth          (Gauge)     tareas en cola esperando
+    milpa_proxy_total          (Counter)   total de requests al proxy
+    milpa_proxy_429_total      (Counter)   requests rechazadas por cola llena
+    milpa_proxy_timeout_total  (Counter)   requests con timeout
+    milpa_circuit_open_total   (Counter)   veces que se abrio el circuit breaker
+    milpa_proxy_latency_ms     (Histogram) latencia en ms, buckets: [50,100,200,400,800,1500,3000,6000,12000]
+  Metricas de negocio RAG:
+    milpa_rag_insufficient_evidence_rate  (Gauge)   porcentaje de queries con evidencia insuficiente
+    milpa_retrieval_recall_drop           (Gauge)   degradacion de recall vs baseline
+    milpa_recommendations_applied_rate    (Gauge)   tasa de aplicacion de recomendaciones
+    milpa_top_crops_consulted             (Counter) volumen de consultas por cultivo/region
+    milpa_top_pests_consulted             (Counter) volumen de consultas por plaga/cultivo
+    milpa_taxonomy_version                (Gauge)   version de taxonomia activa
+
+15.4. Prometheus
+  Configuracion: docs/observability/prometheus.yml
+  Targets de scraping: ai:8000/metrics, presenter:8080/metrics.
+  Retencion: 15 dias.
+
+15.5. Grafana
+  Dashboards provisionados desde: docs/observability/grafana/dashboards/
+  Datasource provisionado desde: docs/observability/grafana/datasources/
+  Acceso: http://localhost:3000 (admin / milpa_grafana_2025)
+
+
+======================================================================
+16. FEATURE FLAGS: DETALLE Y CONSUMO
+======================================================================
+
+16.1. Almacenamiento
+  Tabla: feature_flags en SQLite.
+  Cargados en memoria al iniciar (cache en FeatureFlags._cache).
+  Recargables en caliente con reload() sin reiniciar el servicio.
+  Modificables por API: PUT /admin/feature-flags/{name}
+
+16.2. Clase gestora
+  Archivo: milpa_ai_backend/core/config_flags/feature_flags.py
+  Clase: FeatureFlags
+  Singleton: feature_flags = FeatureFlags()
+  Metodos:
+    is_enabled(flag_name, default) -> bool
+    get_config(flag_name, key, default) -> Any
+    reload() -> None
+    set_flag(flag_name, enabled, config) -> None
+
+16.3. Helpers de acceso rapido
+    is_reranker_enabled()           -> True si RERANKER_ENABLED esta habilitado
+    get_embeddings_model()          -> nombre del modelo (defecto "BAAI/bge-m3")
+    get_rag_mode()                  -> dict con mode, bm25_weight, vector_weight
+    is_blue_green_v2_enabled()      -> (enabled: bool, rollout_percent: int)
+
+16.4. Flags definidos y su efecto
+    RERANKER_ENABLED:
+      Controla si se aplica reranking con cross-encoder despues de la fusion RRF.
+      Si esta deshabilitado, la respuesta se da con el ranking directo de RRF.
+
+    EMBEDDINGS_MODEL:
+      Define el modelo de embeddings a usar. Puede cambiar entre MiniLM y BGE-m3 sin redeploy.
+      Afecta la dimensionalidad del vector store.
+
+    RAG_MODE:
+      Define pesos relativos de BM25 vs vectorial en la fusion.
+      Permite ajustar la estrategia de retrieval sin cambiar codigo.
+
+    TAXONOMY_VERSION:
+      Version de la taxonomia agricola usada para NER.
+      Permite cargar nuevas versiones de listas de cultivos/plagas/nutrientes.
+
+    BLUE_GREEN_V2_ENABLED:
+      Controla el rollout gradual de una version v2 de la UI.
+      rollout_percent define que porcentaje de sesiones se redirige a /ui/v2.
+      Por defecto deshabilitado (0%).
+
+    TABLE_EXTRACTION_MODE:
+      Controla las estrategias de Camelot: auto, lattice, stream o ambas.
+
+    ENRICHMENT_ENABLED:
+      Controla si se ejecuta NER y clasificacion sobre los fragmentos durante extraccion.
+
+    AV_STRICT_MODE:
+      Controla si se ejecutan ambos modos de escaneo (SCAN + INSTREAM) o solo uno.
+
+    OCR_ENABLED:
+      Controla si se aplica OCR a paginas con poco texto nativo.
+      Configura idioma de Tesseract y umbral minimo de texto.
+
+
+======================================================================
+17. FRONTEND LEGADO: DETALLE COMPLETO
+======================================================================
+
+17.1. Stack tecnologico
+  Runtime: Node.js con Express.
+  Base de datos: MongoDB (via Mongoose).
+  Comunicacion en tiempo real: Socket.IO.
+  Autenticacion: JWT con bcrypt para hashing de contrasenas.
+
+17.2. Punto de entrada
+  Archivo: frontend/server.js
+  Funcion: iniciarServidor()
+  Proceso:
+    1. Conecta a MongoDB (process.env.MONGODB_URI).
+    2. Levanta Express en el puerto configurado.
+    3. Registra rutas estaticas desde frontend/MILPA/.
+    4. Configura Socket.IO con autenticacion JWT en el handshake.
+
+17.3. Colecciones MongoDB
+  users:         username, password (hash bcrypt), createdAt
+  messages:      user (ref a users), texto, type, createdAt
+  notifications: type, title, message, createdAt
+
+17.4. Endpoints REST
+  POST /api/auth/register  -> crea usuario (valida unicidad, hashea password con bcrypt)
+  POST /api/auth/login     -> autentica, retorna JWT (expira en 24h)
+  Middleware verificarToken -> extrae "Bearer <token>" de Authorization, verifica con jwt.verify
+
+17.5. Socket.IO: eventos
+  connection:            se autentica via socket.handshake.auth.token
+  request_initial_data:  cliente pide historial -> servidor emite data_update con todos los Message
+  mensaje_chat:          cliente envia {texto} -> guarda en DB -> broadcast nuevo_mensaje a todos
+  push_notification:     al conectar, servidor emite las ultimas 3 Notification
+
+17.6. Funcion responderComoBot(mensaje, usuarioId, usuarioNombre)
+  Genera una respuesta automatica del sistema al mensaje del usuario.
+  Guarda el mensaje del bot en la coleccion messages.
+  Emite nuevo_mensaje por Socket.IO.
+
+17.7. Paginas web del frontend legado
+  Servidas como archivos estaticos desde frontend/MILPA/:
+    index.html:           landing page (hero con imagen de campo, call-to-action)
+    login.html:           formulario de login
+    registro.html:        formulario de registro
+    dashboard.html:       panel principal post-login
+    tiempo-real.html:     monitorizacion en tiempo real
+    recomendaciones.html: pagina de recomendaciones agricolas
+    configuracion.html:   ajustes de usuario
+    datos.html:           gestion de datos
+    calendario.html:      calendario agricola
+
+17.8. Cliente JavaScript
+  Archivo: frontend/MILPA/js/client.js
+  Funciones:
+    setupEventListeners()   -> registra handlers de UI
+    handleChatMessage()     -> envia mensaje por socket
+    appendChatMessage()     -> renderiza mensaje en el DOM
+    appendNotification()    -> renderiza notificacion
+    updateNotificationBadge() -> actualiza contador de notificaciones
+    showToast()             -> muestra toast de feedback
+    updateUserUI()          -> actualiza UI con datos del usuario autenticado
+    logout()                -> cierra sesion
+    redirectToLogin()       -> redirige a login.html
+
+17.9. Diseno visual del legado
+  CSS con Bootstrap 5, Font Awesome 6, Google Fonts (Poppins, Roboto).
+  Paleta: --forest-green: #2E7D32, --light-green: #66BB6A, --gold-accent: #FFCA28, --beige-bg: #F5F5F5.
+  Navbar verde, boton login dorado, hero con imagen de campo.
+
+17.10. Hallazgo de seguridad: JWT_SECRET hardcodeado
+  En frontend/routes/api.js linea 7:
+    const JWT_SECRET = '12345';
+  Este secreto es trivial y esta directamente en el codigo fuente.
+  Si el frontend legado se reactivara, cualquier persona podria forjar tokens JWT validos.
+
+
+======================================================================
+18. MAPA DE CONEXIONES GLOBAL ("QUE CONECTA CON QUE")
+======================================================================
+
+18.1. Flujo de usuario web (sistema activo)
+
+  Navegador del usuario
+       |
+       | HTTP :8080
+       v
+  milpa_presenter (Fastify, TypeScript, Node 20)
+       |
+       +---> /ui/checks      (pagina HTML: verificacion de sistema)
+       +---> /ui/library      (pagina HTML: biblioteca de documentos)
+       +---> /ui/library/:id  (pagina HTML: detalle de documento)
+       +---> /ui/query        (pagina HTML: consulta RAG)
+       +---> /health          (JSON: healthcheck)
+       +---> /metrics         (Prometheus: metricas del presenter)
+       +---> /runtime/status  (JSON: estado del scheduler/circuit breaker)
+       |
+       | Proxy /ai/* -> http://ai:8000/*
+       v
+  milpa_ai_backend (FastAPI, Python 3.11)
+       |
+       +---> /health                          (JSON: healthcheck)
+       +---> /api/documents/upload            (POST: sube archivo)
+       +---> /api/documents/{id}/extract      (POST: extrae contenido)
+       +---> /api/query                       (POST: consulta RAG)
+       +---> /api/index/rebuild               (POST: reconstruye indices)
+       +---> /library                         (GET: lista documentos)
+       +---> /library/{id}                    (GET: detalle documento)
+       +---> /library/facets                  (GET: filtros disponibles)
+       +---> /admin/feature-flags             (GET: lista flags)
+       +---> /admin/feature-flags/{name}      (PUT: actualiza flag)
+       +---> /metrics                         (Prometheus: metricas del backend)
+       |
+       +-----> SQLite (milpa_knowledge.db):   docs, fragments, tables, table_cells, fine_refs
+       +-----> SQLite (main.db):              feature_flags, migraciones yoyo
+       +-----> ChromaDB (data/vector_db/):    embeddings vectoriales
+       +-----> BM25 (data/bm25_idx/):         indice lexico Tantivy/Whoosh
+       +-----> Filesystem (data/documents/):  archivos originales
+       |
+       +-----> ClamAV (:3310 TCP):            escaneo antivirus de uploads
+       |
+       v
+  Prometheus (:9090)
+       |
+       +---> scrape ai:8000/metrics           cada N segundos
+       +---> scrape presenter:8080/metrics    cada N segundos
+       |
+       v
+  Grafana (:3000)
+       |
+       +---> datasource: http://prometheus:9090
+       +---> dashboards provisionados desde docs/observability/grafana/
+
+18.2. Flujo de usuario (frontend legado, NO activo en stack principal)
+
+  Navegador
+       |
+       | HTTP (puerto configurado por el legado)
+       v
+  frontend/server.js (Express + Socket.IO)
+       |
+       +---> /api/auth/register    (REST: registro)
+       +---> /api/auth/login       (REST: login JWT)
+       +---> Socket.IO             (WebSocket: chat, notificaciones)
+       |
+       +-----> MongoDB:            users, messages, notifications
+       |
+       v
+  Paginas estaticas: frontend/MILPA/*.html
+
+18.3. Relacion entre los dos frontends
+  - milpa_presenter es el frontend activo y forma parte del stack Docker.
+  - frontend es codigo heredado que NO se despliega en docker-compose.yml.
+  - NO hay comunicacion entre ambos.
+  - El frontend legado usa MongoDB; el sistema activo usa SQLite + ChromaDB.
+  - El frontend legado tiene autenticacion JWT; el sistema activo no la implementa.
+
+
+======================================================================
+19. TABLA RESUMEN DE DEPENDENCIAS TECNOLOGICAS
+======================================================================
+
+  Componente          Tecnologia                 Version/Modelo                   Estado
+  -----------------   -------------------------  -------------------------------  --------
+  Backend API         FastAPI + uvicorn          Python 3.11                      Activo
+  Presenter           Fastify                    Node 20, TypeScript              Activo
+  Frontend legado     Express + Socket.IO        Node.js                          Legado
+  BD relacional       SQLite                     WAL mode                         Activo
+  BD vectorial        ChromaDB                   Persistente, cosine              Activo
+  Indice lexico       Tantivy > Whoosh > mem     Cascada de fallbacks             Activo
+  Embeddings          Sentence Transformers      paraphrase-multilingual-MiniLM-L12-v2 (384d)  Defecto
+  Embeddings (flag)   BGE-m3                     BAAI/bge-m3 (1024d)              Configurable
+  NER                 spaCy + diccionarios       Taxonomia agricola CSV/JSON      Activo
+  OCR                 Tesseract                  spa+eng                          Activo
+  Tablas              Camelot + PyMuPDF          lattice/stream/fallback          Activo
+  PDF parsing         PyMuPDF (fitz)             -                                Activo
+  Antivirus           ClamAV                     clamd via TCP :3310              Activo
+  Trazas              OpenTelemetry              OTLP + FastAPIInstrumentor       Activo
+  Metricas            Prometheus + prom-client   Scraping endpoints /metrics      Activo
+  Dashboards          Grafana                    v11.3.1                          Activo
+  BD legado           MongoDB + Mongoose         No desplegada en Compose         Legado
+  Autenticacion leg.  JWT + bcrypt               JWT_SECRET='12345' (inseguro)    Legado
+  Migraciones         yoyo-migrations            SQLite DDL                       Activo
+  Contenedores        Docker Compose v2          5 servicios definidos            Activo
+
+
+======================================================================
+20. CONCLUSION AMPLIADA
+======================================================================
+
+20.1. Sobre completitud del sistema
+El sistema MILPA implementa un pipeline RAG completo de punta a punta:
+- Ingesta: upload -> antivirus -> persistencia -> extraccion (PDF nativo + OCR + tablas) -> chunking -> NER -> indexacion BM25 + vectorial.
+- Consulta: query -> busqueda hibrida (BM25 + embeddings) -> fusion RRF -> reranking -> evaluacion de evidencia -> generacion de respuesta -> citaciones -> respuesta al usuario.
+- Presentacion: paginas web SSR con biblioteca, detalle documental, interfaz de consulta y verificacion de sistema.
+- Operacion: Docker Compose con hardening, antivirus, observabilidad (Prometheus + Grafana + OpenTelemetry) y feature flags dinamicos.
+
+20.2. Sobre los vacios verificados
+Ninguno de los componentes principales carece de implementacion funcional detectable por lectura estatica. Los vacios son operativos, no arquitectonicos:
+- La inconsistencia de bases de datos (milpa_knowledge.db vs main.db) es el problema mas concreto.
+- El presenter monolitico dificulta mantenimiento pero funciona.
+- El frontend legado es ruido, no un vacio.
+- Blue-green esta parcialmente integrado pero los componentes existen.
+
+20.3. Sobre descriptividad de procesos
+Esta auditoria ampliada incluye:
+- Esquema de base de datos con todas las tablas, columnas, tipos e indices.
+- Cadena completa de ingesta paso a paso con funciones y archivos.
+- Cadena completa de consulta RAG paso a paso con parametros y umbrales.
+- Descripcion de cada pagina web servida y las llamadas fetch() que realiza.
+- Mecanica exacta del proxy con control de concurrencia y circuit breaker.
+- Red Docker con volumenes, variables de entorno y hardening.
+- Detalle de seguridad: ClamAV, headers, sanitizacion, rate limiting.
+- Observabilidad: OpenTelemetry, Prometheus, Grafana con metricas nombradas.
+- Feature flags: listado completo con efecto de cada uno.
+- Frontend legado: MongoDB, Socket.IO, JWT, paginas y hallazgos de seguridad.
+- Mapa global de conexiones entre todos los componentes.
+
+FIN DEL DOCUMENTO

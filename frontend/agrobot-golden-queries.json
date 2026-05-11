@@ -1,0 +1,41 @@
+{
+  "description": "Consultas golden para QA offline del chat AgroBot (4010/4000). Criterios: sin subcadenas de lista negra (rotación, SI…ENTONCES, guía completa); en crop-only las 3 líneas de sección 2 con verbos de campo o mensaje explícito de fallo de biblioteca; lectura < 30s en móvil (revisar manual).",
+  "blacklist_substrings": [
+    "BENEFICIOS DE LA ROTACIÓN",
+    "SI ",
+    " ENTONCES",
+    "GUÍA COMPLETA",
+    "evaluación del sistema"
+  ],
+  "queries": [
+    {
+      "id": "crop_only_maiz",
+      "input": "Maiz",
+      "expect": "crop_only_contract",
+      "section2_must_be_numbered": true
+    },
+    {
+      "id": "crop_only_calabaza",
+      "input": "Calabaza",
+      "expect": "crop_only_contract"
+    },
+    {
+      "id": "progress_tomate",
+      "input": "Progreso del tomate",
+      "expect": "progress_contract",
+      "must_not_include_substrings": ["etileno", "respiratoria", "cadena de frío"]
+    },
+    {
+      "id": "water_multi",
+      "input": "Agua",
+      "expect": "parcel_water_summary",
+      "must_include_substrings": ["Resumen por lote", "Acciones 0–24 h"]
+    },
+    {
+      "id": "garbage_no_rag",
+      "input": "dadadadad",
+      "expect": "no_rag_standard_reply",
+      "must_not_include_substrings": ["lechuga", "Fuentes:", "[cite_"]
+    }
+  ]
+}

@@ -13,6 +13,7 @@
     <!-- CSS personalizado -->
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/milpa-layout.css">
     <style>
     /* ————————— MODIFICADO: añadidos estilos para el sidebar ————————— */
         .sidebar {
@@ -130,7 +131,7 @@
         }
     </style>
 </head>
-<body>
+<body class="milpa-page" data-active-page="datos.html">
     <!-- Sidebar (igual que en recommendations.html) -->
 <!-- ————————— AGREGADO: Sidebar panel con menú de navegación ————————— -->
     <div class="sidebar" id="sidebar">
@@ -140,7 +141,7 @@
         </div>
         <ul class="sidebar-nav mt-3">
             <li class="sidebar-nav-item">
-                <a href="dashboard.html" class="sidebar-nav-link active">
+                <a href="dashboard.html" class="sidebar-nav-link">
                     <i class="fas fa-home sidebar-icon"></i>
                     <span class="sidebar-text">Inicio</span>
                 </a>
@@ -149,7 +150,7 @@
                 <a href="recomendaciones.html" class="sidebar-nav-link">
                     <i class="fas fa-lightbulb sidebar-icon"></i>
                     <span class="sidebar-text">Recomendaciones</span>
-                    <span class="badge bg-danger alert-badge">3</span>
+                    <span class="badge bg-danger alert-badge" style="display:none">0</span>
                 </a>
             </li>
             <li class="sidebar-nav-item">
@@ -187,14 +188,21 @@
 
     <!-- ————————— AGREGADO: inicio del contenedor principal que empuja el contenido al lado del sidebar ————————— -->
     <div class="main-content" id="mainContent">
+        <nav class="navbar navbar-expand-lg navbar-light border-bottom milpa-top-navbar" aria-label="Barra superior">
+            <div class="container-fluid px-3">
+                <button class="btn btn-link text-secondary px-1" type="button" id="sidebarToggle" aria-label="Alternar menú lateral">
+                    <i class="fas fa-bars fs-5" aria-hidden="true"></i>
+                </button>
+                <div class="ms-auto d-flex align-items-center gap-2">
+                    <a href="dashboard.html" class="btn btn-sm btn-outline-secondary d-none d-md-inline">Inicio</a>
+                    <button type="button" class="btn btn-sm btn-outline-danger" id="milpaLogoutBtn">Salir</button>
+                </div>
+            </div>
+        </nav>
 
-
-    
-    <!-- Main Content (igual que en recommendations.html) -->
-
-    <!-- Page Content -->
     <div class="container-fluid px-4 py-4">
-        <div class="row mb-4">
+        <div id="datosErrorState" class="alert alert-danger d-none" role="alert"></div>
+        <div class="row mb-4 align-items-end">
             <div class="col-12">
                 <h2 class="fw-bold">Visualización de Datos</h2>
                 <nav aria-label="breadcrumb">
@@ -203,7 +211,16 @@
                         <li class="breadcrumb-item active" aria-current="page">Datos</li>
                     </ol>
                 </nav>
+                <p class="text-muted small mb-0" id="datosScopeNote">
+                    Vista de <strong>parcela</strong>: telemetría agregada de todos los cultivos del usuario y la edafología
+                    general del predio. La ventana arranca en la fecha de siembra más temprana registrada.
+                </p>
             </div>
+        </div>
+
+        <div id="datosEmptyState" class="alert alert-warning d-none" role="status">
+            No hay cultivos registrados: los gráficos usan lecturas y cultivos de tu cuenta.
+            <a href="configuracion.html" class="alert-link">Añade un cultivo en Configuración</a> o importa un dataset.
         </div>
 
         <!-- Estadísticas rápidas -->
@@ -214,8 +231,8 @@
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h6 class="text-muted mb-2">Humedad suelo</h6>
-                                <h3 class="mb-0">64%</h3>
-                                <small class="text-success"><i class="fas fa-caret-up me-1"></i> 2% vs ayer</small>
+                                <h3 class="mb-0" id="statSoilMoisture">--</h3>
+                                <small class="text-muted" id="statSoilDelta">Cargando...</small>
                             </div>
                             <div class="stat-icon text-primary">
                                 <i class="fas fa-tint"></i>
@@ -230,8 +247,8 @@
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h6 class="text-muted mb-2">Temperatura</h6>
-                                <h3 class="mb-0">26°C</h3>
-                                <small class="text-danger"><i class="fas fa-caret-down me-1"></i> 3°C vs ayer</small>
+                                <h3 class="mb-0" id="statTemp">--</h3>
+                                <small class="text-muted" id="statTempDelta">Cargando...</small>
                             </div>
                             <div class="stat-icon text-warning">
                                 <i class="fas fa-temperature-high"></i>
@@ -246,8 +263,8 @@
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h6 class="text-muted mb-2">Salud cultivos</h6>
-                                <h3 class="mb-0">82%</h3>
-                                <small class="text-success"><i class="fas fa-caret-up me-1"></i> 5% vs semana pasada</small>
+                                <h3 class="mb-0" id="statHealth">--</h3>
+                                <small class="text-muted" id="statHealthDelta">Cargando...</small>
                             </div>
                             <div class="stat-icon text-success">
                                 <i class="fas fa-heartbeat"></i>
@@ -256,18 +273,91 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="card data-card bg-light border-0">
+                            <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                            <div>
+                                            <h6 class="text-muted mb-2">Precipitación</h6>
+                                                <h3 class="mb-0" id="statPrecip">--</h3>
+                                                <small class="text-muted" id="statPrecipDelta">Cargando...</small>
+                            </div>
+                                            <div class="stat-icon text-info">
+                                                <i class="fas fa-cloud-rain"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6 col-lg-2 mb-4">
                 <div class="card data-card bg-light border-0">
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
                             <div>
-                                <h6 class="text-muted mb-2">Precipitación</h6>
-                                <h3 class="mb-0">12mm</h3>
-                                <small class="text-muted">Últimas 24h</small>
+                                <h6 class="text-muted mb-2">Humedad aire</h6>
+                                <h3 class="mb-0" id="statAirHum">--</h3>
+                                <small class="text-muted" id="statAirHumDelta">—</small>
                             </div>
-                            <div class="stat-icon text-info">
-                                <i class="fas fa-cloud-rain"></i>
+                            <div class="stat-icon text-secondary"><i class="fas fa-water"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-2 mb-4">
+                <div class="card data-card bg-light border-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="text-muted mb-2">Luz</h6>
+                                <h3 class="mb-0" id="statLight">--</h3>
+                                <small class="text-muted" id="statLightDelta">—</small>
                             </div>
+                            <div class="stat-icon text-warning"><i class="fas fa-sun"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-2 mb-4">
+                <div class="card data-card bg-light border-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="text-muted mb-2">Viento</h6>
+                                <h3 class="mb-0" id="statWind">--</h3>
+                                <small class="text-muted" id="statWindDelta">—</small>
+                            </div>
+                            <div class="stat-icon text-dark"><i class="fas fa-wind"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-2 mb-4">
+                <div class="card data-card bg-light border-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="text-muted mb-2">pH (predio)</h6>
+                                <h3 class="mb-0" id="statPh">--</h3>
+                                <small class="text-muted" id="statPhDelta">—</small>
+                            </div>
+                            <div class="stat-icon text-success"><i class="fas fa-flask"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-2 mb-4">
+                <div class="card data-card bg-light border-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="text-muted mb-2">Conductividad</h6>
+                                <h3 class="mb-0" id="statEc">--</h3>
+                                <small class="text-muted" id="statEcDelta">—</small>
+                            </div>
+                            <div class="stat-icon text-primary"><i class="fas fa-bolt"></i></div>
                         </div>
                     </div>
                 </div>
@@ -325,30 +415,31 @@
                                         <div class="chart-container">
                                             <canvas id="soilNutrientsChart"></canvas>
                                         </div>
-                                        <div class="mt-3">
+                                        <div class="mt-3" id="nutrientsDetail">
                                             <div class="d-flex justify-content-between small mb-1">
                                                 <span>Nitrógeno</span>
-                                                <span>2.8% (óptimo 3-4%)</span>
+                                                <span id="nutrientNLabel">--</span>
                                             </div>
                                             <div class="progress mb-2" style="height: 6px;">
-                                                <div class="progress-bar bg-success" role="progressbar" style="width: 70%"></div>
+                                                <div class="progress-bar" id="nutrientNBar" role="progressbar" style="width: 0%"></div>
                                             </div>
                                             
                                             <div class="d-flex justify-content-between small mb-1">
                                                 <span>Fósforo</span>
-                                                <span>1.5% (óptimo 2-3%)</span>
+                                                <span id="nutrientPLabel">--</span>
                                             </div>
                                             <div class="progress mb-2" style="height: 6px;">
-                                                <div class="progress-bar bg-warning" role="progressbar" style="width: 50%"></div>
+                                                <div class="progress-bar" id="nutrientPBar" role="progressbar" style="width: 0%"></div>
                                             </div>
                                             
                                             <div class="d-flex justify-content-between small mb-1">
                                                 <span>Potasio</span>
-                                                <span>3.1% (óptimo 2.5-3.5%)</span>
+                                                <span id="nutrientKLabel">--</span>
                                             </div>
                                             <div class="progress mb-2" style="height: 6px;">
-                                                <div class="progress-bar bg-success" role="progressbar" style="width: 88%"></div>
+                                                <div class="progress-bar" id="nutrientKBar" role="progressbar" style="width: 0%"></div>
                                             </div>
+                                            <small class="text-muted" id="nutrientDate"></small>
                                         </div>
                                     </div>
                                 </div>
@@ -362,14 +453,14 @@
                             <div class="col-lg-6">
                                 <div class="card border-0 shadow-sm mb-4">
                                     <div class="card-body">
-                                        <h5 class="mb-3">Consumo de agua (litros/día)</h5>
+                                        <h5 class="mb-3">Consumo de agua por riego (litros/evento)</h5>
                                         <div class="chart-container">
                                             <canvas id="waterConsumptionChart"></canvas>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-lg 6">
+                            <div class="col-lg-6">
 <div class="card border-0 shadow-sm mb-4">
 <div class="card-body">
 <h5 class="mb-3">Eficiencia de riego</h5>
@@ -380,17 +471,28 @@
 <div class="row">
 <div class="col-6">
 <div class="text-center">
-<h3 class="text-primary">78%</h3>
+<h3 class="text-primary" id="irrigEffActual">--</h3>
 <small class="text-muted">Eficiencia actual</small>
 </div>
 </div>
 <div class="col-6">
 <div class="text-center">
-<h3 class="text-success">+12%</h3>
+<h3 class="text-success" id="irrigEffMejora">--</h3>
 <small class="text-muted">Mejora posible</small>
 </div>
 </div>
 </div>
+</div>
+<!-- Explicación dinámica de eficiencia -->
+<hr class="my-3">
+<div id="irrigExplanacion" class="small">
+  <p class="text-muted"><i class="fas fa-spinner fa-spin me-1"></i> Calculando explicación...</p>
+</div>
+<!-- Fuente bibliográfica desde RAG -->
+<div class="mt-2 p-2 bg-light rounded" id="irrigRagBox" style="display:none">
+  <p class="small mb-1"><i class="fas fa-book-open text-success me-1"></i><strong>Fuente agronómica:</strong></p>
+  <p class="small text-muted mb-0" id="irrigRagText"></p>
+  <p class="small text-muted mb-0" id="irrigRagSource"></p>
 </div>
 </div>
 </div>
@@ -456,292 +558,594 @@
 
 <!-- Bootstrap Bundle con Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- JS personalizado -->
+<script src="js/milpa-api.js"></script>
+<script src="js/milpa-shell.js"></script>
 <script>
-    // Gráfico de humedad del suelo
-    const soilCtx = document.getElementById('soilMoistureChart').getContext('2d');
-    const soilMoistureChart = new Chart(soilCtx, {
-        type: 'line',
-        data: {
-            labels: Array.from({length: 30}, (_, i) => `${i+1} Jun`),
-            datasets: [{
-                label: 'Humedad (%)',
-                data: [65, 64, 66, 62, 60, 58, 55, 57, 60, 62, 64, 63, 65, 67, 65, 63, 61, 62, 64, 66, 68, 67, 65, 63, 61, 62, 63, 64, 65, 64],
-                borderColor: '#2E7D32',
-                backgroundColor: 'rgba(46, 125, 50, 0.1)',
-                borderWidth: 2,
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false
-                }
+// ───── Visualización de datos · siempre por PARCELA (telemetría agregada) ─────
+//
+// Conceptual: la parcela tiene una sola realidad de sensores (humedad de suelo,
+// temperatura, etc.). En BD viven en sensor_readings por user_crop_id; el backend
+// /api/parcel/* agrega todos los cultivos del usuario y los fusiona con
+// edaphology_global_readings.
+//
+// Lo que cambia por cultivo NO es la telemetría: son los metadatos (progreso,
+// distribución del área, fecha de siembra). Por eso los gráficos de Suelo/Clima/Agua
+// son parcela; las pestañas Cultivos sí muestran datos por cultivo (metadatos).
+const datosCharts = {};
+
+function hideDatosError() {
+  const e = document.getElementById('datosErrorState');
+  if (e) { e.textContent = ''; e.classList.add('d-none'); }
+}
+
+function showDatosError(msg) {
+  const e = document.getElementById('datosErrorState');
+  if (e) { e.textContent = msg; e.classList.remove('d-none'); }
+}
+
+function destroyDatosCharts() {
+  Object.keys(datosCharts).forEach(k => {
+    try { datosCharts[k]?.destroy(); } catch (_e) {}
+    delete datosCharts[k];
+  });
+}
+
+function bindDatosTabResizeOnce() {
+  if (bindDatosTabResizeOnce.done) return;
+  bindDatosTabResizeOnce.done = true;
+  document.querySelectorAll('#dataTabs button[data-bs-toggle="tab"]').forEach(btn => {
+    btn.addEventListener('shown.bs.tab', () => {
+      requestAnimationFrame(() => {
+        Object.values(datosCharts).forEach(ch => { try { ch?.resize(); } catch (_e) {} });
+      });
+    });
+  });
+}
+
+function earliestPlantedAt(crops) {
+  return (crops || [])
+    .map(c => (c?.planted_at ? String(c.planted_at).slice(0, 10) : null))
+    .filter(Boolean)
+    .sort()[0] || null;
+}
+
+function fmtFecha(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' });
+}
+
+async function loadDatosReales() {
+  bindDatosTabResizeOnce();
+  hideDatosError();
+  const emptyBanner = document.getElementById('datosEmptyState');
+  const el = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+
+  let crops;
+  try {
+    crops = await MILPA_API.getCrops();
+  } catch (err) {
+    showDatosError(err.message || 'No se pudieron cargar los cultivos.');
+    destroyDatosCharts();
+    return;
+  }
+
+  try {
+    if (!crops || crops.length === 0) {
+      if (emptyBanner) emptyBanner.classList.remove('d-none');
+      el('statSoilMoisture', '—');
+      el('statTemp', '—');
+      el('statHealth', '—');
+      el('statPrecip', '—');
+      el('statAirHum', '—');
+      el('statLight', '—');
+      el('statWind', '—');
+      el('statPh', '—');
+      el('statEc', '—');
+      el('statSoilDelta', 'Sin cultivos');
+      el('statTempDelta', 'Sin cultivos');
+      el('statHealthDelta', '');
+      el('statPrecipDelta', '');
+      el('statAirHumDelta', '');
+      el('statLightDelta', '');
+      el('statWindDelta', '');
+      el('statPhDelta', '');
+      el('statEcDelta', '');
+      destroyDatosCharts();
+      return;
+    }
+    if (emptyBanner) emptyBanner.classList.add('d-none');
+
+    destroyDatosCharts();
+
+    const since = earliestPlantedAt(crops);
+    const scopeNote = document.getElementById('datosScopeNote');
+    if (scopeNote) {
+      scopeNote.innerHTML = since
+        ? `Vista de <strong>parcela</strong>: telemetría agregada de los ${crops.length} cultivo(s) del usuario, desde ${since} (siembra más antigua) y completada con la edafología general del predio.`
+        : `Vista de <strong>parcela</strong>: telemetría agregada y edafología general del predio.`;
+    }
+
+    // ── Stat cards: lectura agregada de PARCELA ──
+    let parcel = null;
+    try { parcel = await MILPA_API.getParcelLatest(); } catch { parcel = null; }
+    if (parcel) {
+      el('statSoilMoisture', parcel.soil_moisture != null ? `${Number(parcel.soil_moisture).toFixed(0)}%` : 'N/D');
+      el('statTemp',         parcel.air_temp       != null ? `${Number(parcel.air_temp).toFixed(0)}°C`     : 'N/D');
+      el('statPrecip',       parcel.precipitation  != null ? `${Number(parcel.precipitation).toFixed(1)}mm` : '0mm');
+      el('statAirHum',       parcel.air_humidity != null ? `${Number(parcel.air_humidity).toFixed(0)}%` : 'N/D');
+      el('statLight',        parcel.light != null ? `${Number(parcel.light).toFixed(0)}%` : 'N/D');
+      el('statWind',         parcel.wind_speed != null ? `${Number(parcel.wind_speed).toFixed(0)} km/h` : 'N/D');
+      el('statPh',           parcel.ph != null ? Number(parcel.ph).toFixed(1) : 'N/D');
+      el('statEc',           parcel.conductivity != null ? Number(parcel.conductivity).toFixed(2) : 'N/D');
+      const detail = parcel.sources
+        ? `Promedio ${parcel.sources.crop_sensor_streams || 0} cultivo(s)${parcel.sources.global_edaphology_used ? ' + edafología global' : ''}`
+        : 'Lectura de parcela';
+      el('statSoilDelta',  detail);
+      el('statTempDelta',  detail);
+      el('statPrecipDelta', detail);
+      el('statAirHumDelta', detail);
+      el('statLightDelta', detail);
+      el('statWindDelta', detail);
+      el('statPhDelta', parcel.ph != null || parcel.conductivity != null ? 'Predio agregado' : detail);
+      el('statEcDelta', parcel.ph != null || parcel.conductivity != null ? 'Predio agregado' : detail);
+    } else {
+      el('statSoilMoisture', '—');
+      el('statTemp', '—');
+      el('statPrecip', '—');
+      el('statAirHum', '—');
+      el('statLight', '—');
+      el('statWind', '—');
+      el('statPh', '—');
+      el('statEc', '—');
+      el('statSoilDelta', 'Sin lecturas de parcela');
+      el('statTempDelta', 'Sin lecturas de parcela');
+      el('statPrecipDelta', 'Sin lecturas de parcela');
+      el('statAirHumDelta', '');
+      el('statLightDelta', '');
+      el('statWindDelta', '');
+      el('statPhDelta', '');
+      el('statEcDelta', '');
+    }
+
+    // Salud de la parcela (peor cultivo) y por cultivo (vista cultivos)
+    let healthByCrop = {};
+    let parcelLabel = null;
+    try {
+      const ah = await MILPA_API.getParcelHealth();
+      (ah.crops || []).forEach(row => { healthByCrop[row.crop_id] = row; });
+      const order = ['Crítico', 'Vigilancia', 'Establecimiento', 'Saludable'];
+      const labels = (ah.crops || []).map(c => c.label).filter(Boolean);
+      if (labels.length) {
+        labels.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+        parcelLabel = labels[0];
+      }
+    } catch (_h) {
+      parcelLabel = null;
+    }
+    if (parcelLabel) {
+      el('statHealth', parcelLabel);
+      el('statHealthDelta', `Estado más crítico entre ${crops.length} cultivo(s)`);
+    } else {
+      const avgProgress = Math.round(crops.reduce((s, c) => s + (c.progress || 0), 0) / crops.length);
+      el('statHealth', `${avgProgress}% avance`);
+      el('statHealthDelta', `${crops.length} cultivo(s) activos`);
+    }
+
+    // ── soilNutrientsChart + barras N/P/K — promedio entre cultivos del usuario ──
+    try {
+      const nutSamples = (await Promise.all(
+        crops.map(c => MILPA_API.getLatestSoilNutrients(c.id).catch(() => null))
+      )).filter(Boolean);
+      const avgField = (rows, k) => {
+        const xs = rows.map(r => r[k]).filter(v => v != null);
+        return xs.length ? xs.reduce((s, v) => s + Number(v), 0) / xs.length : null;
+      };
+      const nut = nutSamples.length ? {
+        nitrogen: avgField(nutSamples, 'nitrogen'),
+        phosphorus: avgField(nutSamples, 'phosphorus'),
+        potassium: avgField(nutSamples, 'potassium'),
+        nitrogen_opt_min: avgField(nutSamples, 'nitrogen_opt_min'),
+        nitrogen_opt_max: avgField(nutSamples, 'nitrogen_opt_max'),
+        phosphorus_opt_min: avgField(nutSamples, 'phosphorus_opt_min'),
+        phosphorus_opt_max: avgField(nutSamples, 'phosphorus_opt_max'),
+        potassium_opt_min: avgField(nutSamples, 'potassium_opt_min'),
+        potassium_opt_max: avgField(nutSamples, 'potassium_opt_max'),
+        created_at: nutSamples.map(r => r.created_at).filter(Boolean).sort().slice(-1)[0],
+        samples: nutSamples.length,
+      } : null;
+      if (nut) {
+        function nutrientStatus(val, optMin, optMax) {
+          const rangePct = optMax > 0 ? Math.min(100, (val / optMax) * 100) : 0;
+          const inRange = val >= optMin && val <= optMax;
+          const low = val < optMin;
+          return {
+            pct: rangePct.toFixed(0),
+            color: inRange ? 'bg-success' : (low ? 'bg-warning' : 'bg-danger'),
+            label: `${val.toFixed(1)}% (óptimo ${optMin}-${optMax}%)`
+          };
+        }
+        const N = nutrientStatus(nut.nitrogen   || 0, nut.nitrogen_opt_min,   nut.nitrogen_opt_max);
+        const P = nutrientStatus(nut.phosphorus || 0, nut.phosphorus_opt_min, nut.phosphorus_opt_max);
+        const K = nutrientStatus(nut.potassium  || 0, nut.potassium_opt_min,  nut.potassium_opt_max);
+
+        el('nutrientNLabel', N.label);
+        el('nutrientPLabel', P.label);
+        el('nutrientKLabel', K.label);
+
+        const nBar = document.getElementById('nutrientNBar');
+        const pBar = document.getElementById('nutrientPBar');
+        const kBar = document.getElementById('nutrientKBar');
+        if (nBar) { nBar.style.width = N.pct + '%'; nBar.className = `progress-bar ${N.color}`; }
+        if (pBar) { pBar.style.width = P.pct + '%'; pBar.className = `progress-bar ${P.color}`; }
+        if (kBar) { kBar.style.width = K.pct + '%'; kBar.className = `progress-bar ${K.color}`; }
+
+        const dateEl = document.getElementById('nutrientDate');
+        if (dateEl && nut.created_at) {
+          const d = new Date(nut.created_at);
+          dateEl.textContent = `Análisis: ${d.toLocaleDateString('es-MX', {day:'2-digit',month:'short',year:'numeric'})}`;
+        }
+
+        const nutEl = document.getElementById('soilNutrientsChart');
+        if (nutEl) {
+          datosCharts.nutrients = new Chart(nutEl.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+              labels: ['Nitrógeno', 'Fósforo', 'Potasio'],
+              datasets: [{ data: [nut.nitrogen, nut.phosphorus, nut.potassium],
+                backgroundColor: ['#28a745','#ffc107','#fd7e14'], borderWidth: 0 }]
             },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '70%' }
+          });
+        }
+      }
+    } catch (_nutErr) { /* sin datos de nutrientes aún */ }
+
+    // ── Historial de la PARCELA (agregado, desde la siembra más temprana) ──
+    let readings = [];
+    try {
+      const hist = await MILPA_API.getParcelReadings({ since, limit: 240 });
+      readings = Array.isArray(hist?.rows) ? hist.rows : [];
+    } catch (_sr) {
+      readings = [];
+    }
+    readings.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+    if (readings.length >= 1) {
+      const labels = readings.map(r => fmtFecha(r.created_at));
+
+      // soilMoistureChart — Humedad del suelo por fecha
+      const smEl = document.getElementById('soilMoistureChart');
+      if (smEl) {
+        datosCharts.soil = new Chart(smEl.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Humedad suelo (%)',
+              data: readings.map(r => r.soil_moisture),
+              borderColor: '#2E7D32',
+              backgroundColor: 'rgba(46,125,50,0.1)',
+              borderWidth: 2, fill: true, tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+            scales: { y: { beginAtZero: false } }
+          }
+        });
+      }
+
+      // climateChart — Temperatura y humedad del aire por fecha
+      const climEl = document.getElementById('climateChart');
+      if (climEl) {
+        datosCharts.climate = new Chart(climEl.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [
+              {
+                label: 'Temperatura (°C)',
+                data: readings.map(r => r.air_temp),
+                borderColor: '#dc3545', backgroundColor: 'rgba(220,53,69,0.1)',
+                borderWidth: 2, yAxisID: 'y', tension: 0.4
+              },
+              {
+                label: 'Humedad aire (%)',
+                data: readings.map(r => r.air_humidity),
+                borderColor: '#007bff', backgroundColor: 'rgba(0,123,255,0.1)',
+                borderWidth: 2, yAxisID: 'y1', tension: 0.4
+              }
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: { tooltip: { mode: 'index', intersect: false } },
             scales: {
-                y: {
-                    beginAtZero: false,
-                    min: 50,
-                    max: 70
-                }
+              y:  { type: 'linear', position: 'left',  title: { display: true, text: 'Temperatura (°C)' } },
+              y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Humedad (%)' } }
             }
-        }
-    });
+          }
+        });
+      }
 
-    // Gráfico de nutrientes del suelo
-    const nutrientsCtx = document.getElementById('soilNutrientsChart').getContext('2d');
-    const soilNutrientsChart = new Chart(nutrientsCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Nitrógreno', 'Fósforo', 'Potasio', 'Otros'],
-            datasets: [{
-                data: [2.8, 1.5, 3.1, 2.6],
-                backgroundColor: [
-                    '#28a745',
-                    '#ffc107',
-                    '#fd7e14',
-                    '#6c757d'
-                ],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            },
-            cutout: '70%'
-        }
-    });
+      // irrigationEfficiencyChart — derivado de lecturas reales de sensor
+      // Cantidad: qué tan cerca está la humedad del óptimo (70%)
+      // Frecuencia: densidad de lecturas (30 lecturas en 30 días = 100%)
+      // Distribución/Tiempo/Absorción: estimados de la varianza de humedad
+      const avgMoisture = readings.reduce((s, r) => s + (r.soil_moisture || 0), 0) / readings.length;
+      const moisture_variance = readings.reduce((s, r) => s + Math.pow((r.soil_moisture || 0) - avgMoisture, 2), 0) / readings.length;
+      const cantidad    = Math.round(Math.min(100, (avgMoisture / 70) * 95));
+      const frecuencia  = Math.round(Math.min(100, (readings.length / 30) * 100));
+      const distribucion = Math.round(Math.max(40, 100 - moisture_variance * 0.5)); // baja varianza = buena distribución
+      const absorcion   = Math.round(Math.min(100, cantidad * 0.95));
+      const tiempo      = Math.round((cantidad + frecuencia) / 2);
+      const eficienciaActual = Math.round((cantidad + frecuencia + distribucion + absorcion + tiempo) / 5);
+      const mejoraPosible   = Math.max(0, 91 - eficienciaActual);
 
-    // Gráfico de consumo de agua
-    const waterCtx = document.getElementById('waterConsumptionChart').getContext('2d');
-    const waterConsumptionChart = new Chart(waterCtx, {
-        type: 'bar',
-        data: {
-            labels: ['Maíz', 'Frijol', 'Calabaza', 'Chile', 'Tomate'],
-            datasets: [{
-                label: 'Consumo diario (L)',
-                data: [45, 32, 28, 38, 40],
-                backgroundColor: [
-                    'rgba(54, 162, 235, 0.7)',
-                    'rgba(75, 192, 192, 0.7)',
-                    'rgba(255, 159, 64, 0.7)',
-                    'rgba(255, 99, 132, 0.7)',
-                    'rgba(153, 102, 255, 0.7)'
-                ],
-                borderColor: [
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(255, 159, 64, 1)',
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(153, 102, 255, 1)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            }
-        }
-    });
+      el('irrigEffActual', `${eficienciaActual}%`);
+      el('irrigEffMejora', mejoraPosible > 0 ? `+${mejoraPosible}%` : 'Óptimo');
 
-    // Gráfico de eficiencia de riego
-    const irrigationCtx = document.getElementById('irrigationEfficiencyChart').getContext('2d');
-    const irrigationEfficiencyChart = new Chart(irrigationCtx, {
-        type: 'radar',
-        data: {
+      const irrigEl = document.getElementById('irrigationEfficiencyChart');
+      if (irrigEl) {
+        datosCharts.irrigRadar = new Chart(irrigEl.getContext('2d'), {
+          type: 'radar',
+          data: {
             labels: ['Distribución', 'Tiempo', 'Cantidad', 'Frecuencia', 'Absorción'],
-            datasets: [{
+            datasets: [
+              {
                 label: 'Actual',
-                data: [75, 80, 70, 85, 80],
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                pointBackgroundColor: 'rgba(54, 162, 235, 1)',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(54, 162, 235, 1)'
-            }, {
+                data: [distribucion, tiempo, cantidad, frecuencia, absorcion],
+                backgroundColor: 'rgba(54,162,235,0.2)', borderColor: 'rgba(54,162,235,1)',
+                pointBackgroundColor: 'rgba(54,162,235,1)', pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff', pointHoverBorderColor: 'rgba(54,162,235,1)'
+              },
+              {
                 label: 'Óptimo',
                 data: [90, 85, 95, 90, 95],
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                pointBackgroundColor: 'rgba(75, 192, 192, 1)',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(75, 192, 192, 1)'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                r: {
-                    angleLines: {
-                        display: true
-                    },
-                    suggestedMin: 50,
-                    suggestedMax: 100
-                }
-            }
-        }
-    });
+                backgroundColor: 'rgba(75,192,192,0.2)', borderColor: 'rgba(75,192,192,1)',
+                pointBackgroundColor: 'rgba(75,192,192,1)', pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff', pointHoverBorderColor: 'rgba(75,192,192,1)'
+              }
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: { r: { angleLines: { display: true }, suggestedMin: 50, suggestedMax: 100 } }
+          }
+        });
+      }
+    }
 
-    // Gráfico de clima
-    const climateCtx = document.getElementById('climateChart').getContext('2d');
-    const climateChart = new Chart(climateCtx, {
-        type: 'line',
-        data: {
-            labels: ['6am', '9am', '12pm', '3pm', '6pm', '9pm', '12am', '3am'],
-            datasets: [{
-                label: 'Temperatura (°C)',
-                data: [18, 22, 26, 28, 25, 22, 20, 19],
-                borderColor: '#dc3545',
-                backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                borderWidth: 2,
-                yAxisID: 'y',
-                tension: 0.4
-            }, {
-                label: 'Humedad (%)',
-                data: [85, 70, 60, 55, 65, 75, 80, 83],
-                borderColor: '#007bff',
-                backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                borderWidth: 2,
-                yAxisID: 'y1',
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false
-            },
-            plugins: {
-                tooltip: {
-                    mode: 'index',
-                    intersect: false
-                }
-            },
-            scales: {
-                y: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                    title: {
-                        display: true,
-                        text: 'Temperatura (°C)'
-                    }
-                },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    grid: {
-                        drawOnChartArea: false
-                    },
-                    title: {
-                        display: true,
-                        text: 'Humedad (%)'
-                    }
-                }
-            }
+    // ── waterConsumptionChart — litros por cultivo (PARCELA, varios cultivos) ──
+    const waterCropData = await Promise.all(crops.map(async c => {
+      try {
+        const evts = await MILPA_API.getIrrigationEvents(c.id, 10);
+        if (evts && evts.length > 0) {
+          const avgLiters = evts.reduce((s, e) => s + (e.liters_applied || 0), 0) / evts.length;
+          return { name: c.display_name || c.crop_name, liters: +avgLiters.toFixed(1), source: 'real' };
         }
-    });
-
-    // Gráfico de distribución de cultivos
-    const cropsCtx = document.getElementById('cropsDistributionChart').getContext('2d');
-    const cropsDistributionChart = new Chart(cropsCtx, {
-        type: 'pie',
-        data: {
-            labels: ['Maíz', 'Frijol', 'Calabaza', 'Chile', 'Tomate'],
-            datasets: [{
-                data: [35, 25, 20, 12, 8],
-                backgroundColor: [
-                    '#FF6384',
-                    '#36A2EB',
-                    '#FFCE56',
-                    '#4BC0C0',
-                    '#9966FF'
-                ],
-                hoverOffset: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'right'
-                }
-            }
-        }
-    });
-
-    // Gráfico de progreso de crecimiento
-    const growthCtx = document.getElementById('growthProgressChart').getContext('2d');
-    const growthProgressChart = new Chart(growthCtx, {
+        const sLatest = parcel || await MILPA_API.getLatestSensor(c.id).catch(() => null);
+        const deficit = sLatest ? Math.max(0, 80 - (Number(sLatest.soil_moisture) || 0)) : 30;
+        return { name: c.display_name || c.crop_name, liters: +(deficit * 0.6).toFixed(1), source: 'estimado' };
+      } catch {
+        return { name: c.display_name || c.crop_name, liters: 0, source: 'sin datos' };
+      }
+    }));
+    const waterEl = document.getElementById('waterConsumptionChart');
+    if (waterEl) {
+      const palette = [
+        'rgba(54,162,235,0.7)', 'rgba(75,192,192,0.7)', 'rgba(255,159,64,0.7)',
+        'rgba(255,99,132,0.7)', 'rgba(153,102,255,0.7)', 'rgba(46,125,50,0.7)'
+      ];
+      datosCharts.water = new Chart(waterEl.getContext('2d'), {
         type: 'bar',
         data: {
-            labels: ['Maíz', 'Frijol', 'Calabaza', 'Chile', 'Tomate'],
-            datasets: [{
-                label: 'Progreso (%)',
-                data: [65, 45, 30, 20, 55],
-                backgroundColor: [
-                    'rgba(46, 125, 50, 0.7)',
-                    'rgba(141, 110, 99, 0.7)',
-                    'rgba(255, 193, 7, 0.7)',
-                    'rgba(220, 53, 69, 0.7)',
-                    'rgba(23, 162, 184, 0.7)'
-                ],
-                borderColor: [
-                    'rgba(46, 125, 50, 1)',
-                    'rgba(141, 110, 99, 1)',
-                    'rgba(255, 193, 7, 1)',
-                    'rgba(220, 53, 69, 1)',
-                    'rgba(23, 162, 184, 1)'
-                ],
-                borderWidth: 1
-            }]
+          labels: waterCropData.map(d => d.name),
+          datasets: [{
+            label: 'Litros promedio por riego',
+            data: waterCropData.map(d => d.liters),
+            backgroundColor: waterCropData.map((_, i) => palette[i % palette.length]),
+            borderColor:      waterCropData.map((_, i) => palette[i % palette.length].replace('0.7', '1')),
+            borderWidth: 1
+          }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                }
-            }
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: {
+            callbacks: { afterLabel: (ctx) => waterCropData[ctx.dataIndex]?.source === 'estimado' ? '(estimado desde humedad)' : '(promedio de riegos registrados)' }
+          }}
         }
-    });
+      });
+    }
 
-    // Toggle para la sidebar
-    document.getElementById('sidebarToggle').addEventListener('click', function() {
-        document.getElementById('sidebar').classList.toggle('sidebar-collapsed');
-        document.getElementById('mainContent').classList.toggle('main-content-expanded');
-    });
+    // ── irrigationEfficiencyChart — métricas agregadas de la PARCELA (promedio de cultivos) ──
+    try {
+      const effs = (await Promise.all(
+        crops.map(c => MILPA_API.getIrrigationEfficiency(c.id).catch(() => null))
+      )).filter(Boolean);
+      if (!effs.length) throw new Error('Sin datos de eficiencia para ningún cultivo de la parcela.');
+      const avg = (xs) => xs.reduce((s, v) => s + Number(v || 0), 0) / xs.length;
+      const eff = {
+        eficiencia_actual: Math.round(avg(effs.map(e => e.eficiencia_actual))),
+        mejora_posible: Math.round(avg(effs.map(e => e.mejora_posible))),
+        event_count: effs.reduce((s, e) => s + (e.event_count || 0), 0),
+        recent_events_30d: effs.reduce((s, e) => s + (e.recent_events_30d || 0), 0),
+        avg_liters_per_event: +avg(effs.map(e => e.avg_liters_per_event || 0)).toFixed(1),
+        last_event: effs.map(e => e.last_event).filter(Boolean).sort((a, b) => (b?.event_date || '').localeCompare(a?.event_date || ''))[0] || null,
+        metrics: {
+          cantidad:    Math.round(avg(effs.map(e => e.metrics?.cantidad ?? 0))),
+          frecuencia:  Math.round(avg(effs.map(e => e.metrics?.frecuencia ?? 0))),
+          distribucion: Math.round(avg(effs.map(e => e.metrics?.distribucion ?? 0))),
+          absorcion:   Math.round(avg(effs.map(e => e.metrics?.absorcion ?? 0))),
+          tiempo:      Math.round(avg(effs.map(e => e.metrics?.tiempo ?? 0))),
+        },
+        optimal_values: effs[0].optimal_values || [90, 85, 95, 90, 95],
+        optimal_targets: effs[0].optimal_targets || {},
+      };
+      const { cantidad, frecuencia, distribucion, absorcion, tiempo } = eff.metrics;
+
+      el('irrigEffActual', `${eff.eficiencia_actual}%`);
+      el('irrigEffMejora', eff.mejora_posible > 0 ? `+${eff.mejora_posible}%` : 'Óptimo');
+
+      const irrigEl = document.getElementById('irrigationEfficiencyChart');
+      if (irrigEl) {
+        datosCharts.irrigRadar = new Chart(irrigEl.getContext('2d'), {
+          type: 'radar',
+          data: {
+            labels: ['Distribución', 'Tiempo', 'Cantidad', 'Frecuencia', 'Absorción'],
+            datasets: [
+              {
+                label: 'Actual',
+                data: [distribucion, tiempo, cantidad, frecuencia, absorcion],
+                backgroundColor: 'rgba(54,162,235,0.2)', borderColor: 'rgba(54,162,235,1)',
+                pointBackgroundColor: 'rgba(54,162,235,1)', pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff', pointHoverBorderColor: 'rgba(54,162,235,1)'
+              },
+              {
+                label: 'Óptimo',
+                data: eff.optimal_values,
+                backgroundColor: 'rgba(75,192,192,0.2)', borderColor: 'rgba(75,192,192,1)',
+                pointBackgroundColor: 'rgba(75,192,192,1)', pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff', pointHoverBorderColor: 'rgba(75,192,192,1)'
+              }
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: { r: { angleLines: { display: true }, suggestedMin: 50, suggestedMax: 100 } }
+          }
+        });
+      }
+
+      // ── Explicación dinámica (basada en los valores reales del perfil del cultivo) ──
+      const metodoMasUsado = eff.last_event?.method || 'goteo';
+      const avgL = eff.avg_liters_per_event;
+      const recientes = eff.recent_events_30d;
+      const targets = eff.optimal_targets || {};
+      const tgtLiters = targets.liters_per_event ?? 45;
+      const tgtFreq = targets.freq_per_month ?? 4;
+      const tgtDur = targets.duration_min ?? 35;
+      const freqLabel = tgtFreq >= 4 ? '1 vez/semana' : `${Math.round(tgtFreq)} riegos/mes`;
+
+      let razonesActual = [];
+      if (cantidad < 80) razonesActual.push(`volumen promedio de ${avgL}L por riego, por debajo del óptimo de ${tgtLiters}L`);
+      else razonesActual.push(`volumen promedio de ${avgL}L por riego`);
+      if (frecuencia < 80) razonesActual.push(`${recientes} riego(s) en los últimos 30 días (se recomiendan ${tgtFreq})`);
+      else razonesActual.push(`frecuencia adecuada: ${recientes} riegos en 30 días`);
+      if (absorcion < 80) razonesActual.push(`absorción del suelo inferior a la esperada (Δhumedad/litro por debajo del óptimo)`);
+      else razonesActual.push(`buena absorción del suelo (Δhumedad/litro óptimo)`);
+      if (distribucion < 80) razonesActual.push(`alta variabilidad en humedad post-riego, indicando distribución irregular`);
+
+      let mejoraTips = [];
+      if (cantidad < 90) mejoraTips.push(`aumentar litros por riego hasta ~${tgtLiters}L`);
+      if (frecuencia < 90) mejoraTips.push(`regar con mayor regularidad (meta: ${freqLabel})`);
+      if (absorcion < 90) mejoraTips.push(`ajustar duración del riego para mejorar absorción del suelo`);
+      if (distribucion < 90) mejoraTips.push(`usar sistema de ${metodoMasUsado === 'goteo' ? 'goteo uniforme' : 'aspersión calibrada'} para mayor uniformidad`);
+      if (tiempo < 90) mejoraTips.push(`optimizar duración del riego (meta: ~${tgtDur} min)`);
+      if (mejoraTips.length === 0) mejoraTips.push(`el sistema está funcionando de manera óptima`);
+
+      const explEl = document.getElementById('irrigExplanacion');
+      if (explEl) {
+        explEl.innerHTML = `
+          <p><strong>¿Por qué ${eff.eficiencia_actual}% de eficiencia actual?</strong></p>
+          <p class="text-muted">Calculado a partir de <strong>${eff.event_count} eventos de riego</strong> registrados en la base de datos (método: ${metodoMasUsado}). Los factores evaluados son:</p>
+          <ul class="text-muted mb-2">${razonesActual.map(r => `<li>${r}</li>`).join('')}</ul>
+          <p><strong>¿Por qué ${eff.mejora_posible > 0 ? '+'+eff.mejora_posible+'%' : 'Óptimo'} de mejora posible?</strong></p>
+          ${eff.mejora_posible > 0
+            ? `<p class="text-muted">Se identificaron ${mejoraTips.length} área(s) de mejora: <ul>${mejoraTips.map(t => `<li>${t}</li>`).join('')}</ul></p>`
+            : `<p class="text-muted">La eficiencia actual (≥ 91%) está en el rango óptimo. Se puede mantener el esquema actual.</p>`
+          }`;
+      }
+
+      // ── Fuente desde RAG (parcela: usa el cultivo principal del usuario) ──
+      try {
+        const principalCrop = (crops[0]?.crop_name || 'maiz');
+        const ragQuery = `eficiencia de riego ${principalCrop} frecuencia litros absorcion humedad suelo`;
+        const ragResp = await MILPA_API.queryRAG(ragQuery, 3);
+        if (ragResp && ragResp.fragments && ragResp.fragments.length > 0) {
+          const frag = ragResp.fragments[0];
+          const box = document.getElementById('irrigRagBox');
+          const txt = document.getElementById('irrigRagText');
+          const src = document.getElementById('irrigRagSource');
+          if (box && txt) {
+            txt.textContent = frag.text.length > 300 ? frag.text.slice(0, 300) + '…' : frag.text;
+            if (src && frag.doc_title) src.textContent = `— ${frag.doc_title}${frag.page_start ? ', p. ' + frag.page_start : ''}`;
+            box.style.display = '';
+          }
+        }
+      } catch (_ragErr) { /* RAG no disponible */ }
+
+    } catch (_effErr) {
+      // Fallback: estimado desde sensor_readings si no hay irrigation_events
+      if (readings && readings.length > 1) {
+        const avgMoisture = readings.reduce((s, r) => s + (r.soil_moisture || 0), 0) / readings.length;
+        const moisture_variance = readings.reduce((s, r) => s + Math.pow((r.soil_moisture || 0) - avgMoisture, 2), 0) / readings.length;
+        const cantidad2    = Math.round(Math.min(100, (avgMoisture / 70) * 95));
+        const frecuencia2  = Math.round(Math.min(100, (readings.length / 30) * 100));
+        const distribucion2 = Math.round(Math.max(40, 100 - moisture_variance * 0.5));
+        const absorcion2   = Math.round(Math.min(100, cantidad2 * 0.95));
+        const tiempo2      = Math.round((cantidad2 + frecuencia2) / 2);
+        const eficiencia2  = Math.round((cantidad2 + frecuencia2 + distribucion2 + absorcion2 + tiempo2) / 5);
+        el('irrigEffActual', `${eficiencia2}%`);
+        el('irrigEffMejora', Math.max(0, 91-eficiencia2) > 0 ? `+${Math.max(0,91-eficiencia2)}%` : 'Óptimo');
+        const expEl2 = document.getElementById('irrigExplanacion');
+        if (expEl2) expEl2.innerHTML = '<p class="text-muted small"><i class="fas fa-exclamation-triangle me-1 text-warning"></i>Estimado desde lecturas de humedad de sensor (no hay eventos de riego registrados aún).</p>';
+      }
+    }
+    const distEl = document.getElementById('cropsDistributionChart');
+    if (distEl) {
+      const colors = ['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#2E7D32','#FF9F40'];
+      datosCharts.dist = new Chart(distEl.getContext('2d'), {
+        type: 'pie',
+        data: {
+          labels: crops.map(c => c.crop_name),
+          datasets: [{ data: crops.map(c => c.progress || 10), backgroundColor: colors.slice(0, crops.length), hoverOffset: 4 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'right' } }
+        }
+      });
+    }
+
+    // ── growthProgressChart — progreso real de cultivos registrados ──
+    const growEl = document.getElementById('growthProgressChart');
+    if (growEl) {
+      datosCharts.grow = new Chart(growEl.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: crops.map(c => c.crop_name),
+          datasets: [{
+            label: 'Progreso (%)',
+            data: crops.map(c => c.progress || 0),
+            backgroundColor: crops.map(c => c.progress >= 60 ? 'rgba(46,125,50,0.7)' : c.progress >= 40 ? 'rgba(255,193,7,0.7)' : 'rgba(220,53,69,0.7)'),
+            borderColor:      crops.map(c => c.progress >= 60 ? 'rgba(46,125,50,1)'   : c.progress >= 40 ? 'rgba(255,193,7,1)'   : 'rgba(220,53,69,1)'),
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true, max: 100 } },
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    setTimeout(() => {
+      Object.values(datosCharts).forEach(ch => { try { ch?.resize(); } catch (_e) {} });
+    }, 200);
+
+  } catch(e) {
+    console.warn('Error cargando datos reales:', e);
+    showDatosError(e.message || 'No se pudieron actualizar las visualizaciones.');
+  }
+}
+
+loadDatosReales();
+// Refresco automático para reflejar cambios de dataset/sensores en tiempo real.
+setInterval(loadDatosReales, 60000);
 </script>
-</body> </html>
+</body>
+</html>

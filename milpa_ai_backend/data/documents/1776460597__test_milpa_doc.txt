@@ -1,0 +1,19 @@
+﻿Cultivo de Maiz en la Milpa Tradicional
+
+El sistema milpa es una forma de policultivo mesoamericano que combina maiz, frijol y calabaza.
+El maiz (Zea mays) es el cultivo principal y requiere suelos con buen drenaje y pH entre 5.5 y 7.0.
+
+Fertilizacion del Maiz:
+- Nitrogeno: 120-150 kg/ha para rendimientos optimos
+- Fosforo: 40-60 kg/ha aplicado al momento de la siembra
+- Potasio: 30-40 kg/ha segun analisis de suelo
+
+El frijol (Phaseolus vulgaris) fija nitrogeno atmosferico mediante simbiosis con bacterias Rhizobium,
+aportando entre 40-60 kg N/ha al sistema. La calabaza (Cucurbita spp.) cubre el suelo reduciendo
+la evapotranspiracion y controlando malezas.
+
+Manejo de Plagas:
+El gusano cogollero (Spodoptera frugiperda) es la principal plaga del maiz en Mexico.
+Se recomienda monitoreo semanal y control biologico con Bacillus thuringiensis (Bt).
+
+Rendimientos esperados en temporal: 2-4 ton/ha de maiz, 0.5-1 ton/ha de frijol.

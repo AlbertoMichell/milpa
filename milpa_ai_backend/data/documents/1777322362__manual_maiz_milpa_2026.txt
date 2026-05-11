@@ -1,0 +1,209 @@
+MANUAL AGRONOMICO INTEGRAL DEL MAIZ EN SISTEMA MILPA
+Edicion MILPA 2026 | Autor: Equipo agronomico MILPA | Licencia: institutional
+================================================================================
+
+CAPITULO 1. INTRODUCCION AL MAIZ EN MILPA
+--------------------------------------------------------------------------------
+El maiz (Zea mays L.) es la columna vertebral del sistema milpa mesoamericano.
+Su asociacion con frijol (Phaseolus spp.) y calabaza (Cucurbita spp.) — conocida
+como las "tres hermanas" — proporciona fijacion biologica de nitrogeno,
+cobertura de suelo y proteccion mutua frente a plagas. Este manual entrega
+umbrales operativos, reglas de decision y acciones concretas que el sistema
+MILPA aplica para emitir recomendaciones agronomicas a partir de las lecturas
+de sensores y del contexto edafologico.
+
+CAPITULO 2. RANGOS OPTIMOS Y UMBRALES DE ALERTA
+--------------------------------------------------------------------------------
+2.1 Temperatura del aire (T_air)
+- Rango optimo de crecimiento: 18 a 32 grados centigrados.
+- Estres por calor leve: 32 a 35 grados centigrados.
+- Estres por calor severo: mayor o igual a 35 grados centigrados.
+- Riesgo de aborto floral: temperatura mayor a 35 grados centigrados durante la
+  floracion (V12 a R1) por mas de 4 horas continuas.
+- Riesgo de helada: menor o igual a 10 grados centigrados.
+
+2.2 Humedad del suelo (HS)
+- Rango optimo: 45 por ciento a 75 por ciento.
+- Riego urgente cuando HS es menor a 25 por ciento.
+- Riego programado cuando HS esta entre 25 y 40 por ciento.
+- Drenaje forzoso cuando HS es mayor a 80 por ciento (riesgo de pudricion).
+
+2.3 Humedad ambiental (HA)
+- Rango operativo saludable: 40 por ciento a 70 por ciento.
+- Riesgo de deshidratacion foliar cuando HA es menor a 30 por ciento.
+- Riesgo de enfermedades fungicas (roya, mancha gris, antracnosis) cuando HA
+  es mayor a 85 por ciento por mas de 24 horas.
+
+2.4 pH del suelo y conductividad
+- pH optimo para maiz: 5.5 a 7.5.
+- Salinidad alta cuando la conductividad electrica supera 2.0 dS/m.
+
+2.5 Radiacion y luz
+- Maiz es planta C4: requiere mas de 8 horas de luz diaria.
+- Luz menor a 35 por ciento en sensor: probable nubosidad alta o sombra; la
+  fotosintesis se reduce y el ritmo de crecimiento baja.
+
+CAPITULO 3. ETAPAS FENOLOGICAS Y ACCIONES CLAVE
+--------------------------------------------------------------------------------
+3.1 Establecimiento (V1 a V4, 0 a 30 dias)
+- HS objetivo 50 a 65 por ciento.
+- Fertilizacion arrancadora: N a 40 kg/ha; aplicar urea fraccionada al lado de
+  la linea de siembra.
+- Vigilar gusano cogollero (Spodoptera frugiperda) y aves.
+
+3.2 Desarrollo vegetativo (V5 a V12, 30 a 60 dias)
+- HS optima 55 a 70 por ciento; ventana critica para escarda y aporque.
+- Segunda dosis de N (40 kg/ha) en V8 si el follaje muestra clorosis.
+- Recomendacion: si T_air mayor a 32 grados centigrados durante esta etapa,
+  aplicar acolchado vegetal de paja o residuos de calabaza para reducir la
+  evapotranspiracion.
+
+3.3 Floracion y polinizacion (V13 a R1, 60 a 75 dias)
+- ETAPA CRITICA. Cualquier estres hidrico de mas de 48 horas reduce el
+  rendimiento entre 15 y 30 por ciento.
+- HS objetivo 60 a 75 por ciento.
+- Si T_air mayor o igual a 35 grados centigrados y HS menor a 40 por ciento:
+  aplicar riego por goteo de auxilio de 35 a 45 mm en menos de 24 horas y
+  considerar malla sombra del 30 por ciento.
+
+3.4 Llenado de grano (R2 a R5, 75 a 110 dias)
+- HS optima 50 a 65 por ciento.
+- Mantener riego cada 4 a 5 dias.
+- Si HA mayor a 85 por ciento: aplicar fungicida preventivo a base de cobre
+  o Trichoderma; revisar mazorcas por mancha de asfalto.
+
+3.5 Madurez y cosecha (R6, 110 a 130 dias)
+- Cosechar cuando el grano alcanza 18 a 22 por ciento de humedad y aparece la
+  capa negra.
+- Para forraje, cosechar en estado lechoso-masoso.
+- Si humedad de grano mayor a 25 por ciento se requiere secado artificial.
+
+CAPITULO 4. REGLAS DE DECISION TIPO "SI X ENTONCES Y"
+--------------------------------------------------------------------------------
+Las siguientes reglas son las que MILPA usa internamente y son recuperadas por
+el RAG cuando se evalua el estado del cultivo:
+
+R1. SI cultivo es maiz Y HS menor a 25 por ciento ENTONCES emitir recomendacion
+    de "riego urgente" con prioridad alta. Aplicar 35 a 45 mm de agua por
+    goteo en las proximas 6 horas para evitar marchitez permanente.
+
+R2. SI cultivo es maiz Y T_air mayor o igual a 35 grados centigrados Y HS menor
+    a 40 por ciento ENTONCES emitir "riego de auxilio + acolchado" con
+    prioridad alta. Aplicar 30 mm de agua y cubrir el suelo con paja seca a
+    razon de 4 toneladas por hectarea.
+
+R3. SI cultivo es maiz Y T_air mayor a 32 grados centigrados Y T_air menor a
+    35 grados centigrados ENTONCES emitir "sombra o acolchado" con prioridad
+    media. Es preferible regar en la madrugada (entre 04:00 y 06:00) para
+    reducir evapotranspiracion.
+
+R4. SI cultivo es maiz Y HS mayor a 80 por ciento ENTONCES emitir "drenar
+    exceso de agua" con prioridad media. Construir surcos de drenaje y revisar
+    raices a 7 dias para descartar pudricion por Pythium o Fusarium.
+
+R5. SI cultivo es maiz Y HA mayor a 90 por ciento durante mas de 48 horas
+    ENTONCES emitir "vigilar enfermedades fungicas" con prioridad alta y
+    aplicar Trichoderma harzianum a la base del tallo.
+
+R6. SI cultivo es maiz Y etapa = floracion Y HS entre 40 y 55 por ciento Y
+    T_air entre 28 y 32 grados centigrados ENTONCES emitir "programar riego
+    a 4 dias" con prioridad media, dosis 30 mm.
+
+R7. SI cultivo es maiz Y N foliar bajo (clorosis V8 en adelante) ENTONCES
+    aplicar urea 46 por ciento a 40 kg/ha en banda y, si pH menor a 5.5,
+    encalar con 1 tonelada por hectarea de cal dolomita.
+
+R8. SI cultivo es maiz Y se detecta gusano cogollero (mas de 3 individuos por
+    planta) ENTONCES aplicar Bacillus thuringiensis aizawai 1.5 g/L o liberar
+    Trichogramma pretiosum a 100,000 individuos por hectarea.
+
+R9. SI cultivo es maiz Y HS entre 45 y 75 por ciento Y T_air entre 18 y 32
+    grados centigrados Y HA entre 40 y 70 por ciento ENTONCES emitir
+    "monitoreo continuo" con prioridad baja. No es necesario intervenir.
+
+R10. SI cultivo es maiz Y precipitacion mayor a 25 mm en las ultimas 24 horas
+     ENTONCES suspender riego y revisar drenaje en bordos.
+
+CAPITULO 5. CASOS DE EJEMPLO ETIQUETADOS
+--------------------------------------------------------------------------------
+Caso A: "Maiz, T_air 37 grados centigrados, HS 22 por ciento, HA 28 por ciento,
+floracion V13."
+Diagnostico: estres termico severo combinado con sequia leve. Aplica las
+reglas R1 y R2 simultaneamente. Accion recomendada: RIEGO URGENTE de 40 mm
+por goteo dentro de las proximas 6 horas, instalar acolchado vegetal a 4
+toneladas por hectarea y, si la prediccion meteorologica mantiene
+temperaturas mayores a 35 grados centigrados, instalar malla sombra del 30
+por ciento sobre la parcela en floracion. Prioridad: alta. Ventana critica:
+no exceder 48 horas sin actuar para evitar perdida de mas del 15 por ciento
+del rendimiento por aborto floral.
+
+Caso B: "Maiz, T_air 28 grados centigrados, HS 60 por ciento, HA 55 por ciento,
+desarrollo V8."
+Diagnostico: condiciones optimas. Aplica la regla R9. Accion: monitoreo
+continuo, programar segunda fertilizacion nitrogenada de 40 kg/ha si el
+follaje no muestra verde intenso. Prioridad: baja.
+
+Caso C: "Maiz, T_air 24 grados centigrados, HS 85 por ciento, HA 92 por ciento."
+Diagnostico: exceso de humedad y riesgo fungico. Aplica las reglas R4 y R5.
+Accion: drenar el exceso de agua mediante surcos perpendiculares a la
+pendiente y aplicar Trichoderma harzianum a la base del tallo. Prioridad:
+alta. Vigilar mancha de asfalto y antracnosis durante 7 dias.
+
+Caso D: "Maiz, T_air 30 grados centigrados, HS 33 por ciento, HA 45 por ciento,
+floracion R1."
+Diagnostico: humedad de suelo en zona amarilla. Aplica regla R6 con ajuste
+por etapa critica. Accion: programar riego de 30 mm por goteo dentro de las
+proximas 24 horas, evitar dejar pasar mas de 48 horas sin riego durante la
+floracion. Prioridad: media-alta.
+
+Caso E: "Maiz, T_air 12 grados centigrados, HS 50 por ciento."
+Diagnostico: riesgo de helada. Accion: instalar cobertura plastica nocturna o
+agrotextil flotante y, si el pronostico mantiene temperaturas menores a 10
+grados centigrados, retrasar la siembra hasta que el suelo se sostenga sobre
+18 grados centigrados durante 5 dias.
+
+CAPITULO 6. INTEGRACION CON FRIJOL Y CALABAZA EN MILPA
+--------------------------------------------------------------------------------
+- Frijol fija de 60 a 80 kg/ha de nitrogeno biologico, reduciendo en 40 por
+  ciento la dosis de urea para el maiz asociado.
+- Calabaza cubre el suelo, mantiene humedad relativa cerca de 5 por ciento mas
+  alta y disminuye temperatura del suelo en 2 a 3 grados centigrados.
+- Distancia recomendada: 1 maiz por golpe a 80 cm de calle y 50 cm sobre el
+  surco; el frijol se siembra 15 dias despues, la calabaza 10 dias mas tarde.
+
+CAPITULO 7. INDICADORES PARA TABLERO DE MONITOREO
+--------------------------------------------------------------------------------
+El sistema MILPA expone los siguientes indicadores derivados de los datos del
+cultivo y los compara contra los rangos optimos:
+
+- Humedad de suelo (45-75 por ciento) ; alarma menor a 25 o mayor a 80.
+- Temperatura del aire (18-32 grados centigrados) ; alarma mayor o igual a 35.
+- Humedad ambiental (40-70 por ciento) ; alarma mayor a 90.
+- Precipitacion semanal acumulada (15-40 mm).
+- Eficiencia hidrica objetivo: aplicar 45 litros por evento, 4 eventos por
+  mes, duracion 35 minutos por evento, delta de humedad esperado 12 puntos
+  porcentuales tras un evento.
+- Score de salud (radar): suelo 90, temperatura 85, humedad 95, luz 90,
+  precipitacion 95.
+
+CAPITULO 8. CHECKLIST OPERATIVO PARA EL AGRICULTOR
+--------------------------------------------------------------------------------
+Diariamente:
+1. Revisar lectura de humedad de suelo y temperatura.
+2. Revisar conteo de plagas y trampas.
+3. Anotar precipitacion acumulada.
+
+Semanalmente:
+1. Revisar fertilizacion programada (V4 y V8).
+2. Revisar bordos y drenaje.
+3. Inspeccionar enfermedades en el enves de las hojas.
+
+Mensualmente:
+1. Calibrar sensores de humedad y temperatura.
+2. Comparar el radar de salud contra los valores objetivo.
+3. Ajustar el plan de riego segun pronostico.
+
+================================================================================
+FIN DEL MANUAL. Para incidencias o ajustes contactar al equipo agronomico
+MILPA. Las recomendaciones son orientativas y deben adaptarse a las
+condiciones locales.

@@ -1,0 +1,431 @@
+"""Genera el manual técnico de Lechuga en dos formatos:
+
+  - ``docs/manual_lechuga_milpa_2026.txt``: TXT plano, alimenta el E2E genérico
+    (``tools/e2e_crop.py``) y el motor RAG.
+  - ``docs/manual_lechuga_milpa_2026.pdf``: PDF a 2 columnas con secciones A–H,
+    pensado para validar el extractor block-level (bbox por fragmento, OCR
+    regional fallback, token chunker HF).
+
+El contenido es agronómicamente válido para Lechuga (Lactuca sativa) y
+cubre exactamente las secciones que la prueba E2E busca para que el RAG
+pueda recuperar evidencia ante escenarios de calor (≥55 °C) y baja humedad
+de suelo. NO contiene reglas hardcodeadas: las reglas están escritas en
+lenguaje natural y los umbrales viven en ``crop_profiles`` (migración 0016).
+
+Uso:
+
+    py -3 milpa_ai_backend/tools/gen_manual_lechuga.py
+"""
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import LETTER
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.platypus import (
+    BaseDocTemplate,
+    Frame,
+    PageTemplate,
+    Paragraph,
+    Spacer,
+)
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# Contenido base (mismo para TXT y PDF). Las secciones A–H son las que el E2E
+# genérico evalúa para que el RAG recupere evidencia y produzca acciones.
+# ────────────────────────────────────────────────────────────────────────────
+
+
+SECTIONS: list[tuple[str, list[str]]] = [
+    (
+        "A. INFORMACIÓN GENERAL DEL CULTIVO",
+        [
+            "Nombre común: lechuga.",
+            "Nombre científico: Lactuca sativa.",
+            "La taxonomía MILPA puede mapear sinónimos como \"lactuca\", \"lechuguilla cultivada\" "
+            "y nombres regionales al término canónico \"lechuga\" usando la tabla synonyms.json.",
+            "Tipo de cultivo: hortaliza de hoja, anual, herbácea, de ciclo corto. Se cultiva "
+            "principalmente por sus hojas tiernas para consumo fresco. Se desarrolla "
+            "tanto a cielo abierto como en invernadero o agricultura urbana.",
+            "Ciclo aproximado: 45 a 70 días desde siembra hasta cosecha según la variedad. "
+            "El sistema MILPA guarda en `crop_profiles.cycle_days` un valor operativo de 60 "
+            "días para lechuga, ajustable con un UPDATE sin tocar código.",
+            "Requerimientos generales: clima fresco, suelos sueltos con buen drenaje y "
+            "alta materia orgánica, riego frecuente y constante. Es muy sensible al "
+            "estrés térmico (espigado y amargor) y al estrés hídrico (marchitez, "
+            "hojas duras).",
+        ],
+    ),
+    (
+        "B. CONDICIONES CLIMÁTICAS IDEALES",
+        [
+            "Temperatura óptima: 15 °C a 22 °C (rango operativo MILPA: optimal_temp_min=10, "
+            "optimal_temp_max=24).",
+            "Temperatura mínima tolerable: 4 °C — por debajo se frena la germinación y se "
+            "dañan las hojas tiernas.",
+            "Temperatura máxima crítica: 26 °C — por encima de 27 °C aparece bolting "
+            "(espigado prematuro), amargor y reducción de calidad. A 55 °C el daño es "
+            "severo y debe activarse alerta de calor extremo y medidas de emergencia.",
+            "Humedad relativa recomendada: 60 % a 80 %.",
+            "Riesgos por calor extremo: bolting (espigado), amargor en hojas, marchitez "
+            "foliar, golpe de sol, pérdida de cosecha.",
+            "Riesgos por frío: detención de germinación, daño por heladas en plántulas, "
+            "tip-burn por estrés térmico fluctuante.",
+            "Riesgos por exceso de lluvia: pudriciones del cuello, mildiú, sclerotinia, "
+            "lavado de nitratos del suelo, encharcamiento.",
+        ],
+    ),
+    (
+        "C. CONDICIONES EDAFOLÓGICAS IDEALES",
+        [
+            "Tipo de suelo recomendado: franco a franco-arenoso, profundo, con buena "
+            "estructura y drenaje. Evitar suelos pesados sin acondicionamiento.",
+            "pH recomendado: 6.0 a 7.0 (rango operativo MILPA: optimal_ph_min=6.0, "
+            "optimal_ph_max=7.0).",
+            "Drenaje: indispensable, no tolera encharcamientos prolongados.",
+            "Materia orgánica: superior a 3 %, con incorporación de compost antes de "
+            "siembra.",
+            "Nitrógeno (N): demanda media, 80 a 120 kg/ha, fraccionado.",
+            "Fósforo (P): 40 a 60 kg/ha, importante para enraizamiento.",
+            "Potasio (K): 80 a 120 kg/ha, mejora firmeza y vida poscosecha.",
+            "Conductividad eléctrica: por debajo de 1.5 dS/m. Lechuga es sensible a "
+            "salinidades altas.",
+            "Humedad del suelo recomendada: 65 % a 85 % de capacidad de campo "
+            "(rango operativo MILPA: optimal_soil_moisture_min=65, "
+            "optimal_soil_moisture_max=85).",
+        ],
+    ),
+    (
+        "D. MANEJO DEL CULTIVO",
+        [
+            "Preparación del terreno: barbecho, rastreo y formación de camas elevadas. "
+            "Incorporar materia orgánica al menos 15 días antes de siembra.",
+            "Siembra: en almácigo y trasplante a los 25–30 días, o siembra directa a 0.5 cm "
+            "de profundidad. Distancia 0.20–0.30 m entre plantas y 0.30–0.40 m entre "
+            "surcos.",
+            "Riego: alta frecuencia, mantener el suelo húmedo sin encharcar. El sistema "
+            "por goteo es preferible para reducir mojado del follaje y prevenir hongos. "
+            "En formación de cabeza no permitir periodos prolongados de estrés hídrico.",
+            "Fertilización: aplicar la base de N-P-K antes de siembra y fraccionar nitrógeno "
+            "por fertirriego durante el ciclo. Evitar exceso de nitrógeno cerca de cosecha "
+            "para reducir nitratos en hoja.",
+            "Control de malezas: deshierbe manual o mecánico temprano. La cobertura con "
+            "acolchado plástico u orgánico reduce malezas y conserva humedad.",
+            "Manejo de plagas: monitoreo de pulgón, mosca blanca, trips, gusano del suelo "
+            "y babosas. Usar control biológico y trampas cromáticas; aplicar productos "
+            "selectivos solo cuando se superen los umbrales de población.",
+            "Manejo de enfermedades: prevenir mildiú (Bremia lactucae), sclerotinia, "
+            "botrytis y virosis mediante poda de aire, riego basal y rotación. En "
+            "condiciones de alta humedad, intensificar el monitoreo y aplicar tratamientos "
+            "preventivos.",
+            "Poda o guía: la lechuga no requiere tutorado. Eliminar hojas viejas o "
+            "enfermas para favorecer ventilación.",
+            "Polinización: la lechuga es autógama; no requiere polinizadores para "
+            "producción de hoja. Para producción de semilla sí intervienen insectos.",
+            "Cosecha: cuando la cabeza alcanza tamaño comercial, antes de iniciar "
+            "espigado. Cortar al ras del suelo en horas frescas (madrugada) y enfriar "
+            "rápido para conservar turgencia.",
+        ],
+    ),
+    (
+        "E. SOLUCIÓN A PROBLEMAS AMBIENTALES",
+        [
+            "Calor excesivo (temperatura > 26 °C):",
+            "  - Programar riego en horas frescas (madrugada o atardecer).",
+            "  - Aumentar la frecuencia y reducir el volumen por evento para evitar "
+            "estrés hídrico.",
+            "  - Aplicar acolchado plástico blanco o cobertura orgánica para reducir la "
+            "temperatura del suelo y la evaporación.",
+            "  - Instalar malla sombra del 30 a 50 % cuando el calor sea sostenido.",
+            "  - Suspender fertilizaciones pesadas durante el evento térmico.",
+            "  - Monitorear marchitez, espigado prematuro y golpe de sol.",
+            "  - Reducir el estrés térmico, priorizar la protección del cultivo.",
+            "Calor extremo (temperatura ≥ 55 °C):",
+            "  - Activar alerta de calor extremo y medidas de emergencia.",
+            "  - Suspender labores de campo no esenciales.",
+            "  - Aplicar riego controlado en horarios frescos para evitar shock térmico, "
+            "pero sin saturar el suelo.",
+            "  - Instalar sombreo temporal de emergencia.",
+            "  - Evitar fertilización fuerte durante el estrés térmico severo.",
+            "  - Documentar daño foliar, marchitez y aborto de cabezas.",
+            "  - Priorizar protección del cultivo, revisar humedad del suelo y monitorear "
+            "marchitez.",
+            "Sequía y baja humedad del suelo (soil_moisture < 65 %):",
+            "  - Programar riego inmediato en horarios frescos.",
+            "  - Aumentar la frecuencia de riego.",
+            "  - Aplicar acolchado para conservar humedad del suelo.",
+            "  - Revisar el sistema de riego en busca de fugas y obstrucciones.",
+            "  - Monitorear marchitez foliar como señal de estrés hídrico.",
+            "  - Evitar encharcamiento al corregir el déficit.",
+            "  - Reforzar el monitoreo de humedad del suelo en distintos puntos de la "
+            "parcela.",
+            "Baja humedad ambiental (air_humidity < 60 %):",
+            "  - Reducir el estrés hídrico mediante riego suplementario y mantillo.",
+            "  - Programar riego nocturno o en madrugada.",
+            "  - Reforzar el monitoreo de evapotranspiración.",
+            "  - Proteger el cultivo en horas de mayor radiación con malla sombra "
+            "temporal si está disponible.",
+            "Humedad excesiva del suelo:",
+            "  - Mejorar el drenaje, abrir zanjas si aplica.",
+            "  - Suspender riego temporalmente.",
+            "  - Vigilar pudrición de raíz y enfermedades fúngicas.",
+            "Lluvia excesiva: suspender riego, reforzar drenaje, monitoreo fitosanitario "
+            "preventivo.",
+            "Riesgo de hongos: mejorar ventilación con poda de hojas bajas, reducir riego "
+            "foliar, aplicar tratamientos preventivos compatibles.",
+            "Baja temperatura: proteger con cobertura plástica o agrotextil, suspender "
+            "riego en las horas más frías.",
+            "Viento fuerte: instalar barreras rompevientos, verificar daños mecánicos.",
+        ],
+    ),
+    (
+        "F. SOLUCIÓN A PROBLEMAS NUTRICIONALES",
+        [
+            "Falta de nitrógeno: aplicar fuente nitrogenada (urea, sulfato amónico, té de "
+            "composta o fuentes orgánicas equivalentes) y monitorear coloración de hojas "
+            "nuevas.",
+            "Exceso de nitrógeno: suspender aportes y aumentar fertilización potásica "
+            "para reequilibrar relación N/K. Vigilar acumulación de nitratos en hoja.",
+            "Falta de fósforo: aplicar fuente fosfatada cerca de la zona radical y "
+            "monitorear coloración rojiza en hojas viejas.",
+            "Falta de potasio: reforzar la fertilización potásica durante formación de "
+            "cabeza; vigilar bordes foliares amarillos y tip-burn.",
+            "pH bajo: aplicar enmienda con cal agrícola dolomítica.",
+            "pH alto: aplicar azufre elemental o materia orgánica acidificante.",
+            "Salinidad alta: lavar el perfil con riegos prolongados y mejorar drenaje; "
+            "reducir uso de fertilizantes con alto índice salino.",
+            "Baja materia orgánica: incorporar compost, estiércol bien curado y abonos "
+            "verdes; promover rotación con leguminosas.",
+        ],
+    ),
+    (
+        "G. ACTIVIDADES RECOMENDADAS POR SITUACIÓN",
+        [
+            "Germinación (días 0 a 8): mantener humedad constante, vigilar plagas del "
+            "suelo, evitar costras superficiales.",
+            "Crecimiento vegetativo (días 9 a 30): primera fertilización nitrogenada, "
+            "deshierbe, monitoreo de plagas.",
+            "Floración (no aplica para producción de hoja; sí para semilleros): "
+            "monitorear espigado prematuro como señal de estrés.",
+            "Fructificación / formación de cabeza (días 31 a 55): mantener humedad estable, "
+            "aplicar potasio, vigilar tip-burn y enfermedades fúngicas.",
+            "Antes de cosecha (días 56 a 60): suspender fertilizaciones nitrogenadas, "
+            "reducir riego previo a corte, planear cosechas escalonadas.",
+            "Actividades correctivas según condiciones del suelo: pH fuera de rango, "
+            "baja materia orgánica o alta salinidad: corregir según F.",
+            "Actividades correctivas según condiciones climáticas: calor (ver E), frío "
+            "(cubierta plástica), lluvia excesiva (suspender riego y mejorar drenaje).",
+        ],
+    ),
+    (
+        "H. REGLAS DE DECISIÓN",
+        [
+            "Las siguientes reglas son lineamientos genéricos que el sistema MILPA puede "
+            "consumir como conocimiento. NO son código: son reglas en lenguaje natural "
+            "recuperables por el motor RAG. Los umbrales se leen siempre desde "
+            "`crop_profiles` o desde el documento, nunca desde código.",
+            "IF temperatura > umbral_calor THEN aplicar_sombra_y_riego_controlado",
+            "IF temperatura >= 55 THEN activar_alerta_calor_extremo_y_medidas_de_emergencia",
+            "IF temperatura > optimal_temp_max THEN reducir_estres_termico_y_revisar_dano_foliar",
+            "IF humedad_suelo < humedad_suelo_minima THEN aumentar_riego_en_horarios_frescos",
+            "IF humedad_suelo < (humedad_suelo_minima - 10) THEN activar_alerta_sequia_y_reforzar_monitoreo",
+            "IF humedad_ambiental < humedad_ambiental_minima THEN reducir_estres_hidrico_y_proteger_de_radiacion",
+            "IF humedad_suelo > humedad_suelo_maxima THEN mejorar_drenaje_y_suspender_riego",
+            "IF lluvia_excesiva = TRUE THEN suspender_riego_y_prevenir_hongos",
+            "IF nitrogeno_bajo = TRUE THEN aplicar_fuente_nitrogenada",
+            "IF potasio_bajo = TRUE THEN reforzar_fertilizacion_potasica",
+            "IF pH_fuera_de_rango = TRUE THEN corregir_suelo",
+            "IF conductividad_alta = TRUE THEN lavar_perfil_y_mejorar_drenaje",
+            "IF etapa = vegetativo AND temperatura > optimal_temp_max THEN proteger_de_estres_termico_y_evitar_espigado",
+            "IF etapa = formacion_cabeza AND humedad_suelo < humedad_suelo_minima THEN priorizar_riego_y_proteger_calidad",
+            "ACCIONES PREVENTIVAS CONTRA TEMPERATURA EXTREMA Y CALOR DE 55 °C:",
+            "  - Activar alerta de calor extremo.",
+            "  - Programar riego en horarios frescos.",
+            "  - Aplicar sombreo temporal.",
+            "  - Monitorear marchitez y daño foliar.",
+            "  - Reducir estrés térmico.",
+            "  - Revisar daño en hojas y cabezas.",
+            "  - Evitar fertilización fuerte durante estrés térmico severo.",
+            "  - Priorizar la protección del cultivo y la integridad foliar.",
+            "  - Suspender labores no esenciales en horas de mayor radiación.",
+            "  - Documentar evidencia para ajustar el manejo en futuros ciclos.",
+            "ACCIONES PREVENTIVAS CONTRA BAJA HUMEDAD AMBIENTAL Y BAJA HUMEDAD DEL SUELO:",
+            "  - Programar riego en horarios frescos.",
+            "  - Aumentar la frecuencia de riego sin causar encharcamiento.",
+            "  - Revisar humedad del suelo en distintos puntos de la parcela.",
+            "  - Aplicar acolchado para reducir evaporación.",
+            "  - Monitorear marchitez foliar.",
+            "  - Reducir el estrés hídrico mediante riego suplementario.",
+            "  - Ajustar la frecuencia de riego según los datos del sensor.",
+            "  - Reforzar el monitoreo de humedad del suelo.",
+            "  - Priorizar el riego en horas frescas para mejorar absorción.",
+            "  - Evitar encharcamiento al corregir déficit.",
+            "  - Vigilar la recuperación del cultivo durante 48 horas posteriores al "
+            "inicio del riego correctivo.",
+        ],
+    ),
+]
+
+
+HEADER = (
+    "MANUAL TÉCNICO DEL CULTIVO DE LECHUGA EN PARCELAS DE MILPA",
+    "Edición operativa 2026 — guía agronómica integral para acompañar al sistema MILPA",
+    "Fuente curada para la biblioteca MILPA. Procesable por el extractor del backend.",
+)
+
+
+FOOTER = (
+    "NOTAS FINALES",
+    [
+        "Este documento se publica en la biblioteca MILPA como una de varias fuentes de "
+        "conocimiento agronómico. El sistema NO depende de un documento específico: el "
+        "motor RAG recupera evidencia por similitud semántica y lexical, y los umbrales "
+        "operativos se leen desde `crop_profiles` y desde la taxonomía dinámica del "
+        "sistema.",
+        "Cualquier cultivo nuevo registrado en `crop_profiles` se beneficia del mismo "
+        "flujo, sin necesidad de tocar código.",
+    ],
+)
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# Generación TXT
+# ────────────────────────────────────────────────────────────────────────────
+
+
+def write_txt(path: Path) -> None:
+    lines: list[str] = []
+    lines.append(HEADER[0])
+    lines.append(HEADER[1])
+    lines.append(HEADER[2])
+    lines.append("")
+    for title, paragraphs in SECTIONS:
+        lines.append("─" * 76)
+        lines.append(title)
+        lines.append("─" * 76)
+        lines.append("")
+        for p in paragraphs:
+            lines.append(p)
+        lines.append("")
+    lines.append("─" * 76)
+    lines.append(FOOTER[0])
+    lines.append("─" * 76)
+    lines.append("")
+    for p in FOOTER[1]:
+        lines.append(p)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# Generación PDF a 2 columnas
+# ────────────────────────────────────────────────────────────────────────────
+
+
+def _build_styles() -> dict:
+    base = getSampleStyleSheet()
+    styles = {
+        "title": ParagraphStyle(
+            "Title", parent=base["Heading1"], fontSize=16, leading=20,
+            textColor=colors.HexColor("#1B5E20"), spaceAfter=12,
+        ),
+        "subtitle": ParagraphStyle(
+            "Subtitle", parent=base["Heading2"], fontSize=12, leading=15,
+            textColor=colors.HexColor("#33691E"), spaceAfter=6,
+        ),
+        "section": ParagraphStyle(
+            "Section", parent=base["Heading2"], fontSize=12, leading=14,
+            textColor=colors.HexColor("#2E7D32"), spaceBefore=8, spaceAfter=4,
+        ),
+        "body": ParagraphStyle(
+            "Body", parent=base["BodyText"], fontSize=9, leading=12,
+            spaceAfter=4, alignment=4,  # justify
+        ),
+    }
+    return styles
+
+
+def write_pdf(path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    doc = BaseDocTemplate(
+        str(path),
+        pagesize=LETTER,
+        leftMargin=2 * cm, rightMargin=2 * cm,
+        topMargin=2 * cm, bottomMargin=2 * cm,
+        title="Manual MILPA - Lechuga",
+        author="Sistema MILPA",
+        subject="Manual técnico de Lechuga (Lactuca sativa)",
+    )
+
+    page_width, page_height = LETTER
+    usable_w = page_width - 4 * cm
+    gutter = 0.6 * cm
+    col_w = (usable_w - gutter) / 2.0
+    frame_h = page_height - 4 * cm
+    frame_top = page_height - 2 * cm
+
+    frame_left = Frame(
+        2 * cm, 2 * cm, col_w, frame_h, id="col_left",
+        leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0,
+    )
+    frame_right = Frame(
+        2 * cm + col_w + gutter, 2 * cm, col_w, frame_h, id="col_right",
+        leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0,
+    )
+
+    def _on_page(canvas, _doc):
+        canvas.saveState()
+        canvas.setFont("Helvetica", 8)
+        canvas.setFillColor(colors.HexColor("#666666"))
+        canvas.drawString(2 * cm, 1.2 * cm, "MILPA · Manual técnico de Lechuga · Edición 2026")
+        canvas.drawRightString(page_width - 2 * cm, 1.2 * cm, f"Página {canvas.getPageNumber()}")
+        canvas.restoreState()
+
+    doc.addPageTemplates([
+        PageTemplate(id="two_col", frames=[frame_left, frame_right], onPage=_on_page),
+    ])
+
+    styles = _build_styles()
+    flow: list = []
+    flow.append(Paragraph(HEADER[0], styles["title"]))
+    flow.append(Paragraph(HEADER[1], styles["subtitle"]))
+    flow.append(Paragraph(HEADER[2], styles["body"]))
+    flow.append(Spacer(1, 0.3 * cm))
+    for title, paragraphs in SECTIONS:
+        flow.append(Paragraph(title, styles["section"]))
+        for p in paragraphs:
+            # Reportlab interpreta < y > como markup; los escapamos.
+            safe = p.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            flow.append(Paragraph(safe, styles["body"]))
+        flow.append(Spacer(1, 0.2 * cm))
+    flow.append(Paragraph(FOOTER[0], styles["section"]))
+    for p in FOOTER[1]:
+        safe = p.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        flow.append(Paragraph(safe, styles["body"]))
+
+    doc.build(flow)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--out-dir", default="docs", help="Directorio destino (relativo al repo)")
+    args = parser.parse_args()
+    root = Path(__file__).resolve().parents[2]
+    out_dir = (root / args.out_dir).resolve()
+    txt_path = out_dir / "manual_lechuga_milpa_2026.txt"
+    pdf_path = out_dir / "manual_lechuga_milpa_2026.pdf"
+    write_txt(txt_path)
+    write_pdf(pdf_path)
+    print(f"TXT: {txt_path}")
+    print(f"PDF: {pdf_path}")
+    print(f"  TXT bytes: {txt_path.stat().st_size}")
+    print(f"  PDF bytes: {pdf_path.stat().st_size}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

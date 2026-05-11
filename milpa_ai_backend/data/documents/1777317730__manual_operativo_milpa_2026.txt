@@ -1,0 +1,43 @@
+Manual Operativo MILPA 2026 - Planeacion de Calendario y Ejecucion de Labores
+
+1) Enfoque de programacion
+- El calendario se programa por cultivo activo usando fecha de siembra como ancla.
+- Cada evento tiene fundamento agronomico: etapa fenologica, umbrales de clima/suelo y riesgo operativo.
+- Si hay conflicto entre sensor local y lectura regional, se prioriza el riesgo mayor para decisiones preventivas.
+
+2) Reglas maestras para maiz (si X entonces Y)
+- Si etapa = establecimiento (0 a 20 dias) entonces monitorear emergencia y humedad cada 7 dias.
+- Si humedad de suelo < 30% entonces programar riego de soporte en menos de 24 h.
+- Si temperatura del aire >= 35C entonces activar evento de proteccion termica (acolchado/sombra).
+- Si etapa = floracion entonces elevar prioridad de monitoreo (cada 5 a 7 dias).
+- Si humedad ambiental > 85% entonces programar inspeccion de hongos y manejo preventivo.
+- Si progreso >= 75% y fecha esperada de cosecha cercana entonces activar pre-cosecha.
+
+3) Acciones por tipo de evento
+- Siembra: verificar humedad, profundidad, densidad y estado de semilla.
+- Mantenimiento: deshierbe, acolchado, limpieza de surcos, revision visual.
+- Riego: aplicar litros objetivo por cultivo; registrar antes/despues de humedad.
+- Fertilizacion: ajustar NPK por etapa y sintomas observados.
+- Monitoreo: capturar temperatura, humedad de suelo, humedad del aire, luz y observaciones.
+- Plagas: registrar incidencia, severidad y accion de control.
+- Cosecha: validar madurez fisiologica, estado sanitario y ventana climatica.
+
+4) Criterios de fecha
+- Fecha base: planted_at del cultivo.
+- day_offset: dias transcurridos desde la siembra para ejecutar una labor.
+- Si la fecha ya paso, puede omitirse o marcarse como vencida segun politica.
+- Eventos duplicados (mismo cultivo, titulo y fecha) no deben recrearse.
+
+5) Reglas de escritura para bots agronomicos
+- Responder solo sobre cultivos activos del usuario.
+- Si la consulta pide "maiz", no mezclar respuesta principal con frijol/calabaza salvo que el usuario lo pida.
+- Priorizar recomendaciones accionables (que hacer, cuando, y con que umbral).
+- Incluir fundamento (sensor local + contexto regional + regla aplicada).
+- Evitar recomendaciones ambiguas sin umbral cuantitativo.
+
+6) Trazabilidad esperada
+- Cada evento generado debe contener:
+  - motivo de programacion,
+  - condicion de activacion,
+  - accion esperada al llegar la fecha,
+  - referencia documental (manual_maiz_milpa_2026 o manual_operativo_milpa_2026).

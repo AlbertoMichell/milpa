@@ -1,0 +1,10 @@
+/* Navbar superior en páginas app (posición horizontal la fija milpa-shell.js inline) */
+.milpa-page .main-content {
+  padding-top: 56px;
+  min-height: 100vh;
+}
+.navbar.milpa-top-navbar {
+  position: fixed;
+  top: 0;
+  z-index: 999;
+}

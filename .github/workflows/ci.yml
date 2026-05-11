@@ -182,10 +182,10 @@ jobs:
           mypy api/ core/ --ignore-missing-imports || true
 
   # ────────────────────────────────────────────────────────────────
-  # JOB 5: Tests del Presenter (TypeScript)
+  # JOB 5: Presenter — npm ci + tsc emit (dist debe ser buildable en CI)
   # ────────────────────────────────────────────────────────────────
   test-presenter:
-    name: Presenter Tests (TypeScript)
+    name: Presenter Build (TypeScript → dist)
     runs-on: ubuntu-latest
     
     steps:
@@ -197,15 +197,16 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: milpa_presenter/package.json
+          cache-dependency-path: milpa_presenter/package-lock.json
       
       - name: Install dependencies
         working-directory: ./milpa_presenter
         run: npm ci
       
-      - name: Run TypeScript compiler check
+      # Emite dist/ y falla si TypeScript no compila (evita servir src desactualizado vs dist).
+      - name: Build presenter (npm run build → dist)
         working-directory: ./milpa_presenter
-        run: npx tsc --noEmit
+        run: npm run build
       
       - name: Run tests (if exist)
         working-directory: ./milpa_presenter

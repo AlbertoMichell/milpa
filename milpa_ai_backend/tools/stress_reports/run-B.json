@@ -1,0 +1,457 @@
+{
+  "label": "run-B",
+  "health": {
+    "ok": true
+  },
+  "ingest": {
+    "status": "ok",
+    "doc_id": "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+    "title": "MILPA stress test sintético",
+    "stored_path": "C:\\Users\\Usuario\\Downloads\\milpa\\milpa_ai_backend\\data\\documents\\1778086544__stress_pdf_milpa.pdf",
+    "pages": 5,
+    "fragments": 17,
+    "tables": 9,
+    "indexed": 17,
+    "_http_status": 200,
+    "_elapsed_ms": 7768
+  },
+  "db": {
+    "doc_id": "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+    "fragments_by_page": [
+      {
+        "page_start": 1,
+        "source": "native",
+        "n": 2,
+        "chars": 1476
+      },
+      {
+        "page_start": 1,
+        "source": "table",
+        "n": 3,
+        "chars": 2106
+      },
+      {
+        "page_start": 2,
+        "source": "native",
+        "n": 2,
+        "chars": 2069
+      },
+      {
+        "page_start": 2,
+        "source": "table",
+        "n": 1,
+        "chars": 2140
+      },
+      {
+        "page_start": 3,
+        "source": "native",
+        "n": 2,
+        "chars": 1942
+      },
+      {
+        "page_start": 3,
+        "source": "table",
+        "n": 1,
+        "chars": 1985
+      },
+      {
+        "page_start": 4,
+        "source": "native",
+        "n": 1,
+        "chars": 542
+      },
+      {
+        "page_start": 4,
+        "source": "table",
+        "n": 2,
+        "chars": 1076
+      },
+      {
+        "page_start": 5,
+        "source": "native",
+        "n": 1,
+        "chars": 635
+      },
+      {
+        "page_start": 5,
+        "source": "table",
+        "n": 2,
+        "chars": 836
+      }
+    ],
+    "fragment_summary": {
+      "n_frag": 17,
+      "chars": 14807,
+      "n_native": 8,
+      "n_ocr": 0
+    },
+    "tables": {
+      "n_tables": 9,
+      "csv_bytes": 7801
+    },
+    "canary_in_fragments": [
+      {
+        "id": "two_col",
+        "needle": "AGUACATILLO_DOSCOLUMNAS_CANARIO_4321",
+        "hits": [
+          {
+            "fragment_id": "8bbee2a9620646638a63265b81f70c9e",
+            "page_start": 2,
+            "chars": 1197,
+            "source": "native"
+          },
+          {
+            "fragment_id": "518ee7c5f98c4a0e8166350d6949d6f8",
+            "page_start": 2,
+            "chars": 2140,
+            "source": "table"
+          }
+        ]
+      },
+      {
+        "id": "three_col",
+        "needle": "PETUNIA_TRESCOLUMNAS_CANARIO_8765",
+        "hits": [
+          {
+            "fragment_id": "0338d3ed5daf4ddb85239b7eadfbf2dd",
+            "page_start": 3,
+            "chars": 1165,
+            "source": "native"
+          }
+        ]
+      },
+      {
+        "id": "table_yield",
+        "needle": "JITOMATE_TABLA_RENDIMIENTO_CANARIO_RBR42",
+        "hits": [
+          {
+            "fragment_id": "2bd74ead390a46b190054a3957655a6b",
+            "page_start": 1,
+            "chars": 281,
+            "source": "native"
+          },
+          {
+            "fragment_id": "21107376f0154f8fa21b06695fdb47c2",
+            "page_start": 1,
+            "chars": 411,
+            "source": "table"
+          },
+          {
+            "fragment_id": "bf5699835ed7474dbd327748427a7c13",
+            "page_start": 1,
+            "chars": 506,
+            "source": "table"
+          }
+        ]
+      },
+      {
+        "id": "table_dense",
+        "needle": "PIPILA_TABLA_DENSA_CANARIO_QWQ73",
+        "hits": [
+          {
+            "fragment_id": "7044a05db9304361a2e9425da645e8bf",
+            "page_start": 4,
+            "chars": 542,
+            "source": "native"
+          },
+          {
+            "fragment_id": "bb025834c7154a158539809314a016c2",
+            "page_start": 4,
+            "chars": 589,
+            "source": "table"
+          }
+        ]
+      },
+      {
+        "id": "chart_legend",
+        "needle": "CHIPILIN_FIGURA_CANARIO_LMN15",
+        "hits": [
+          {
+            "fragment_id": "89ed23e33f79454f90e7d8cb668bd9dc",
+            "page_start": 5,
+            "chars": 635,
+            "source": "native"
+          },
+          {
+            "fragment_id": "040aa4e2bd524ddab253c3b08f3162c9",
+            "page_start": 5,
+            "chars": 775,
+            "source": "table"
+          }
+        ]
+      },
+      {
+        "id": "list_item",
+        "needle": "MEZQUITE_LISTA_CANARIO_KP9",
+        "hits": [
+          {
+            "fragment_id": "30a87290a38d4afe8a90c6725aee5573",
+            "page_start": 1,
+            "chars": 1195,
+            "source": "native"
+          },
+          {
+            "fragment_id": "5dad06b3284e43f8a803d305a178292b",
+            "page_start": 1,
+            "chars": 1189,
+            "source": "table"
+          },
+          {
+            "fragment_id": "bf5699835ed7474dbd327748427a7c13",
+            "page_start": 1,
+            "chars": 506,
+            "source": "table"
+          }
+        ]
+      },
+      {
+        "id": "footer_real",
+        "needle": "PIE_REAL_NO_REPETIDO_99",
+        "hits": [
+          {
+            "fragment_id": "89ed23e33f79454f90e7d8cb668bd9dc",
+            "page_start": 5,
+            "chars": 635,
+            "source": "native"
+          },
+          {
+            "fragment_id": "040aa4e2bd524ddab253c3b08f3162c9",
+            "page_start": 5,
+            "chars": 775,
+            "source": "table"
+          }
+        ]
+      }
+    ]
+  },
+  "queries": [
+    {
+      "canary_id": "two_col",
+      "mode": "hybrid",
+      "elapsed_ms": 53,
+      "insufficient_evidence": false,
+      "rank_of_canary": 0,
+      "top_scores": [
+        0.02419,
+        0.02154,
+        0.01818,
+        0.01791
+      ],
+      "doc_id_in_top": [
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "two_col",
+      "mode": "lex",
+      "elapsed_ms": 28,
+      "insufficient_evidence": true,
+      "rank_of_canary": -1,
+      "top_scores": [],
+      "doc_id_in_top": [],
+      "canary_in_top_doc": false
+    },
+    {
+      "canary_id": "three_col",
+      "mode": "hybrid",
+      "elapsed_ms": 12,
+      "insufficient_evidence": false,
+      "rank_of_canary": 1,
+      "top_scores": [
+        0.02131,
+        0.02097,
+        0.02059,
+        0.01562
+      ],
+      "doc_id_in_top": [
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "three_col",
+      "mode": "lex",
+      "elapsed_ms": 9,
+      "insufficient_evidence": true,
+      "rank_of_canary": -1,
+      "top_scores": [],
+      "doc_id_in_top": [],
+      "canary_in_top_doc": false
+    },
+    {
+      "canary_id": "table_yield",
+      "mode": "hybrid",
+      "elapsed_ms": 14,
+      "insufficient_evidence": false,
+      "rank_of_canary": 0,
+      "top_scores": [
+        0.02218,
+        0.01758,
+        0.01538
+      ],
+      "doc_id_in_top": [
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "table_yield",
+      "mode": "lex",
+      "elapsed_ms": 21,
+      "insufficient_evidence": true,
+      "rank_of_canary": -1,
+      "top_scores": [],
+      "doc_id_in_top": [],
+      "canary_in_top_doc": false
+    },
+    {
+      "canary_id": "table_dense",
+      "mode": "hybrid",
+      "elapsed_ms": 36,
+      "insufficient_evidence": false,
+      "rank_of_canary": 0,
+      "top_scores": [
+        0.0202,
+        0.01882,
+        0.01716,
+        0.01667
+      ],
+      "doc_id_in_top": [
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "table_dense",
+      "mode": "lex",
+      "elapsed_ms": 26,
+      "insufficient_evidence": true,
+      "rank_of_canary": -1,
+      "top_scores": [],
+      "doc_id_in_top": [],
+      "canary_in_top_doc": false
+    },
+    {
+      "canary_id": "chart_legend",
+      "mode": "hybrid",
+      "elapsed_ms": 33,
+      "insufficient_evidence": false,
+      "rank_of_canary": 0,
+      "top_scores": [
+        0.04767,
+        0.02381,
+        0.01912,
+        0.01587,
+        0.01562
+      ],
+      "doc_id_in_top": [
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+        "ba43b7f67a3bd825e258b1a0999894d4b97f75fca8810201647e83ce835e719c",
+        "ba43b7f67a3bd825e258b1a0999894d4b97f75fca8810201647e83ce835e719c"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "chart_legend",
+      "mode": "lex",
+      "elapsed_ms": 29,
+      "insufficient_evidence": false,
+      "rank_of_canary": 0,
+      "top_scores": [
+        29.62045,
+        28.14086
+      ],
+      "doc_id_in_top": [
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "list_item",
+      "mode": "hybrid",
+      "elapsed_ms": 31,
+      "insufficient_evidence": false,
+      "rank_of_canary": 0,
+      "top_scores": [
+        0.02381,
+        0.01642,
+        0.01618,
+        0.01562
+      ],
+      "doc_id_in_top": [
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+        "dbef9bf5e83542af778f6c3f0a8707764b8065e1640c94b77f1c1de7cb49b60d",
+        "696c591e4a3dd636e1634bfa3a9ae7b473d0c55464c0af80b8b3acc1c00e6efd",
+        "696c591e4a3dd636e1634bfa3a9ae7b473d0c55464c0af80b8b3acc1c00e6efd"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "list_item",
+      "mode": "lex",
+      "elapsed_ms": 7,
+      "insufficient_evidence": true,
+      "rank_of_canary": -1,
+      "top_scores": [],
+      "doc_id_in_top": [],
+      "canary_in_top_doc": false
+    },
+    {
+      "canary_id": "footer_real",
+      "mode": "hybrid",
+      "elapsed_ms": 12,
+      "insufficient_evidence": false,
+      "rank_of_canary": 0,
+      "top_scores": [
+        0.02083,
+        0.01776,
+        0.01747,
+        0.0172,
+        0.01693
+      ],
+      "doc_id_in_top": [
+        "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+        "868aa94971fef04a03e87b79e579c3f3d69521b1f1b85124288b09ccd1ffa9c9",
+        "868aa94971fef04a03e87b79e579c3f3d69521b1f1b85124288b09ccd1ffa9c9",
+        "868aa94971fef04a03e87b79e579c3f3d69521b1f1b85124288b09ccd1ffa9c9",
+        "868aa94971fef04a03e87b79e579c3f3d69521b1f1b85124288b09ccd1ffa9c9"
+      ],
+      "canary_in_top_doc": true
+    },
+    {
+      "canary_id": "footer_real",
+      "mode": "lex",
+      "elapsed_ms": 9,
+      "insufficient_evidence": true,
+      "rank_of_canary": -1,
+      "top_scores": [],
+      "doc_id_in_top": [],
+      "canary_in_top_doc": false
+    }
+  ],
+  "summary": {
+    "doc_id": "6fe73c71d3bb80ce03c2750adf272ca11991b1729c38502e67d097c1782fc6b4",
+    "ingest_status": 200,
+    "ingest_elapsed_ms": 7768,
+    "pages": 5,
+    "fragments": 17,
+    "tables": 9,
+    "indexed": 17,
+    "canary_recall_in_top": "8/14"
+  }
+}

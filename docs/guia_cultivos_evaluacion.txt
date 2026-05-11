@@ -1,0 +1,200 @@
+GUÍA COMPLETA DE CULTIVOS PARA EVALUACIÓN DEL SISTEMA RAG
+=========================================================
+
+SECCIÓN 1: CARACTERÍSTICAS DEL MAÍZ
+
+El maíz (Zea mays) es un cultivo de origen mesoamericano ampliamente cultivado en todo el mundo.
+
+COLORES Y VARIEDADES DEL MAÍZ:
+El maíz comercial más común presenta granos de color amarillo dorado. Existen variedades de maíz blanco utilizadas principalmente para tortillas. El maíz morado se cultiva en zonas andinas para preparar chicha morada. El maíz azul es una variedad tradicional de México rica en antocianinas.
+
+ALTURA DE LA PLANTA:
+El maíz alcanza una altura promedio de 2.5 metros en condiciones óptimas de cultivo. Las variedades comerciales modernas pueden crecer hasta 3 metros, mientras que las variedades criollas tradicionales oscilan entre 1.8 y 2.2 metros.
+
+CICLO DE VIDA:
+El maíz tiene un ciclo vegetativo de 120 días desde la siembra hasta la cosecha. Este periodo se divide en:
+- Germinación: 7-10 días
+- Crecimiento vegetativo: 45-50 días
+- Floración: 60-70 días
+- Maduración: 100-120 días
+
+REQUERIMIENTOS DE AGUA:
+El maíz necesita un total de 600 mm de precipitación durante todo su ciclo. Los periodos críticos son la floración y el llenado de grano, donde requiere al menos 150 mm por mes.
+
+
+SECCIÓN 2: CARACTERÍSTICAS DEL FRIJOL
+======================================
+
+El frijol (Phaseolus vulgaris) es una leguminosa fundamental en la alimentación latinoamericana.
+
+COLORES Y VARIEDADES:
+- El frijol negro es la variedad más cultivada en México y Centroamérica
+- El frijol pinto presenta manchas color café sobre fondo beige
+- El frijol rojo es común en Nicaragua y Costa Rica
+- El frijol blanco o alubia se usa en cocidos españoles
+
+ALTURA DE LA PLANTA:
+Las variedades de frijol arbustivo alcanzan una altura de 50 centímetros. Las variedades de enrame o guía pueden trepar hasta 2 metros de altura cuando cuentan con tutores adecuados.
+
+CICLO DE VIDA:
+El frijol completa su ciclo en 90 días desde siembra hasta cosecha. Las etapas son:
+- Emergencia: 5-8 días
+- Primera flor: 30-35 días
+- Formación de vainas: 50-60 días
+- Madurez fisiológica: 85-90 días
+
+FIJACIÓN DE NITRÓGENO:
+El frijol puede fijar 80 kilogramos de nitrógeno por hectárea gracias a la simbiosis con bacterias Rhizobium. Esta capacidad reduce la necesidad de fertilización nitrogenada química hasta en un 60%.
+
+
+SECCIÓN 3: FERTILIZACIÓN DEL MAÍZ
+==================================
+
+NITRÓGENO (N):
+El maíz requiere 180 kilogramos de nitrógeno por hectárea para rendimientos óptimos. La aplicación se divide en:
+- 60 kg/ha al momento de la siembra
+- 60 kg/ha a los 30 días (primera escarda)
+- 60 kg/ha a los 50 días (antes de floración)
+
+FÓSFORO (P₂O₅):
+La dosis recomendada de fósforo para maíz es de 90 kilogramos de P₂O₅ por hectárea. Todo el fósforo se aplica en una sola dosis al momento de la siembra, ya que tiene poca movilidad en el suelo.
+
+POTASIO (K₂O):
+El maíz extrae 120 kilogramos de K₂O por hectárea durante su ciclo completo. En suelos con bajo contenido de potasio, se recomienda aplicar 100 kg/ha de K₂O antes de la siembra.
+
+AZUFRE (S):
+El maíz necesita 25 kilogramos de azufre elemental por hectárea. La deficiencia de azufre causa amarillamiento de hojas jóvenes y reduce la síntesis de proteínas en el grano.
+
+
+SECCIÓN 4: FERTILIZACIÓN DEL FRIJOL
+====================================
+
+NITRÓGENO (N):
+El frijol requiere solo 40 kilogramos de nitrógeno por hectárea debido a su capacidad de fijación biológica. Una aplicación excesiva de nitrógeno causa crecimiento vegetativo excesivo y reduce la formación de vainas.
+
+FÓSFORO (P₂O₅):
+La dosis óptima de fósforo para frijol es de 60 kilogramos de P₂O₅ por hectárea. El fósforo estimula el desarrollo radicular y mejora la nodulación con Rhizobium.
+
+POTASIO (K₂O):
+El frijol extrae 70 kilogramos de K₂O por hectárea. En suelos arcillosos con buen contenido de potasio, la aplicación externa puede reducirse a 30 kg/ha.
+
+ZINC (Zn):
+El frijol es particularmente sensible a la deficiencia de zinc. La aplicación foliar de 2 kilogramos de zinc por hectárea corrige síntomas de clorosis intervenal y mejora el cuajado de vainas.
+
+
+SECCIÓN 5: PLAGAS Y ENFERMEDADES DEL MAÍZ
+==========================================
+
+GUSANO COGOLLERO (Spodoptera frugiperda):
+El gusano cogollero es la plaga más destructiva del maíz en América Latina. Las larvas pueden causar pérdidas de hasta 60% del rendimiento si no se controla. El umbral económico es de 15% de plantas afectadas.
+
+CONTROL DEL GUSANO COGOLLERO:
+- Control biológico con Trichogramma pretiosum (liberación de 100,000 avispas por hectárea)
+- Control químico con clorpirifos a dosis de 1.5 litros por hectárea
+- Resistencia varietal: híbridos Bt expresan proteína Cry1Ab
+
+PUDRICIÓN DE MAZORCA (Fusarium graminearum):
+Esta enfermedad fúngica aparece cuando la humedad relativa supera el 85% durante la floración. Produce micotoxinas (fumonisinas) que contaminan el grano. La rotación de cultivos reduce la incidencia en un 40%.
+
+
+SECCIÓN 6: PLAGAS Y ENFERMEDADES DEL FRIJOL
+============================================
+
+MOSCA BLANCA (Bemisia tabaci):
+La mosca blanca transmite el virus del mosaico dorado del frijol. Una población de 5 adultos por planta es suficiente para causar infección viral. El uso de variedades resistentes reduce las pérdidas en 70%.
+
+ROYA DEL FRIJOL (Uromyces appendiculatus):
+La roya aparece como pústulas color naranja en el envés de las hojas. Las condiciones favorables son temperatura de 22°C y humedad superior a 90%. Las aplicaciones preventivas de azoxystrobina a dosis de 0.5 litros por hectárea controlan efectivamente la enfermedad.
+
+ANTRACNOSIS (Colletotrichum lindemuthianum):
+Esta enfermedad causa lesiones negras hundidas en vainas y tallos. La semilla certificada libre de patógenos reduce la incidencia en 85%. La rotación con cereales por 2 años elimina el inóculo del suelo.
+
+
+SECCIÓN 7: MANEJO DE SUELOS
+============================
+
+pH ÓPTIMO PARA MAÍZ:
+El maíz se desarrolla mejor en suelos con pH entre 6.0 y 7.0. En suelos ácidos con pH inferior a 5.5, se debe aplicar cal agrícola a razón de 2 toneladas por hectárea para corregir la acidez.
+
+pH ÓPTIMO PARA FRIJOL:
+El frijol prefiere suelos ligeramente ácidos con pH entre 6.0 y 6.5. La nodulación de Rhizobium se inhibe en suelos con pH inferior a 5.0 o superior a 8.0.
+
+MATERIA ORGÁNICA:
+Un suelo agrícola productivo debe contener al menos 3% de materia orgánica. La incorporación de 10 toneladas de estiércol bovino por hectárea aumenta el contenido de materia orgánica en 0.5% anualmente.
+
+DENSIDAD APARENTE:
+La densidad aparente óptima para cultivos anuales es de 1.2 gramos por centímetro cúbico. Valores superiores a 1.6 g/cm³ indican compactación severa que limita el desarrollo radicular.
+
+
+SECCIÓN 8: SISTEMAS DE RIEGO
+=============================
+
+RIEGO POR GOTEO EN MAÍZ:
+El riego por goteo en maíz utiliza cintas con goteros espaciados cada 30 centímetros. La lámina de riego recomendada es de 25 milímetros cada 3 días durante la floración. Este sistema ahorra 40% de agua comparado con riego por gravedad.
+
+RIEGO POR ASPERSIÓN EN FRIJOL:
+El frijol responde bien al riego por aspersión con láminas de 20 milímetros cada 5 días. El riego excesivo durante la floración causa aborto de flores y reduce el cuajado de vainas en un 30%.
+
+
+SECCIÓN 9: COSECHA Y POSTCOSECHA
+=================================
+
+MOMENTO DE COSECHA DEL MAÍZ:
+El maíz está listo para cosechar cuando los granos alcanzan 18% de humedad. A este nivel de humedad, los granos presentan una capa negra en la base y se desprenden fácilmente de la mazorca.
+
+SECADO DEL MAÍZ:
+El maíz cosechado debe secarse hasta 14% de humedad para almacenamiento seguro. El secado natural al sol toma 7 días, mientras que el secado artificial con aire forzado a 40°C toma 24 horas.
+
+MOMENTO DE COSECHA DEL FRIJOL:
+El frijol se cosecha cuando las vainas están completamente secas y los granos tienen 16% de humedad. Cosechar con humedad superior causa manchado del grano y pérdida de calidad comercial.
+
+ALMACENAMIENTO DEL FRIJOL:
+El frijol debe almacenarse en silos con humedad inferior a 13%. A este nivel de humedad, el gorgojo mexicano del frijol (Zabrotes subfasciatus) no puede completar su ciclo reproductivo.
+
+
+SECCIÓN 10: RENDIMIENTOS ESPERADOS
+===================================
+
+RENDIMIENTO DEL MAÍZ:
+En condiciones de temporal (lluvia) el maíz produce 4 toneladas por hectárea. Con riego y fertilización adecuada, el rendimiento se incrementa a 8 toneladas por hectárea. Los híbridos modernos bajo manejo intensivo alcanzan 12 toneladas por hectárea.
+
+RENDIMIENTO DEL FRIJOL:
+El frijol de temporal produce 1.2 toneladas por hectárea en promedio. Con riego complementario, el rendimiento aumenta a 2.0 toneladas por hectárea. Las variedades mejoradas bajo riego y control de plagas pueden alcanzar 2.5 toneladas por hectárea.
+
+RELACIÓN COSTO-BENEFICIO MAÍZ:
+El cultivo de maíz con tecnología media tiene un costo de producción de $15,000 pesos por hectárea. Con rendimiento de 8 toneladas y precio de $4,000 por tonelada, el ingreso bruto es $32,000 pesos, generando una utilidad neta de $17,000 pesos por hectárea.
+
+RELACIÓN COSTO-BENEFICIO FRIJOL:
+El frijol tiene un costo de producción de $18,000 pesos por hectárea. Con rendimiento de 2 toneladas y precio de $15,000 por tonelada, el ingreso bruto es $30,000 pesos, generando una utilidad neta de $12,000 pesos por hectárea.
+
+
+SECCIÓN 11: ROTACIÓN DE CULTIVOS
+=================================
+
+SECUENCIA MAÍZ-FRIJOL:
+La rotación maíz-frijol es benéfica porque el frijol fija nitrógeno que aprovecha el maíz del siguiente ciclo. Esta rotación reduce la aplicación de fertilizante nitrogenado en 50 kilogramos por hectárea.
+
+BENEFICIOS DE LA ROTACIÓN:
+- Reducción de plagas específicas en 45%
+- Mejora de estructura del suelo
+- Incremento de materia orgánica de 0.3% por año
+- Reducción de enfermedades del suelo en 60%
+
+CULTIVO DE COBERTURA:
+La siembra de avena como cultivo de cobertura después de maíz aporta 3 toneladas de materia seca por hectárea. Su incorporación al suelo aumenta la retención de humedad en 15%.
+
+
+SECCIÓN 12: CAMBIO CLIMÁTICO Y ADAPTACIÓN
+==========================================
+
+TEMPERATURA ÓPTIMA MAÍZ:
+El maíz crece óptimamente a temperaturas entre 25°C y 30°C. Temperaturas superiores a 35°C durante la floración causan esterilidad del polen y reducen el cuajado de grano en 40%.
+
+TEMPERATURA ÓPTIMA FRIJOL:
+El frijol prefiere temperaturas entre 18°C y 24°C. Temperaturas nocturnas superiores a 20°C durante la floración reducen la formación de vainas en 25%.
+
+ESTRÉS HÍDRICO:
+El maíz es sensible al estrés hídrico durante la etapa de floración. Una sequía de 15 días en este periodo reduce el rendimiento en 50%. El frijol es más sensible, una sequía de 10 días durante floración reduce rendimiento en 60%.
+
+FIN DEL DOCUMENTO
+=================

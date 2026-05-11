@@ -1,0 +1,443 @@
+{
+  "label": "multi-formato",
+  "health": {
+    "ok": true
+  },
+  "results": {
+    "pdf": {
+      "doc_id": "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+      "ingest_status": 200,
+      "elapsed_ms": 10045,
+      "pages": 5,
+      "fragments": 33,
+      "tables": 9,
+      "indexed": 33,
+      "bbox_audit": {
+        "kind": "pdf",
+        "fragments": 33,
+        "with_bbox": 33
+      },
+      "canary_recall": "14/14",
+      "queries": [
+        {
+          "id": "two_col",
+          "mode": "hybrid",
+          "in_top": true,
+          "needle": "AGUACATILLO_DOSCOLUMNAS_CANARIO_4321",
+          "doc_id_in_top": [
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "two_col",
+          "mode": "lex",
+          "in_top": true,
+          "needle": "AGUACATILLO_DOSCOLUMNAS_CANARIO_4321",
+          "doc_id_in_top": [
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "three_col",
+          "mode": "hybrid",
+          "in_top": true,
+          "needle": "PETUNIA_TRESCOLUMNAS_CANARIO_8765",
+          "doc_id_in_top": [
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "three_col",
+          "mode": "lex",
+          "in_top": true,
+          "needle": "PETUNIA_TRESCOLUMNAS_CANARIO_8765",
+          "doc_id_in_top": [
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "table_yield",
+          "mode": "hybrid",
+          "in_top": true,
+          "needle": "JITOMATE_TABLA_RENDIMIENTO_CANARIO_RBR42",
+          "doc_id_in_top": [
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "table_yield",
+          "mode": "lex",
+          "in_top": true,
+          "needle": "JITOMATE_TABLA_RENDIMIENTO_CANARIO_RBR42",
+          "doc_id_in_top": [
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "table_dense",
+          "mode": "hybrid",
+          "in_top": true,
+          "needle": "PIPILA_TABLA_DENSA_CANARIO_QWQ73",
+          "doc_id_in_top": [
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "table_dense",
+          "mode": "lex",
+          "in_top": true,
+          "needle": "PIPILA_TABLA_DENSA_CANARIO_QWQ73",
+          "doc_id_in_top": [
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "chart_legend",
+          "mode": "hybrid",
+          "in_top": true,
+          "needle": "CHIPILIN_FIGURA_CANARIO_LMN15",
+          "doc_id_in_top": [
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "chart_legend",
+          "mode": "lex",
+          "in_top": true,
+          "needle": "CHIPILIN_FIGURA_CANARIO_LMN15",
+          "doc_id_in_top": [
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "list_item",
+          "mode": "hybrid",
+          "in_top": true,
+          "needle": "MEZQUITE_LISTA_CANARIO_KP9",
+          "doc_id_in_top": [
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "list_item",
+          "mode": "lex",
+          "in_top": true,
+          "needle": "MEZQUITE_LISTA_CANARIO_KP9",
+          "doc_id_in_top": [
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "footer_real",
+          "mode": "hybrid",
+          "in_top": true,
+          "needle": "PIE_REAL_NO_REPETIDO_99",
+          "doc_id_in_top": [
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "footer_real",
+          "mode": "lex",
+          "in_top": true,
+          "needle": "PIE_REAL_NO_REPETIDO_99",
+          "doc_id_in_top": [
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        }
+      ]
+    },
+    "docx": {
+      "doc_id": "0bc66e763cf630ddf35dc303bea3afc0a27f83bfe7cc8d8f1e5a44ae349c3a14",
+      "ingest_status": 200,
+      "elapsed_ms": 4810,
+      "pages": 3,
+      "fragments": 4,
+      "tables": 1,
+      "indexed": 4,
+      "bbox_audit": {
+        "kind": "docx",
+        "fragments": 4,
+        "with_bbox": 0
+      },
+      "canary_recall": "8/8",
+      "queries": [
+        {
+          "id": "intro",
+          "mode": "hybrid",
+          "in_top": true,
+          "needle": "ROBLE_DOCX_INTRO_CANARIO_AB1",
+          "doc_id_in_top": [
+            "0bc66e763cf630ddf35dc303bea3afc0a27f83bfe7cc8d8f1e5a44ae349c3a14",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "intro",
+          "mode": "lex",
+          "in_top": true,
+          "needle": "ROBLE_DOCX_INTRO_CANARIO_AB1",
+          "doc_id_in_top": [
+            "0bc66e763cf630ddf35dc303bea3afc0a27f83bfe7cc8d8f1e5a44ae349c3a14",
+            "0bc66e763cf630ddf35dc303bea3afc0a27f83bfe7cc8d8f1e5a44ae349c3a14",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "list",
+          "mode": "hybrid",
+          "in_top": true,
+          "needle": "ALAMO_DOCX_LISTA_CANARIO_CD2",
+          "doc_id_in_top": [
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "list",
+          "mode": "lex",
+          "in_top": true,
+          "needle": "ALAMO_DOCX_LISTA_CANARIO_CD2",
+          "doc_id_in_top": [
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "table",
+          "mode": "hybrid",
+          "in_top": true,
+          "needle": "ENCINA_DOCX_TABLA_CANARIO_EF3",
+          "doc_id_in_top": [
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "0bc66e763cf630ddf35dc303bea3afc0a27f83bfe7cc8d8f1e5a44ae349c3a14",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "table",
+          "mode": "lex",
+          "in_top": true,
+          "needle": "ENCINA_DOCX_TABLA_CANARIO_EF3",
+          "doc_id_in_top": [
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "manage",
+          "mode": "hybrid",
+          "in_top": true,
+          "needle": "PINO_DOCX_MANEJO_CANARIO_GH4",
+          "doc_id_in_top": [
+            "0bc66e763cf630ddf35dc303bea3afc0a27f83bfe7cc8d8f1e5a44ae349c3a14",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "manage",
+          "mode": "lex",
+          "in_top": true,
+          "needle": "PINO_DOCX_MANEJO_CANARIO_GH4",
+          "doc_id_in_top": [
+            "0bc66e763cf630ddf35dc303bea3afc0a27f83bfe7cc8d8f1e5a44ae349c3a14",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        }
+      ]
+    },
+    "md": {
+      "doc_id": "cd0635db501f78a1164948a6da56e1fd3f8d736859a48299ea8a38b40a2e42c5",
+      "ingest_status": 200,
+      "elapsed_ms": 4659,
+      "pages": 3,
+      "fragments": 3,
+      "tables": 0,
+      "indexed": 3,
+      "bbox_audit": {
+        "kind": "md",
+        "fragments": 3,
+        "with_bbox": 0
+      },
+      "canary_recall": "10/10",
+      "queries": [
+        {
+          "id": "intro_h1",
+          "mode": "hybrid",
+          "in_top": true,
+          "needle": "SAUCE_MD_INTRO_CANARIO_IJ5",
+          "doc_id_in_top": [
+            "cd0635db501f78a1164948a6da56e1fd3f8d736859a48299ea8a38b40a2e42c5",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "intro_h1",
+          "mode": "lex",
+          "in_top": true,
+          "needle": "SAUCE_MD_INTRO_CANARIO_IJ5",
+          "doc_id_in_top": [
+            "cd0635db501f78a1164948a6da56e1fd3f8d736859a48299ea8a38b40a2e42c5",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "0bc66e763cf630ddf35dc303bea3afc0a27f83bfe7cc8d8f1e5a44ae349c3a14"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "h2_cult",
+          "mode": "hybrid",
+          "in_top": true,
+          "needle": "TARANGA_MD_CULTIVOS_CANARIO_KL6",
+          "doc_id_in_top": [
+            "cd0635db501f78a1164948a6da56e1fd3f8d736859a48299ea8a38b40a2e42c5",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "h2_cult",
+          "mode": "lex",
+          "in_top": true,
+          "needle": "TARANGA_MD_CULTIVOS_CANARIO_KL6",
+          "doc_id_in_top": [
+            "cd0635db501f78a1164948a6da56e1fd3f8d736859a48299ea8a38b40a2e42c5",
+            "0bc66e763cf630ddf35dc303bea3afc0a27f83bfe7cc8d8f1e5a44ae349c3a14",
+            "0bc66e763cf630ddf35dc303bea3afc0a27f83bfe7cc8d8f1e5a44ae349c3a14"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "page2",
+          "mode": "hybrid",
+          "in_top": true,
+          "needle": "CIPRES_MD_MANEJO_CANARIO_MN7",
+          "doc_id_in_top": [
+            "cd0635db501f78a1164948a6da56e1fd3f8d736859a48299ea8a38b40a2e42c5",
+            "0bc66e763cf630ddf35dc303bea3afc0a27f83bfe7cc8d8f1e5a44ae349c3a14",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "page2",
+          "mode": "lex",
+          "in_top": true,
+          "needle": "CIPRES_MD_MANEJO_CANARIO_MN7",
+          "doc_id_in_top": [
+            "cd0635db501f78a1164948a6da56e1fd3f8d736859a48299ea8a38b40a2e42c5",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "fert",
+          "mode": "hybrid",
+          "in_top": true,
+          "needle": "FRESNO_MD_FERTILIZACION_CANARIO_OP8",
+          "doc_id_in_top": [
+            "cd0635db501f78a1164948a6da56e1fd3f8d736859a48299ea8a38b40a2e42c5",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "fert",
+          "mode": "lex",
+          "in_top": true,
+          "needle": "FRESNO_MD_FERTILIZACION_CANARIO_OP8",
+          "doc_id_in_top": [
+            "cd0635db501f78a1164948a6da56e1fd3f8d736859a48299ea8a38b40a2e42c5",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "page3",
+          "mode": "hybrid",
+          "in_top": true,
+          "needle": "JACARANDA_MD_COSECHA_CANARIO_QR9",
+          "doc_id_in_top": [
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        },
+        {
+          "id": "page3",
+          "mode": "lex",
+          "in_top": true,
+          "needle": "JACARANDA_MD_COSECHA_CANARIO_QR9",
+          "doc_id_in_top": [
+            "cd0635db501f78a1164948a6da56e1fd3f8d736859a48299ea8a38b40a2e42c5",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d",
+            "555b53986999bbe102e887018c9df803ae6e8fabfae9539a8cf273253c5bbe9d"
+          ],
+          "insufficient_evidence": false
+        }
+      ]
+    }
+  }
+}

@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/milpa-layout.css">
 
 <style>
     body {
@@ -268,7 +269,7 @@
     }
 </style>
 </head>
-<body>
+<body class="milpa-page" data-active-page="dashboard.html">
 
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1150;">
       <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
@@ -294,7 +295,7 @@
             <li class="sidebar-nav-item">
                 <a href="recomendaciones.html" class="sidebar-nav-link">
                     <i class="fas fa-lightbulb sidebar-icon"></i><span class="sidebar-text">Recomendaciones</span>
-                    <span class="badge bg-danger alert-badge">3</span>
+                    <span id="sidebarAlertBadge" class="badge bg-danger alert-badge" style="display:none">0</span>
                 </a>
             </li>
             <li class="sidebar-nav-item">
@@ -325,7 +326,7 @@
     </div>
 
     <div class="main-content" id="mainContent">
-        <nav class="navbar navbar-expand-lg navbar-light">
+        <nav class="navbar navbar-expand-lg navbar-light milpa-top-navbar">
             <div class="container-fluid">
                 <button class="btn btn-link text-secondary" id="sidebarToggle" aria-label="Toggle sidebar">
                     <i class="fas fa-bars fs-5"></i>
@@ -334,27 +335,24 @@
                     <div class="dropdown me-3">
                         <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-bell fs-5 text-success"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                2
+                            <span id="topNotificationsBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none">
+                                0
                                 <span class="visually-hidden">notificaciones no leídas</span>
                             </span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="notificationsDropdown">
+                        <ul id="notificationsList" class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="notificationsDropdown" style="min-width: 320px; max-height: 360px; overflow-y: auto;">
                             <li><h6 class="dropdown-header">Notificaciones</h6></li>
-                            <li><a class="dropdown-item" href="#">Nueva recomendación disponible</a></li>
-                            <li><a class="dropdown-item" href="#">Alerta de clima: posible sequía</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-primary" href="#">Ver todas</a></li>
+                            <li><span class="dropdown-item-text text-muted small">Cargando…</span></li>
                         </ul>
                     </div>
                     <div class="dropdown">
                         <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="elementos/Campesinos.jpg" alt="Usuario" class="rounded-circle me-2" width="32" height="32">
+                            <img id="navbarAvatar" src="elementos/Campesinos.jpg" alt="Usuario" class="rounded-circle me-2" width="32" height="32">
                             <span id="userDisplayName" class="d-none d-md-inline text-dark">Usuario</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="#">Perfil</a></li>
-                            <li><a class="dropdown-item" href="#">Configuración</a></li>
+                            <li><a class="dropdown-item" href="configuracion.html">Perfil</a></li>
+                            <li><a class="dropdown-item" href="configuracion.html">Configuración</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="#" id="logoutBtn">Cerrar sesión</a></li>
                         </ul>
@@ -366,11 +364,11 @@
         <div class="container-fluid px-md-4 px-3 py-4">
             <div class="row mb-4">
                 <div class="col-12">
-                    <div class="alert alert-danger d-flex align-items-center animated-fade-in" role="alert">
+                    <div id="dashboardAlert" class="alert alert-danger d-flex align-items-center animated-fade-in" role="alert">
                         <i class="fas fa-exclamation-triangle me-3 fs-4"></i>
                         <div>
-                            <h5 class="alert-heading mb-1">¡Alerta importante!</h5>
-                            <p class="mb-0">Se pronostica sequía para los próximos 3 días. Considera ajustar el riego.</p>
+                            <h5 id="dashboardAlertTitle" class="alert-heading mb-1">Cargando contexto agronómico...</h5>
+                            <p id="dashboardAlertBody" class="mb-0">Estamos recopilando cultivos, recomendaciones y condiciones regionales.</p>
                         </div>
                     </div>
                 </div>
@@ -380,21 +378,21 @@
                 <div class="col-lg-4 mb-4 mb-lg-0 profile-summary-card animated-fade-in">
                     <div class="card h-100">
                         <div class="card-body text-center d-flex flex-column justify-content-center">
-                            <img src="elementos/Campesinos.jpg" alt="Perfil" class="profile-img rounded-circle mb-3 mx-auto">
+                            <img id="profileAvatar" src="elementos/Campesinos.jpg" alt="Perfil" class="profile-img rounded-circle mb-3 mx-auto">
                             <h4 id="profileName" class="mb-1">Usuario</h4>
-                            <p class="text-muted small mb-3">Agricultor MILPA</p>
+                            <p id="profileSubtitle" class="text-muted small mb-3">Agricultor MILPA</p>
                             <div class="d-flex justify-content-around mb-3">
                                 <div class="text-center">
-                                    <h5 class="mb-0">12</h5><small class="text-muted">Cultivos</small>
+                                    <h5 id="summaryCropCount" class="mb-0">0</h5><small class="text-muted">Cultivos</small>
                                 </div>
                                 <div class="text-center">
-                                    <h5 class="mb-0">5</h5><small class="text-muted">Alertas</small>
+                                    <h5 id="summaryAlertCount" class="mb-0">0</h5><small class="text-muted">Alertas</small>
                                 </div>
                                 <div class="text-center">
-                                    <h5 class="mb-0">8</h5><small class="text-muted">Recomend.</small>
+                                    <h5 id="summaryRecommendationCount" class="mb-0">0</h5><small class="text-muted">Recomend.</small>
                                 </div>
                             </div>
-                            <button class="btn btn-outline-success btn-sm mt-auto">Editar perfil</button>
+                            <a href="configuracion.html" class="btn btn-outline-success btn-sm mt-auto">Editar perfil</a>
                         </div>
                     </div>
                 </div>
@@ -403,7 +401,7 @@
                     <div class="card h-100">
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-                                <h5 class="card-title mb-0">Ubicación de tu milpa</h5>
+                                <h5 id="mapTitle" class="card-title mb-0">Ubicación de tu milpa</h5>
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="mapDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="fas fa-layer-group me-1"></i> Capas
@@ -417,11 +415,12 @@
                             </div>
                             <div class="map-container-custom flex-grow-1">
                                 <div id="static-container">
-                                    <img src="https://static-maps.yandex.ru/1.x/?ll=-96.936838,19.653445&z=14&size=600,400&l=map&pt=-96.936838,19.653445,pm2rdl"
+                                    <img id="dashboardMapStatic" src="https://static-maps.yandex.ru/1.x/?ll=-96.936838,19.653445&z=14&size=600,400&l=map&pt=-96.936838,19.653445,pm2rdl"
                                          class="img-fluid w-100 h-100" style="object-fit: cover;" alt="Mapa Estático Yandex">
                                 </div>
                                 <div id="interactive-container">
                                     <iframe
+                                        id="dashboardMapInteractive"
                                         src="https://www.openstreetmap.org/export/embed.html?bbox=-96.9512%2C19.6478%2C-96.9225%2C19.6591&amp;layer=mapnik"
                                         style="width:100%; height:100%;"
                                         title="Mapa Interactivo OpenStreetMap"></iframe>
@@ -446,10 +445,11 @@
                             </button>
                         </div>
                         <div class="card-body p-0">
+                            <p class="small text-muted px-3 pt-2 mb-1 mb-md-2 border-bottom border-light"><strong>Modo biblioteca:</strong> definiciones y buenas prácticas generales (ej. «¿Qué es la rotación de cultivos?»). <strong>Modo parcela:</strong> al nombrar tu cultivo, riego, plagas, sensores o términos como <em>parcela, lote, clima, agua, humedad</em>, AgroBot prioriza las lecturas de tu parcela y evita mezclarlas con sugerencias genéricas que las contradigan. Es distinto del consultor RAG del visor presentador.</p>
                             <div id="chat"></div>
                             <div class="input-group p-3 border-top">
-                                <input type="text" id="inputMensaje" class="form-control" placeholder="Escribe tu mensaje..." aria-label="Escribe tu mensaje">
-                                <button id="btnEnviar" class="btn btn-success">
+                                <input type="text" id="inputMensaje" class="form-control" placeholder="Ej.: definición agronómica, o riego / plagas en tu cultivo" aria-label="Mensaje para AgroBot">
+                                <button type="button" id="btnEnviar" class="btn btn-success">
                                     <i class="fas fa-paper-plane"></i> Enviar
                                 </button>
                             </div>
@@ -464,118 +464,12 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="card-title mb-0">Cultivos activos</h5>
-                                <a href="#" class="btn btn-sm btn-outline-success">Ver todos</a>
+                                <a href="configuracion.html" class="btn btn-sm btn-outline-success">Gestionar cultivos</a>
                             </div>
-                            <div class="row g-4">
-                                <div class="col-md-6 col-lg-4 col-xl-3">
-                                    <div class="card crop-card h-100">
-                                        <img src="elementos/maiz.jpg" class="card-img-top crop-img" alt="Maíz">
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <h6 class="mb-0">Maíz Criollo</h6>
-                                                <span class="badge bg-success">Saludable</span>
-                                            </div>
-                                            <p class="text-muted small mb-3">Sembrado: 15/02/2025</p>
-                                            <div class="mb-3">
-                                                <div class="d-flex justify-content-between small mb-1">
-                                                    <span>Progreso</span><span>65%</span>
-                                                </div>
-                                                <div class="progress"><div class="progress-bar bg-success" role="progressbar" style="width: 65%;"></div></div>
-                                            </div>
-                                            <div class="d-flex justify-content-between small">
-                                                <div><i class="fas fa-tint text-primary me-1"></i><span>Riego: 2 días</span></div>
-                                                <div><i class="fas fa-bug text-success me-1"></i><span>Sin plagas</span></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-lg-4 col-xl-3">
-                                    <div class="card crop-card h-100">
-                                        <img src="elementos/frijol.jpg" class="card-img-top crop-img" alt="Frijol">
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <h6 class="mb-0">Frijol Negro</h6>
-                                                <span class="badge bg-warning text-dark">Vigilancia</span>
-                                            </div>
-                                            <p class="text-muted small mb-3">Sembrado: 22/05/2025</p>
-                                            <div class="mb-3">
-                                                <div class="d-flex justify-content-between small mb-1">
-                                                    <span>Progreso</span><span>45%</span>
-                                                </div>
-                                                <div class="progress"><div class="progress-bar bg-warning" role="progressbar" style="width: 45%;"></div></div>
-                                            </div>
-                                            <div class="d-flex justify-content-between small">
-                                                <div><i class="fas fa-tint text-primary me-1"></i><span>Riego: 1 día</span></div>
-                                                <div><i class="fas fa-bug text-danger me-1"></i><span>Plaga detectada</span></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-lg-4 col-xl-3">
-                                    <div class="card crop-card h-100">
-                                        <img src="elementos/calabaza.jpg" class="card-img-top crop-img" alt="Calabaza">
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <h6 class="mb-0">Calabaza</h6>
-                                                <span class="badge bg-success">Saludable</span>
-                                            </div>
-                                            <p class="text-muted small mb-3">Sembrado: 10/06/2025</p>
-                                            <div class="mb-3">
-                                                <div class="d-flex justify-content-between small mb-1">
-                                                    <span>Progreso</span><span>30%</span>
-                                                </div>
-                                                <div class="progress"><div class="progress-bar bg-success" role="progressbar" style="width: 30%;"></div></div>
-                                            </div>
-                                            <div class="d-flex justify-content-between small">
-                                                <div><i class="fas fa-tint text-primary me-1"></i><span>Riego: 3 días</span></div>
-                                                <div><i class="fas fa-bug text-success me-1"></i><span>Sin plagas</span></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-lg-4 col-xl-3">
-                                    <div class="card crop-card h-100">
-                                        <img src="elementos/chile.jpg" class="card-img-top crop-img" alt="Chile">
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <h6 class="mb-0">Chile Serrano</h6>
-                                                <span class="badge bg-danger">Crítico</span>
-                                            </div>
-                                            <p class="text-muted small mb-3">Sembrado: 05/06/2025</p>
-                                            <div class="mb-3">
-                                                <div class="d-flex justify-content-between small mb-1">
-                                                    <span>Progreso</span><span>20%</span>
-                                                </div>
-                                                <div class="progress"><div class="progress-bar bg-danger" role="progressbar" style="width: 20%;"></div></div>
-                                            </div>
-                                            <div class="d-flex justify-content-between small">
-                                                <div><i class="fas fa-tint text-primary me-1"></i><span>Riego urgente</span></div>
-                                                <div><i class="fas fa-bug text-danger me-1"></i><span>Plagas presentes</span></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-lg-4 col-xl-3">
-                                    <div class="card crop-card h-100">
-                                        <img src="elementos/tomate.jpg" class="card-img-top crop-img" alt="Tomate">
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <h6 class="mb-0">Tomate</h6>
-                                                <span class="badge bg-info">En crecimiento</span>
-                                            </div>
-                                            <p class="text-muted small mb-3">Sembrado: 12/06/2023</p>
-                                            <div class="mb-3">
-                                                <div class="d-flex justify-content-between small mb-1">
-                                                    <span>Progreso</span><span>55%</span>
-                                                </div>
-                                                <div class="progress"><div class="progress-bar bg-info" role="progressbar" style="width: 55%;"></div></div>
-                                            </div>
-                                            <div class="d-flex justify-content-between small">
-                                                <div><i class="fas fa-tint text-primary me-1"></i><span>Riego: Mañana</span></div>
-                                                <div><i class="fas fa-bug text-warning me-1"></i><span>Posible plaga</span></div>
-                                            </div>
-                                        </div>
-                                    </div>
+                            <div class="row g-4" id="cropsContainer">
+                                <div class="col-12 text-center py-4">
+                                    <div class="spinner-border text-success" role="status"></div>
+                                    <p class="mt-2 text-muted">Cargando cultivos...</p>
                                 </div>
                             </div>
                         </div>
@@ -585,56 +479,14 @@
         </div>
     </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/milpa-api.js"></script>
+<script src="js/milpa-shell.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const sidebar = document.getElementById('sidebar');
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    const mainContent = document.getElementById('mainContent');
-    const topNavbar = document.querySelector('.navbar'); // Usamos .navbar ya que es el único navbar principal
+    // Layout sidebar / navbar: js/milpa-shell.js
 
-    const applyLayoutStates = () => {
-        if (!sidebar || !mainContent || !topNavbar) {
-            console.warn('Dashboard UI: Faltan elementos del DOM para el layout (sidebar, mainContent, o topNavbar).');
-            return;
-        }
-
-        const isSmallScreen = window.innerWidth <= 768;
-        const isSidebarCollapsed = sidebar.classList.contains('sidebar-collapsed');
-
-        if (isSmallScreen) {
-            sidebar.classList.add('sidebar-collapsed'); // Forzar colapso en pequeño
-            mainContent.classList.add('main-content-expanded');
-            topNavbar.style.left = '80px';
-            topNavbar.style.width = 'calc(100% - 80px)';
-        } else {
-            // En pantallas grandes, el estado depende del clic del usuario
-            if (isSidebarCollapsed) {
-                mainContent.classList.add('main-content-expanded');
-                topNavbar.style.left = '80px';
-                topNavbar.style.width = 'calc(100% - 80px)';
-            } else {
-                sidebar.classList.remove('sidebar-collapsed'); // Asegurar expansión
-                mainContent.classList.remove('main-content-expanded');
-                topNavbar.style.left = '250px';
-                topNavbar.style.width = 'calc(100% - 250px)';
-            }
-        }
-    };
-
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', () => {
-            if (sidebar) {
-                sidebar.classList.toggle('sidebar-collapsed');
-                applyLayoutStates(); // Actualizar todo el layout después del toggle
-            }
-        });
-    }
-    
-    applyLayoutStates(); // Aplicar al cargar
-    window.addEventListener('resize', applyLayoutStates); // Aplicar al redimensionar
-
-    // Lógica para mostrar mapa interactivo por defecto (las funciones showInteractive/showStatic están abajo)
-    // Se llama aquí para asegurar que el DOM está listo, incluyendo los contenedores del mapa.
+    // Mapa interactivo por defecto
     showInteractive(); 
 });
 
@@ -654,7 +506,367 @@ function showStatic() {
 }
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script src="js/client.js"></script> </body>
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js" crossorigin="anonymous"></script>
+<script src="js/client.js"></script>
+<script>
+function dashboardEscapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function dashboardBadgeFor(progress) {
+    if (progress >= 70) return ['bg-success', 'Saludable'];
+    if (progress >= 45) return ['bg-warning text-dark', 'Vigilancia'];
+    if (progress >= 20) return ['bg-danger', 'Crítico'];
+    return ['bg-info', 'Establecimiento'];
+}
+
+function dashboardBadgeFromAgronomic(healthLabel, progress) {
+    const L = String(healthLabel || '').trim();
+    if (L === 'Saludable') return ['bg-success', 'Saludable'];
+    if (L === 'Vigilancia') return ['bg-warning text-dark', 'Vigilancia'];
+    if (L === 'Crítico') return ['bg-danger', 'Crítico'];
+    if (L === 'Establecimiento') return ['bg-info', 'Establecimiento'];
+    return dashboardBadgeFor(Number(progress || 0));
+}
+
+function dashboardBarFromAgronomic(healthLabel, progress) {
+    const L = String(healthLabel || '').trim();
+    if (L === 'Saludable') return 'bg-success';
+    if (L === 'Vigilancia') return 'bg-warning';
+    if (L === 'Crítico') return 'bg-danger';
+    if (L === 'Establecimiento') return 'bg-info';
+    return dashboardBarColor(Number(progress || 0));
+}
+
+function dashboardBarColor(progress) {
+    if (progress >= 70) return 'bg-success';
+    if (progress >= 45) return 'bg-warning';
+    if (progress >= 20) return 'bg-danger';
+    return 'bg-info';
+}
+
+function renderDashboardBadges(recommendations) {
+    const pending = recommendations.filter(r => r.status === 'pendiente').length;
+    const sidebarBadge = document.getElementById('sidebarAlertBadge');
+    const topBadge = document.getElementById('topNotificationsBadge');
+
+    if (sidebarBadge) {
+        sidebarBadge.textContent = String(pending);
+        sidebarBadge.style.display = pending > 0 ? 'inline-block' : 'none';
+    }
+
+    if (topBadge) {
+        topBadge.textContent = String(pending);
+        topBadge.style.display = pending > 0 ? 'inline-block' : 'none';
+    }
+}
+
+/**
+ * Construye el banner superior del dashboard. Antes solo miraba
+ * `globalReading.air_temp >= 35` (umbral hardcodeado, no agronómico). Ahora
+ * usa la salud por cultivo que el backend ya calcula en /api/parcel/health
+ * (cruza parcel_latest contra crop_profiles + ritmo fenológico).
+ */
+function renderDashboardAlert(recommendations, globalReading, crops, healthByCrop = {}, parcelLatest = null) {
+    const alertBox = document.getElementById('dashboardAlert');
+    const title = document.getElementById('dashboardAlertTitle');
+    const body = document.getElementById('dashboardAlertBody');
+    if (!alertBox || !title || !body) return;
+
+    const pending = recommendations.filter(r => r.status === 'pendiente');
+    const highPriority = pending.filter(r => r.priority === 'high');
+    alertBox.className = 'alert d-flex align-items-center animated-fade-in';
+
+    const cropsInCritical = (crops || [])
+        .map(c => ({ crop: c, h: healthByCrop[c.id] }))
+        .filter(x => x.h && x.h.label === 'Crítico');
+    const cropsInWatch = (crops || [])
+        .map(c => ({ crop: c, h: healthByCrop[c.id] }))
+        .filter(x => x.h && x.h.label === 'Vigilancia');
+
+    if (cropsInCritical.length) {
+        const first = cropsInCritical[0];
+        const why = first.h?.factors?.[0]?.message || 'condiciones fuera de rango';
+        alertBox.classList.add('alert-danger');
+        title.textContent = `Cultivo en estado crítico: ${first.crop.display_name || first.crop.crop_name}`;
+        body.textContent = `${cropsInCritical.length} cultivo(s) marcados como Crítico. Motivo principal: ${why}.`;
+        return;
+    }
+
+    if (highPriority.length) {
+        alertBox.classList.add('alert-danger');
+        title.textContent = 'Acciones urgentes detectadas';
+        body.textContent = `Hay ${highPriority.length} recomendación(es) críticas pendientes. Revisa primero ${highPriority[0].action}.`;
+        return;
+    }
+
+    if (cropsInWatch.length) {
+        const first = cropsInWatch[0];
+        const why = first.h?.factors?.[0]?.message || 'desviación detectada';
+        alertBox.classList.add('alert-warning');
+        title.textContent = `Vigilancia activa: ${first.crop.display_name || first.crop.crop_name}`;
+        body.textContent = `${cropsInWatch.length} cultivo(s) en Vigilancia. Motivo: ${why}.`;
+        return;
+    }
+
+    // Estrés térmico regional: el techo agronómico se calcula como el peor
+    // optimal_temp_max entre los crop_profiles activos del usuario, en vez
+    // de un 35 °C fijo. Si no hay perfiles, cae a 35 °C como referencia.
+    if (globalReading?.air_temp != null) {
+        const profileTempMaxes = (crops || [])
+            .map(c => healthByCrop[c.id]?.profile_used?.optimal_temp_max)
+            .filter(v => v != null && !Number.isNaN(Number(v)))
+            .map(Number);
+        const tempCeiling = profileTempMaxes.length ? Math.min(...profileTempMaxes) : 35;
+        if (Number(globalReading.air_temp) >= tempCeiling) {
+            alertBox.classList.add('alert-warning');
+            title.textContent = 'Estrés térmico regional';
+            body.textContent = `Temperatura regional ${Number(globalReading.air_temp).toFixed(0)}°C supera el techo agronómico (${tempCeiling}°C) de los cultivos activos.`;
+            return;
+        }
+    }
+
+    if (!crops.length) {
+        alertBox.classList.add('alert-info');
+        title.textContent = 'Aún no hay plantas visibles en inicio';
+        body.textContent = 'Carga una planta con imagen desde Configuración para que aparezca aquí y se conecte al resto del sistema.';
+        return;
+    }
+
+    alertBox.classList.add('alert-success');
+    title.textContent = 'Panel sincronizado';
+    const parcelHint = parcelLatest && parcelLatest.created_at
+        ? ` Última lectura de parcela: ${new Date(parcelLatest.created_at).toLocaleString('es-MX')}.`
+        : '';
+    body.textContent = `Tienes ${crops.length} cultivo(s) activo(s) y ${pending.length} recomendación(es) pendiente(s).${parcelHint}`;
+}
+
+function renderDashboardProfile(profile, crops, recommendations) {
+    const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim() || profile?.username || 'Usuario';
+    const pending = recommendations.filter(r => r.status === 'pendiente');
+    const alertCount = pending.filter(r => r.priority === 'high').length;
+    const avatar = profile?.avatar_path || 'elementos/Campesinos.jpg';
+
+    const navbarAvatar = document.getElementById('navbarAvatar');
+    const profileAvatar = document.getElementById('profileAvatar');
+    const profileName = document.getElementById('profileName');
+    const userDisplayName = document.getElementById('userDisplayName');
+    const profileSubtitle = document.getElementById('profileSubtitle');
+    const cropCount = document.getElementById('summaryCropCount');
+    const alertsCount = document.getElementById('summaryAlertCount');
+    const recCount = document.getElementById('summaryRecommendationCount');
+    const mapTitle = document.getElementById('mapTitle');
+    const notificationBadge = document.querySelector('#notificationsDropdown .badge');
+
+    if (navbarAvatar) navbarAvatar.src = avatar;
+    if (profileAvatar) profileAvatar.src = avatar;
+    if (profileName) profileName.textContent = fullName;
+    if (userDisplayName) userDisplayName.textContent = fullName;
+    if (profileSubtitle) {
+        profileSubtitle.textContent = profile?.location
+            ? `${profile.location} · ${profile.experience || 'Productor MILPA'}`
+            : (profile?.experience || 'Agricultor MILPA');
+    }
+    if (cropCount) cropCount.textContent = crops.length;
+    if (alertsCount) alertsCount.textContent = alertCount;
+    if (recCount) recCount.textContent = pending.length;
+    if (mapTitle) {
+        mapTitle.textContent = profile?.location ? `Ubicación de tu milpa · ${profile.location}` : 'Ubicación de tu milpa';
+    }
+    if (notificationBadge) {
+        notificationBadge.textContent = pending.length;
+        notificationBadge.style.display = pending.length ? 'inline-block' : 'none';
+    }
+}
+
+function dashboardHealthFactors(h) {
+    if (!h?.factors?.length) return '';
+    return h.factors.slice(0, 3).map(f => `<li>${dashboardEscapeHtml(f.message)}</li>`).join('');
+}
+
+function renderDashboardCrops(crops, healthById = {}, parcelLatest = null) {
+    const container = document.getElementById('cropsContainer');
+    if (!container) return;
+
+    if (!crops.length) {
+        container.innerHTML = '<div class="col-12 text-center py-4"><p class="text-muted">No hay cultivos registrados todavía.</p><a href="configuracion.html" class="btn btn-outline-success btn-sm">Cargar primera planta</a></div>';
+        return;
+    }
+
+    const parcelLine = parcelLatest && (parcelLatest.soil_moisture != null || parcelLatest.air_temp != null)
+        ? `Parcela: humedad suelo ${parcelLatest.soil_moisture != null ? Number(parcelLatest.soil_moisture).toFixed(0) + '%' : 'N/D'}, ` +
+          `temperatura ${parcelLatest.air_temp != null ? Number(parcelLatest.air_temp).toFixed(0) + '°C' : 'N/D'}`
+        : 'Parcela sin telemetría reciente';
+
+    container.innerHTML = crops.map(crop => {
+        const h = healthById[crop.id];
+        const [badgeClass, badgeText] = dashboardBadgeFromAgronomic(h?.label, crop.progress);
+        const phenoStage = h?.phenology?.stage ? dashboardEscapeHtml(h.phenology.stage) : null;
+        const expectedPct = h?.phenology?.expected_progress_pct;
+        const cycle = h?.phenology?.typical_cycle_days;
+        const days = h?.phenology?.days_since_planting;
+        const factorsHtml = dashboardHealthFactors(h);
+        const summary = h?.summary
+            ? dashboardEscapeHtml(h.summary.length > 220 ? h.summary.slice(0, 217) + '…' : h.summary)
+            : 'Cruce: lectura de PARCELA actual ↔ rangos óptimos del cultivo (crop_profiles) + ritmo fenológico vs ciclo típico desde la siembra.';
+        const planted = crop.planted_at ? new Date(crop.planted_at).toLocaleDateString('es-MX') : 'N/D';
+        const harvest = crop.expected_harvest_at ? new Date(crop.expected_harvest_at).toLocaleDateString('es-MX') : 'Sin fecha';
+        const imagePath = crop.image_path || `elementos/${crop.crop_name}.jpg`;
+        const displayName = dashboardEscapeHtml(crop.display_name || crop.crop_name || 'Cultivo');
+        const growthStage = dashboardEscapeHtml(crop.growth_stage || phenoStage || 'Sin etapa');
+
+        const phenoBadge = (phenoStage && days != null && cycle)
+            ? `<span class="badge bg-light text-dark border ms-1" title="Etapa derivada de ${days} día(s) desde la siembra dentro de un ciclo típico de ${cycle} días">${phenoStage}</span>`
+            : '';
+
+        const expectedHint = (expectedPct != null && days != null)
+            ? `Esperado por fenología: ~${expectedPct}% (día ${days} del ciclo)`
+            : `Sin fenología calculable`;
+
+        return `<div class="col-md-6 col-lg-4 col-xl-3">
+            <div class="card crop-card h-100" data-crop-id="${crop.id}">
+                <img src="${imagePath}" class="card-img-top crop-img" alt="${dashboardEscapeHtml(crop.crop_name)}" onerror="this.src='elementos/default.jpg'">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="mb-0">${displayName} ${phenoBadge}</h6>
+                        <div class="text-end">
+                            <span class="badge ${badgeClass}" title="${summary}">${badgeText}</span>
+                            <small class="text-muted d-block mt-1">Estado agronómico</small>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-1">Etapa: ${growthStage}</p>
+                    <p class="text-muted small mb-2">Siembra: ${planted} · Cosecha estimada: ${harvest}</p>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between small mb-1"><span>Progreso reportado</span><span>${Number(crop.progress || 0)}%</span></div>
+                        <div class="progress"><div class="progress-bar ${dashboardBarFromAgronomic(h?.label, crop.progress)}" style="width:${Number(crop.progress || 0)}%"></div></div>
+                        <small class="text-muted d-block mt-1">${expectedHint}</small>
+                    </div>
+                    <details class="small text-muted mb-3">
+                        <summary class="text-success" style="cursor:pointer">¿En qué se basa este estado?</summary>
+                        <p class="mb-1 mt-2">${parcelLine}.</p>
+                        <ul class="mb-1">${factorsHtml || '<li>Sin desviaciones detectadas en la lectura actual.</li>'}</ul>
+                        <p class="mb-0"><em>Cruce contra <code>crop_profiles</code> (rangos óptimos del cultivo) y ritmo fenológico desde <code>planted_at</code>.</em></p>
+                    </details>
+                    <a href="tiempo-real.html" class="btn btn-outline-success btn-sm w-100">Ver monitoreo</a>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function renderDashboardNotifications(notifications) {
+    const list = document.getElementById('notificationsList');
+    const badge = document.getElementById('topNotificationsBadge');
+    if (!list) return;
+    const items = Array.isArray(notifications) ? notifications : [];
+    const unread = items.filter(n => !n.read_at).length;
+
+    if (badge) {
+        badge.textContent = String(unread);
+        badge.style.display = unread > 0 ? 'inline-block' : 'none';
+    }
+
+    if (!items.length) {
+        list.innerHTML = '<li><h6 class="dropdown-header">Notificaciones</h6></li>'
+            + '<li><span class="dropdown-item-text text-muted small">Sin notificaciones por ahora.</span></li>';
+        return;
+    }
+
+    const iconMap = {
+        alert: 'fas fa-exclamation-circle text-danger',
+        update: 'fas fa-info-circle text-info',
+        chat: 'fas fa-comment text-primary',
+    };
+
+    list.innerHTML = '<li><h6 class="dropdown-header">Notificaciones</h6></li>' +
+        items.slice(0, 8).map(n => {
+            const icon = iconMap[n.type] || 'fas fa-bell text-secondary';
+            const unreadDot = n.read_at ? '' : '<span class="badge bg-success ms-2">nuevo</span>';
+            return `<li>
+                <a class="dropdown-item d-flex align-items-start py-2" href="${dashboardEscapeHtml(n.link_url || '#')}" data-notification-id="${n.id}">
+                    <i class="${icon} me-2 mt-1"></i>
+                    <div class="flex-grow-1">
+                        <div class="small fw-bold text-truncate" style="max-width: 240px;">
+                            ${dashboardEscapeHtml(n.title)} ${unreadDot}
+                        </div>
+                        <small class="text-muted d-block text-truncate" style="max-width: 240px;">${dashboardEscapeHtml(n.message)}</small>
+                    </div>
+                </a>
+            </li>`;
+        }).join('') +
+        '<li><hr class="dropdown-divider"></li>' +
+        '<li><a class="dropdown-item text-primary text-center" href="recomendaciones.html">Ver todas</a></li>';
+
+    list.querySelectorAll('[data-notification-id]').forEach(el => {
+        el.addEventListener('click', async () => {
+            const id = el.dataset.notificationId;
+            try { await MILPA_API.markNotificationRead(id); } catch (err) { console.warn('No se pudo marcar leída:', err); }
+        });
+    });
+}
+
+function renderDashboardMap(profile) {
+    const lat = Number(profile?.lat);
+    const lon = Number(profile?.lon);
+    const zoom = Number(profile?.geo_zoom) || 14;
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+    const staticImg = document.getElementById('dashboardMapStatic');
+    const interactive = document.getElementById('dashboardMapInteractive');
+    if (staticImg) {
+        staticImg.src = `https://static-maps.yandex.ru/1.x/?ll=${lon},${lat}&z=${zoom}&size=600,400&l=map&pt=${lon},${lat},pm2rdl`;
+    }
+    if (interactive) {
+        const dx = 0.012, dy = 0.005;
+        const bbox = `${lon-dx},${lat-dy},${lon+dx},${lat+dy}`;
+        interactive.src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lon}`;
+    }
+}
+
+async function loadDashboardState() {
+    try {
+        // Health ahora se calcula con telemetría de PARCELA cruzada con crop_profiles
+        // y ritmo fenológico (días desde planted_at vs ciclo típico).
+        const [cropsResult, recsResult, profileResult, globalResult, notifResult, parcelHealthResult] = await Promise.allSettled([
+            MILPA_API.getCrops(),
+            MILPA_API.getRecommendations(),
+            MILPA_API.getProfile(),
+            MILPA_API.getGlobalEdaphologyLatest(),
+            MILPA_API.getNotifications({ limit: 10 }),
+            MILPA_API.getParcelHealth(),
+        ]);
+
+        const crops = cropsResult.status === 'fulfilled' ? cropsResult.value : [];
+        const recommendations = recsResult.status === 'fulfilled' ? recsResult.value : [];
+        const profile = profileResult.status === 'fulfilled' ? profileResult.value : null;
+        const globalReading = globalResult.status === 'fulfilled' ? globalResult.value : null;
+        const notifications = notifResult.status === 'fulfilled' ? notifResult.value : [];
+
+        const healthById = {};
+        let parcelLatest = null;
+        if (parcelHealthResult.status === 'fulfilled') {
+            const ph = parcelHealthResult.value || {};
+            parcelLatest = ph.parcel_latest || null;
+            (ph.crops || []).forEach(row => { healthById[row.crop_id] = row; });
+        }
+
+        renderDashboardProfile(profile, crops, recommendations);
+        renderDashboardBadges(recommendations);
+        renderDashboardAlert(recommendations, globalReading, crops, healthById, parcelLatest);
+        renderDashboardCrops(crops, healthById, parcelLatest);
+        renderDashboardNotifications(notifications);
+        renderDashboardMap(profile);
+    } catch (error) {
+        console.error('Error cargando el dashboard:', error);
+        renderDashboardCrops([]);
+    }
+}
+
+loadDashboardState();
+</script>
+</body>
 </html>

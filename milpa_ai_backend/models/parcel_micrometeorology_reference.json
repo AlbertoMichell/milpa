@@ -1,0 +1,36 @@
+{
+  "version": "2026.04",
+  "title": "Referencias agroambientales MILPA para telemetría de parcela (no sustituye perfiles por cultivo)",
+  "source_notes": "Criterios sintetizados desde la guía documental parcel_micrometeorologia_general_milpa; el motor prioriza rangos de crop_profiles cuando existen.",
+  "air_temp_c": {
+    "optimal_min": 16,
+    "optimal_max": 30,
+    "cold_stress_below": 12,
+    "severe_cold_below": 5,
+    "heat_stress_above": 32,
+    "severe_hot_above": 38
+  },
+  "soil_moisture_pct": {
+    "optimal_min": 38,
+    "optimal_max": 72,
+    "low_below": 32,
+    "saturation_above": 82
+  },
+  "air_humidity_pct": {
+    "optimal_min": 45,
+    "optimal_max": 85,
+    "very_dry_below": 35,
+    "very_wet_above": 92
+  },
+  "relative_light_pct": {
+    "optimal_min": 35,
+    "optimal_max": 92,
+    "low_below": 25,
+    "stress_glare_above": 98
+  },
+  "wind_kmh": {
+    "calm_max": 18,
+    "stress_above": 32,
+    "high_above": 45
+  }
+}

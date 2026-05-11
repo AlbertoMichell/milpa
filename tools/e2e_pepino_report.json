@@ -1,0 +1,137 @@
+{
+  "crop": {
+    "id": 31,
+    "crop_name": "pepino",
+    "planted_at": "2026-03-30",
+    "expected_harvest_at": "2026-06-28",
+    "status": "activo",
+    "growth_stage": "vegetativo"
+  },
+  "doc_path": "docs\\manual_pepino_milpa_2026.txt",
+  "backend": "http://127.0.0.1:8000",
+  "started_at": "2026-04-29T11:22:43",
+  "P1": true,
+  "P2": true,
+  "doc": {
+    "doc_id": "a9487cb45bc32cd73ec0044904b1c448b75138beefab4d9dd89312cbbe95e89b",
+    "fragments": 28,
+    "filename": "manual_pepino_milpa_2026.txt"
+  },
+  "P3": true,
+  "scenario_heat": {
+    "snapshot": {
+      "scenario": "heat",
+      "forced": {
+        "soil": 67.5,
+        "temp": 55.0,
+        "hum": 40.0
+      },
+      "thresholds": {
+        "soil_min": 55.0,
+        "soil_max": 80.0,
+        "temp_max": 32.0,
+        "hum_min": 60.0
+      },
+      "history_rows": 11,
+      "p4_dataset_ok": true
+    },
+    "modules": {
+      "scenario": "heat",
+      "dashboard_ok": true,
+      "rec_ok": true,
+      "realtime_ok": true,
+      "calendar_ok": true,
+      "rag_actions_ok": true,
+      "rag_recovered_doc": true,
+      "evidence": {
+        "label": "Vigilancia",
+        "factor_codes": [
+          "calor_extremo",
+          "aire_seco"
+        ],
+        "rec_action": "alerta de calor extremo y medidas de emergencia",
+        "rec_priority": "high",
+        "realtime_alerts": [
+          "calor",
+          "calor_extremo",
+          "aire_seco"
+        ],
+        "calendar_activities": 4,
+        "calendar_with_evidence": 4,
+        "used_doc_titles": [
+          "Manual Agronomico Integral del Maiz en Sistema MILPA",
+          "manual_calabaza_milpa_2026",
+          "manual_pepino_milpa_2026"
+        ],
+        "rag_match_count": 8,
+        "rag_sample_answer": "información encontrada relacionada con: \"qué hacer si la temperatura del cultivo de pepino llega a 55 grados medidas de emergencia calor extremo sombreo riego en horarios frescos\"\n\n[1] calor excesivo "
+      }
+    }
+  },
+  "scenario_low_humidity": {
+    "snapshot": {
+      "scenario": "low_humidity",
+      "forced": {
+        "soil": 37.0,
+        "temp": 34.0,
+        "hum": 35.0
+      },
+      "thresholds": {
+        "soil_min": 55.0,
+        "soil_max": 80.0,
+        "temp_max": 32.0,
+        "hum_min": 60.0
+      },
+      "history_rows": 11,
+      "p4_dataset_ok": true
+    },
+    "modules": {
+      "scenario": "low_humidity",
+      "dashboard_ok": true,
+      "rec_ok": true,
+      "realtime_ok": true,
+      "calendar_ok": true,
+      "rag_actions_ok": true,
+      "rag_recovered_doc": true,
+      "evidence": {
+        "label": "Crítico",
+        "factor_codes": [
+          "agua_critica",
+          "calor",
+          "aire_seco"
+        ],
+        "rec_action": "riego urgente",
+        "rec_priority": "high",
+        "realtime_alerts": [
+          "agua_baja",
+          "calor",
+          "aire_seco"
+        ],
+        "calendar_activities": 4,
+        "calendar_with_evidence": 4,
+        "used_doc_titles": [
+          "Manual Agronomico Integral del Maiz en Sistema MILPA",
+          "manual_calabaza_milpa_2026",
+          "manual_pepino_milpa_2026"
+        ],
+        "rag_match_count": 8,
+        "rag_sample_answer": "información encontrada relacionada con: \"qué hacer si la humedad del suelo del cultivo de pepino está muy baja riego programado estrés hídrico marchitez acolchado\"\n\n[1] sequía y baja humedad del suelo"
+      }
+    }
+  },
+  "P4": true,
+  "P5": true,
+  "P6": true,
+  "P7": true,
+  "P8": true,
+  "PRUEBA_CALOR_OK": true,
+  "PRUEBA_HUMEDAD_OK": true,
+  "TODOS_MODULOS_RECOMENDACION_OK": true,
+  "GENERALIZACION_OK": true,
+  "generalization_findings": {
+    "pattern_findings_sample": [],
+    "flag_findings": [],
+    "known_crops_endpoint_has_target": true
+  },
+  "RESULTADO_FINAL": true
+}

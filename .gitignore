@@ -33,3 +33,9 @@ grafana_data/
 
 # Logs
 *.log
+logs/milpa/
+
+# start.ps1 — caché de última sync pip/npm (regenerable; evita reinstalar si no cambió el lock)
+milpa_ai_backend/.milpa_requirements.sha256
+milpa_presenter/.milpa_packagelock.sha256
+frontend/.milpa_packagelock.sha256

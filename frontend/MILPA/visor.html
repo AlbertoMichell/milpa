@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visor de Citas — MILPA RAG</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { background: #f4f6f8; font-family: 'Segoe UI', system-ui, sans-serif; }
+    .visor-shell { display: grid; grid-template-columns: 380px 1fr; gap: 16px; padding: 16px; height: 100vh; }
+    .pane { background: #fff; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); padding: 16px; overflow: auto; }
+    .frag-card { border: 1px solid #e2e6ea; border-radius: 6px; padding: 10px; margin-bottom: 10px; cursor: pointer; transition: 0.15s; }
+    .frag-card:hover { border-color: #2E7D32; background: #f1f8f4; }
+    .frag-card.active { border-color: #2E7D32; background: #e8f5ec; box-shadow: inset 0 0 0 2px #2E7D32; }
+    .frag-meta { font-size: 0.75rem; color: #6c757d; margin-bottom: 4px; }
+    .frag-text { font-size: 0.85rem; line-height: 1.4; max-height: 4.5em; overflow: hidden; }
+    .render-area { position: relative; text-align: center; min-height: 600px; }
+    .render-area img { max-width: 100%; border: 1px solid #ccc; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .empty-state { text-align: center; padding: 60px 20px; color: #888; }
+    .controls { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+    .badge-source { background: #e1f5fe; color: #01579b; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; }
+    .badge-source.ocr { background: #fff3e0; color: #e65100; }
+    .badge-source.table { background: #f3e5f5; color: #4a148c; }
+    .info-box { background: #f5f5f5; padding: 10px; border-radius: 4px; font-size: 0.8rem; margin-top: 12px; }
+    .info-box code { background: #fff; padding: 2px 4px; border-radius: 3px; }
+    h5 { color: #2E7D32; }
+  </style>
+</head>
+<body>
+  <div class="visor-shell">
+    <!-- LEFT: query + lista de fragmentos -->
+    <aside class="pane">
+      <h5><i class="fa-solid fa-magnifying-glass-location"></i> Visor de Citas</h5>
+      <div class="controls">
+        <input id="qInput" type="text" class="form-control" placeholder="Pregunta…" />
+        <button id="qBtn" class="btn btn-success btn-sm"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+      <div class="controls">
+        <select id="modeSelect" class="form-select form-select-sm" style="width:auto">
+          <option value="hybrid" selected>hybrid</option>
+          <option value="lex">lex</option>
+          <option value="dense">dense</option>
+        </select>
+        <input id="kInput" type="number" min="1" max="20" value="6" class="form-control form-control-sm" style="width:70px" />
+        <label class="form-check-label" style="font-size:0.8rem">
+          <input type="checkbox" id="highlightAll" class="form-check-input"/> overlays globales
+        </label>
+      </div>
+      <div id="answer" class="info-box" style="display:none"></div>
+      <hr/>
+      <div id="fragList"></div>
+    </aside>
+
+    <!-- RIGHT: render con overlay -->
+    <main class="pane render-area">
+      <div id="renderPane" class="empty-state">
+        <i class="fa-regular fa-image fa-3x mb-3"></i>
+        <h5>Selecciona una cita</h5>
+        <p>Las respuestas RAG vienen con coordenadas (bbox). Al elegir una cita, se renderiza la página del PDF con un rectángulo amarillo sobre el fragmento exacto.</p>
+        <p class="text-muted">Solo PDFs nativos/escaneados muestran render. DOCX/TXT no tienen layout visual.</p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API_BASE = window.MILPA_API_BASE || "http://localhost:8000";
+    const qInput = document.getElementById("qInput");
+    const qBtn = document.getElementById("qBtn");
+    const modeSelect = document.getElementById("modeSelect");
+    const kInput = document.getElementById("kInput");
+    const highlightAll = document.getElementById("highlightAll");
+    const fragList = document.getElementById("fragList");
+    const renderPane = document.getElementById("renderPane");
+    const answerBox = document.getElementById("answer");
+
+    let currentFragments = [];
+    let activeIndex = -1;
+
+    qBtn.addEventListener("click", runQuery);
+    qInput.addEventListener("keydown", (e) => { if (e.key === "Enter") runQuery(); });
+
+    async function runQuery() {
+      const query = (qInput.value || "").trim();
+      if (!query) return;
+      fragList.innerHTML = '<div class="text-muted">Buscando…</div>';
+      answerBox.style.display = "none";
+      try {
+        const r = await fetch(`${API_BASE}/api/query`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            query,
+            k: parseInt(kInput.value || "6", 10),
+            mode: modeSelect.value,
+          }),
+        });
+        const data = await r.json();
+        if (data.answer) {
+          answerBox.innerHTML = `<strong>Respuesta:</strong><br/>${data.answer}`;
+          answerBox.style.display = "block";
+        }
+        renderFragmentList(data.fragments || []);
+      } catch (e) {
+        fragList.innerHTML = `<div class="text-danger">Error: ${e}</div>`;
+      }
+    }
+
+    function renderFragmentList(fragments) {
+      currentFragments = fragments;
+      activeIndex = -1;
+      fragList.innerHTML = "";
+      if (!fragments.length) {
+        fragList.innerHTML = '<div class="text-muted">Sin resultados</div>';
+        return;
+      }
+      fragments.forEach((f, i) => {
+        const card = document.createElement("div");
+        card.className = "frag-card";
+        const sourceClass = (f.source || "native").toLowerCase();
+        const hasBbox = Array.isArray(f.bbox) && f.bbox.length === 4;
+        card.innerHTML = `
+          <div class="frag-meta">
+            <span class="badge-source ${sourceClass}">${f.source || "native"}</span>
+            · doc <code>${(f.doc_id || "").slice(0,8)}</code>
+            · pág ${f.page_start ?? "?"}
+            · score ${(f.score || 0).toFixed(3)}
+            ${hasBbox ? '<i class="fa-solid fa-vector-square ms-1" title="bbox disponible"></i>' : ''}
+          </div>
+          <div class="frag-text">${escapeHtml(f.text || "")}</div>
+        `;
+        card.addEventListener("click", () => selectFragment(i));
+        fragList.appendChild(card);
+      });
+      // Auto-seleccionar el primero si tiene bbox
+      const firstWithBbox = fragments.findIndex(f => Array.isArray(f.bbox) && f.bbox.length === 4);
+      if (firstWithBbox >= 0) selectFragment(firstWithBbox);
+    }
+
+    function selectFragment(idx) {
+      const cards = fragList.querySelectorAll(".frag-card");
+      cards.forEach((c, i) => c.classList.toggle("active", i === idx));
+      activeIndex = idx;
+      const f = currentFragments[idx];
+      if (!f) return;
+      if (!f.doc_id || !f.page_start) {
+        renderPane.innerHTML = '<div class="empty-state"><i class="fa-solid fa-circle-exclamation fa-2x mb-2"></i><p>Fragmento sin ubicación visual</p></div>';
+        return;
+      }
+      const baseUrl = f.render_url || `/api/documents/${f.doc_id}/render?page=${f.page_start}&fragment_id=${f.fragment_id}`;
+      const sep = baseUrl.includes("?") ? "&" : "?";
+      const url = `${API_BASE}${baseUrl}${highlightAll.checked ? sep + "highlight_all=true" : ""}`;
+      renderPane.innerHTML = `
+        <h6>${escapeHtml(f.doc_title || f.doc_id)} — pág ${f.page_start}</h6>
+        <img src="${url}" alt="render" id="renderImg" />
+        <div class="info-box mt-2">
+          <strong>Fragmento</strong> <code>${f.fragment_id}</code><br/>
+          <strong>BBox PDF</strong> ${Array.isArray(f.bbox) ? '['+f.bbox.map(v=>v.toFixed(1)).join(', ')+']' : '(no disponible)'}
+          <br/><strong>Source</strong> ${f.source || "native"}
+        </div>
+      `;
+    }
+
+    function escapeHtml(s) {
+      return (s || "").replace(/[&<>"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch]));
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# Guía MILPA · Micrometeorología general de parcela (independiente del cultivo específico)
+
+Este documento es la fuente textual que el sistema MILPA debe consultar mediante RAG y la que parametriza el archivo parcel_micrometeorology_reference.json. Los rangos no sustituyen a los óptimos de crop_profiles cuando el cultivo está catalogado.
+
+## Principios
+1) La parcela se evalúa con variables meteorológicas y de superficie antes que con reglas específicas de fenología por cultivo.
+2) Rangos óptimos amplios típicos para vegetación agrícola en condiciones de campo templado‑tropical mexicano: temperatura cómoda 16‑30 °C, humedad relativa estable 45‑85 %, humedad de suelo 38‑72 % (volumétricos normalizados a la escala de sensores), luz efectiva alta 35‑92 % de la línea base del sensor.
+3) Umbral inferior de estrés térmico frío: por debajo de 12 °C la planta muestra menor actividad metabólica; por debajo de 5 °C se asume estrés importante (no equivalente a “helada garantizada”: depende de radiación nocturna y humectación foliar).
+4) Umbral superior de estrés térmico: por encima de 30‑32 °C la fotosíntesis y polinización suelen sufrir estrés antes de llegar al colapso; por encima de 38 °C se asume riesgo severo de daño de tejidos y deshidratación foliar.
+5) Humedad de suelo: menores a 32 % suelen asociarse a déficit hídrico explícito; superiores a 82 % sugieren encharcamiento o escaso drenaje.
+6) Humedad relativa del aire: por debajo de 35 % la transpiración se dispara en calor moderado; por encima del 92 % predispone patógenos fúngicos en tejidos húmedos.
+7) Radiación efectiva percibida (normalizada como % contra el punto de saturación): por debajo de 25 % hay sombra severa para la mayor parte de sistemas hortícolas; valores extremadamente cercanos al 100 % con calor combinado suponen estrés radiativo combinado (“calor brillante”).
+8) Velocidad de viento: hasta ~18 km/h suele ser beneficiosa por ventilar el dosel sin daño visible; más de ~32 km/h incrementa pérdidas de vapor y daño físico en hoja tierna y flores.
+
+## Uso en el sistema
+El frontend consulta el JSON paralelo mediante GET /api/parcel/monitoring-guidelines. Las métricas de tiempo real muestran “estable / vigilar / bajo estrés …” combinando estos rangos cuando no aplican exclusivamente valores de crop_profiles.

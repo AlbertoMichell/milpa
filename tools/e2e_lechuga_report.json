@@ -1,0 +1,137 @@
+{
+  "crop": {
+    "id": 33,
+    "crop_name": "lechuga",
+    "planted_at": "2026-04-06",
+    "expected_harvest_at": "2026-07-05",
+    "status": "activo",
+    "growth_stage": "vegetativo"
+  },
+  "doc_path": "docs\\manual_lechuga_milpa_2026.txt",
+  "backend": "http://127.0.0.1:8000",
+  "started_at": "2026-05-06T13:45:12",
+  "P1": true,
+  "P2": true,
+  "doc": {
+    "doc_id": "0bbbd23a841cfa3f22198e6003429e8d387deb3dd64e1fbc5d434df3f9bc6708",
+    "fragments": 15,
+    "filename": "manual_lechuga_milpa_2026.txt"
+  },
+  "P3": true,
+  "scenario_heat": {
+    "snapshot": {
+      "scenario": "heat",
+      "forced": {
+        "soil": 75.0,
+        "temp": 55.0,
+        "hum": 40.0
+      },
+      "thresholds": {
+        "soil_min": 65.0,
+        "soil_max": 85.0,
+        "temp_max": 24.0,
+        "hum_min": 60.0
+      },
+      "history_rows": 11,
+      "p4_dataset_ok": true
+    },
+    "modules": {
+      "scenario": "heat",
+      "dashboard_ok": true,
+      "rec_ok": true,
+      "realtime_ok": true,
+      "calendar_ok": true,
+      "rag_actions_ok": true,
+      "rag_recovered_doc": true,
+      "evidence": {
+        "label": "Crítico",
+        "factor_codes": [
+          "calor_extremo",
+          "aire_seco",
+          "fenologia_rezaga"
+        ],
+        "rec_action": "alerta de calor extremo y medidas de emergencia",
+        "rec_priority": "high",
+        "realtime_alerts": [
+          "calor",
+          "calor_extremo",
+          "aire_seco"
+        ],
+        "calendar_activities": 4,
+        "calendar_with_evidence": 4,
+        "used_doc_titles": [
+          "manual_lechuga_milpa_2026",
+          "Manual MILPA - Lechuga"
+        ],
+        "rag_match_count": 4,
+        "rag_sample_answer": "información encontrada relacionada con: \"qué hacer si la temperatura del cultivo de lechuga llega a 55 grados medidas de emergencia calor extremo sombreo riego en horarios frescos\"\n\n[1] calor excesivo"
+      }
+    }
+  },
+  "scenario_low_humidity": {
+    "snapshot": {
+      "scenario": "low_humidity",
+      "forced": {
+        "soil": 47.0,
+        "temp": 26.0,
+        "hum": 35.0
+      },
+      "thresholds": {
+        "soil_min": 65.0,
+        "soil_max": 85.0,
+        "temp_max": 24.0,
+        "hum_min": 60.0
+      },
+      "history_rows": 11,
+      "p4_dataset_ok": true
+    },
+    "modules": {
+      "scenario": "low_humidity",
+      "dashboard_ok": true,
+      "rec_ok": true,
+      "realtime_ok": true,
+      "calendar_ok": true,
+      "rag_actions_ok": true,
+      "rag_recovered_doc": true,
+      "evidence": {
+        "label": "Crítico",
+        "factor_codes": [
+          "agua_critica",
+          "calor",
+          "aire_seco",
+          "fenologia_rezaga"
+        ],
+        "rec_action": "riego urgente",
+        "rec_priority": "high",
+        "realtime_alerts": [
+          "agua_baja",
+          "calor",
+          "aire_seco"
+        ],
+        "calendar_activities": 4,
+        "calendar_with_evidence": 4,
+        "used_doc_titles": [
+          "manual_lechuga_milpa_2026",
+          "Manual MILPA - Lechuga"
+        ],
+        "rag_match_count": 8,
+        "rag_sample_answer": "información encontrada relacionada con: \"qué hacer si la humedad del suelo del cultivo de lechuga está muy baja riego programado estrés hídrico marchitez acolchado\"\n\n[1] ar marchitez.\n\nsequía y baja h"
+      }
+    }
+  },
+  "P4": true,
+  "P5": true,
+  "P6": true,
+  "P7": true,
+  "P8": true,
+  "PRUEBA_CALOR_OK": true,
+  "PRUEBA_HUMEDAD_OK": true,
+  "TODOS_MODULOS_RECOMENDACION_OK": true,
+  "GENERALIZACION_OK": true,
+  "generalization_findings": {
+    "pattern_findings_sample": [],
+    "flag_findings": [],
+    "known_crops_endpoint_has_target": true
+  },
+  "RESULTADO_FINAL": true
+}

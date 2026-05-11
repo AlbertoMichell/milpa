@@ -71,6 +71,7 @@ class Taxonomy:
     nutrients: List[str]
     phenology: List[str]
     regions: List[str]
+    env_params: List[str]  # parámetros ambientales (temperatura, humedad, ph, etc.)
     synonyms: Dict[str, str]  # sinonimo(normalizado) -> canon(normalizado)
 
 
@@ -142,6 +143,7 @@ def load_taxonomy(version: Optional[str] = None) -> Taxonomy:
     nutrients = _csv_load_names(str(base / "nutrients.csv"))
     phenology = _csv_load_names(str(base / "phenology.csv"))
     regions = _csv_load_names(str(base / "regions.csv"))
+    env_params = _csv_load_names(str(base / "env_params.csv"))
     synonyms = _json_load_synonyms(str(base / "synonyms.json"))
 
     tax = Taxonomy(
@@ -151,6 +153,7 @@ def load_taxonomy(version: Optional[str] = None) -> Taxonomy:
         nutrients=nutrients,
         phenology=phenology,
         regions=regions,
+        env_params=env_params,
         synonyms=synonyms,
     )
     _TAX_CACHE[ver] = tax
@@ -203,7 +206,8 @@ def _dict_ner(text_norm: str, tax: Taxonomy) -> List[Entity]:
     def _cap(label: str, items: List[str]):
         for it in items:
             # matching con límites de palabra
-            for m in re.finditer(rf"\b{re.escape(it)}\b", text_norm):
+            pattern = rf"\b{re.escape(it)}\b"
+            for m in re.finditer(pattern, text_norm):
                 ents.append(Entity(type=label, value=it, original=m.group(0), start=m.start(), end=m.end()))
 
     _cap("CULTIVO", tax.crops)
@@ -211,6 +215,7 @@ def _dict_ner(text_norm: str, tax: Taxonomy) -> List[Entity]:
     _cap("NUTRIENTE", tax.nutrients)
     _cap("FENOFASE", tax.phenology)
     _cap("LUGAR", tax.regions)
+    _cap("PARAM_AMBIENTAL", tax.env_params)
     return ents
 
 
@@ -253,6 +258,7 @@ def _augment_with_spacy(text_norm: str, tax: Taxonomy, base_ents: List[Entity]) 
     _phr("NUTRIENTE", tax.nutrients)
     _phr("FENOFASE", tax.phenology)
     _phr("LUGAR", tax.regions)
+    _phr("PARAM_AMBIENTAL", tax.env_params)
 
     try:
         ruler.add_patterns(patterns)
@@ -264,7 +270,7 @@ def _augment_with_spacy(text_norm: str, tax: Taxonomy, base_ents: List[Entity]) 
     seen = {(e.type, e.start, e.end) for e in base_ents}
     out = list(base_ents)
     for e in doc.ents:
-        if e.label_ not in {"CULTIVO", "PLAGA", "NUTRIENTE", "FENOFASE", "LUGAR"}:
+        if e.label_ not in {"CULTIVO", "PLAGA", "NUTRIENTE", "FENOFASE", "LUGAR", "PARAM_AMBIENTAL"}:
             continue
         key = (e.label_, e.start_char, e.end_char)
         if key in seen:

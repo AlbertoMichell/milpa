@@ -158,6 +158,14 @@ def build_app() -> FastAPI:
         logger.info("RAG endpoints habilitados (/api/query, /api/index/rebuild)")
     except Exception as e:
         logger.warning(f"No se pudieron cargar endpoints RAG: {e}")
+
+    # Crops / Sensors / Recommendations router
+    try:
+        from milpa_ai_backend.api.crops import router as crops_router
+        app.include_router(crops_router)
+        logger.info("Crops/Sensors/Recommendations endpoints habilitados")
+    except Exception as e:
+        logger.warning(f"No se pudieron cargar endpoints Crops: {e}")
     
     # -------------------------------------------------------------------------
     # SPRINT 19: OpenTelemetry instrumentation
@@ -174,9 +182,3 @@ def build_app() -> FastAPI:
         logger.info("OpenTelemetry deshabilitado (ENABLE_OTEL=%s) o paquete no disponible.", enable_otel)
 
     return app
-
-
-# -------------------------------------------------------------------------
-# INSTANCIA GLOBAL: para tests y ejecución con uvicorn
-# -------------------------------------------------------------------------
-app = build_app()

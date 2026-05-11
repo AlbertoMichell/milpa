@@ -1,0 +1,29 @@
+/* MILPA — estilos base compartidos (las páginas enlazan este archivo) */
+:root {
+  --forest-green: #2e7d32;
+  --forest-dark: #1b5e20;
+}
+
+.btn-forest-green {
+  background-color: var(--forest-green);
+  border-color: var(--forest-green);
+  color: #fff;
+}
+.btn-forest-green:hover {
+  background-color: var(--forest-dark);
+  border-color: var(--forest-dark);
+  color: #fff;
+}
+
+.btn-outline-forest-green {
+  color: var(--forest-green);
+  border-color: var(--forest-green);
+}
+.btn-outline-forest-green:hover {
+  background-color: var(--forest-green);
+  color: #fff;
+}
+
+.text-forest-green {
+  color: var(--forest-green) !important;
+}

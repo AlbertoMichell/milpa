@@ -1,11 +1,8 @@
 # milpa_ai_backend/core/extract/pipeline.py
-# Tubería de extracción SPRINT 3–5:
-# - Localiza el archivo por doc_id (requiere docs.stored_path).
-# - Si PDF: extrae texto por página (PyMuPDF) y usa OCR (Tesseract) cuando falte texto.
-# - Detección de tablas (Camelot) si está disponible.
-# - Chunking token-aware (aprox) con solapamiento (desde settings).
-# - Extracción de unidades físicas y normalización SI (pint).
-# - Persiste 'fragments', 'tables' y 'table_cells'; actualiza 'docs.lang_original'.
+# DEPRECATED — pipeline experimental SPRINT 3–5. No está cableado al endpoint
+# /api/documents/ingest (que usa core/logic/extract.py). Mantener como
+# referencia de chunking token-aware + units (pint). Para reactivarlo se
+# requiere alinear el contrato con SQLite y migrar el endpoint.
 
 from __future__ import annotations
 import io

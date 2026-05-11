@@ -1,0 +1,361 @@
+[
+  {
+    "kind": "simple",
+    "query": "Maíz",
+    "elapsed_ms": 4799,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 3,
+    "unique_doc_ids": 3,
+    "titles": [
+      "0686c239",
+      "8d1c1e14",
+      "Guia Tecnica de Cultivos - Edicion Sintetica 2025"
+    ],
+    "auto_focus": true,
+    "crop_focus": "maiz",
+    "scope": "crop_boost",
+    "answer_first_240": "Hallazgos en la biblioteca para «Maíz»:  - GUÍA COMPLETA DE CULTIVOS PARA EVALUACIÓN DEL SISTEMA RAG ========================================================= SECCIÓN 1: CARACTERÍSTICAS DEL MAÍZ ==================================== El maíz (Zea mays) es un cultivo de origen mesoa…"
+  },
+  {
+    "kind": "simple",
+    "query": "Lechuga",
+    "elapsed_ms": 81,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 3,
+    "unique_doc_ids": 2,
+    "titles": [
+      "Manual MILPA - Lechuga",
+      "Manual MILPA - Lechuga",
+      "0686c239"
+    ],
+    "auto_focus": true,
+    "crop_focus": "lechuga",
+    "scope": "crop_boost",
+    "answer_first_240": "Hallazgos en la biblioteca para «Lechuga»:  - \"lactuca\", \"lechuguilla cultivada\" y nombres regionales al término canónico \"lechuga\" usando la tabla synonyms.json. [1] - la biblioteca MILPA como una de varias fuentes de conocimiento agronómico. [2] - GUÍA COMPLETA DE CULTIVOS PARA…"
+  },
+  {
+    "kind": "simple",
+    "query": "Frijol",
+    "elapsed_ms": 134,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 4,
+    "unique_doc_ids": 4,
+    "titles": [
+      "Manual MILPA - Lechuga",
+      "74b38653",
+      "Guia Tecnica de Cultivos - Edicion Sintetica 2025",
+      "0686c239"
+    ],
+    "auto_focus": true,
+    "crop_focus": "frijol",
+    "scope": "crop_boost",
+    "answer_first_240": "Hallazgos en la biblioteca para «Frijol»:  - Guía de Fertilización para Frijol (Phaseolus vulgaris) en Suelos Arcillosos INTRODUCCIÓN: El frijol común es una leguminosa de gran importancia alimentaria que presenta requerimientos nutricionales específicos. [1] - Frijol (Phaseolus …"
+  },
+  {
+    "kind": "simple",
+    "query": "Calabaza",
+    "elapsed_ms": 118,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 3,
+    "unique_doc_ids": 2,
+    "titles": [
+      "Manual MILPA - Lechuga",
+      "Guia Tecnica de Cultivos - Edicion Sintetica 2025",
+      "Manual MILPA - Lechuga"
+    ],
+    "auto_focus": true,
+    "crop_focus": "calabaza",
+    "scope": "crop_boost",
+    "answer_first_240": "Hallazgos en la biblioteca para «Calabaza»:  - Calabaza (Cucurbita spp.) 3.1 Especies cultivadas en Mexico Mexico es centro de origen de al menos cuatro especies de calabaza domesticadas: C. [1] - [Tabla stream 74x2] Tabla (encabezado): 0 | 1 Riesgos por exceso de lluvia: pudrici…"
+  },
+  {
+    "kind": "simple",
+    "query": "Pepino",
+    "elapsed_ms": 87,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 2,
+    "unique_doc_ids": 1,
+    "titles": [
+      "Manual MILPA - Lechuga",
+      "Manual MILPA - Lechuga"
+    ],
+    "auto_focus": true,
+    "crop_focus": "pepino",
+    "scope": "crop_boost",
+    "answer_first_240": "Hallazgos en la biblioteca para «Pepino»:  - [Tabla stream 74x2] Tabla (encabezado): 0 | 1 Riesgos por exceso de lluvia: pudriciones del cuello, mildiú, MANUAL TÉCNICO DEL sclerotinia, lavado de nitratos del suelo, encharcamiento. [1] - la biblioteca MILPA como una de varias fuen…"
+  },
+  {
+    "kind": "simple",
+    "query": "Tomate",
+    "elapsed_ms": 53,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 2,
+    "unique_doc_ids": 2,
+    "titles": [
+      "Tomate",
+      "Manual MILPA - Lechuga"
+    ],
+    "auto_focus": true,
+    "crop_focus": "tomate",
+    "scope": "crop_boost",
+    "answer_first_240": "Hallazgos en la biblioteca para «Tomate»:  - Guía Técnica Integral: Producción de Tomate de Alto Rendimiento (Edición de Vanguardia) La producción comercial de tomate (Solanum lycopersicum) ha evolucionado hacia una disciplina que combina la agronomía de precisión, la ingeniería …"
+  },
+  {
+    "kind": "simple",
+    "query": "Riego",
+    "elapsed_ms": 76,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 4,
+    "unique_doc_ids": 2,
+    "titles": [
+      "Manual MILPA - Lechuga",
+      "manual_lechuga_milpa_2026",
+      "manual_lechuga_milpa_2026",
+      "Manual MILPA - Lechuga"
+    ],
+    "auto_focus": null,
+    "crop_focus": null,
+    "scope": null,
+    "answer_first_240": "Parámetros agronómicos relevantes para «Riego»:  - MANEJO DEL CULTIVO Requerimientos generales: clima fresco, suelos sueltos con buen drenaje y alta materia orgánica, riego frecuente y | Preparación del terreno: barbecho, rastreo y formación de constante. [1] - | Riego: alta frec…"
+  },
+  {
+    "kind": "simple",
+    "query": "Fertilización",
+    "elapsed_ms": 53,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 3,
+    "unique_doc_ids": 3,
+    "titles": [
+      "Manual MILPA - Lechuga",
+      "manual_lechuga_milpa_2026",
+      "manual_calabaza_milpa_2026"
+    ],
+    "auto_focus": null,
+    "crop_focus": null,
+    "scope": null,
+    "answer_first_240": "Parámetros agronómicos relevantes para «Fertilización»:  - Falta de potasio: reforzar la fertilización potásica durante [1] - Crecimiento vegetativo (días 9 a 30): primera fertilización nitrogenada, deshierbe, monitoreo de plagas. [2] - Antes de cosecha (días 56 a 60): suspender …"
+  },
+  {
+    "kind": "simple",
+    "query": "Plagas",
+    "elapsed_ms": 61,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 3,
+    "unique_doc_ids": 2,
+    "titles": [
+      "Manual MILPA - Lechuga",
+      "Manual Agronomico Integral del Maiz en Sistema MILPA",
+      "Manual MILPA - Lechuga"
+    ],
+    "auto_focus": null,
+    "crop_focus": null,
+    "scope": null,
+    "answer_first_240": "Hallazgos en la biblioteca para «Plagas»:  - Riesgos por frío: detención de germinación, daño por | Manejo de plagas: monitoreo de pulgón, mosca blanca, heladas en plántulas, tip-burn por estrés térmico fluctuante. [1] - Su asociacion con frijol (Phaseolus spp.) y calabaza (Cucur…"
+  },
+  {
+    "kind": "simple",
+    "query": "Suelo",
+    "elapsed_ms": 64,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 3,
+    "unique_doc_ids": 2,
+    "titles": [
+      "Manual MILPA - Lechuga",
+      "Manual MILPA - Lechuga",
+      "Manual Agronomico Integral del Maiz en Sistema MILPA"
+    ],
+    "auto_focus": null,
+    "crop_focus": null,
+    "scope": null,
+    "answer_first_240": "Hallazgos en la biblioteca para «Suelo»:  - [Tabla stream 74x2] Tabla (encabezado): 0 | 1 Riesgos por exceso de lluvia: pudriciones del cuello, mildiú, MANUAL TÉCNICO DEL sclerotinia, lavado de nitratos del suelo, encharcamiento. [1] - - Revisar humedad del suelo en distintos pun…"
+  },
+  {
+    "kind": "compound",
+    "query": "Temperatura ideal para la lechuga",
+    "elapsed_ms": 97,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 3,
+    "unique_doc_ids": 2,
+    "titles": [
+      "manual_lechuga_milpa_2026",
+      "Manual MILPA - Lechuga",
+      "Manual MILPA - Lechuga"
+    ],
+    "auto_focus": true,
+    "crop_focus": "lechuga",
+    "scope": "crop_boost",
+    "answer_first_240": "Parámetros agronómicos relevantes para «Temperatura ideal para la lechuga»:  - CONDICIONES CLIMÁTICAS IDEALES ──────────────────────────────────────────────────────────────────────────── Temperatura óptima: 15 °C a 22 °C (rango operativo MILPA: optimal_temp_min=10, optimal_temp_m…"
+  },
+  {
+    "kind": "compound",
+    "query": "pH óptimo del suelo para maíz",
+    "elapsed_ms": 98,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 1,
+    "unique_doc_ids": 1,
+    "titles": [
+      "Manual Agronomico Integral del Maiz en Sistema MILPA"
+    ],
+    "auto_focus": true,
+    "crop_focus": "maiz",
+    "scope": "crop_boost",
+    "answer_first_240": "Parámetros agronómicos relevantes para «pH óptimo del suelo para maíz»:  - 2.4 pH del suelo y conductividad - pH optimo para maiz: 5.5 a 7.5. [1] - 2.5 Radiacion y luz - Maiz es planta C4: requiere mas de 8 horas de luz diaria. [1]  Fuentes: [1] — \"Manual Agronomico Integral del …"
+  },
+  {
+    "kind": "compound",
+    "query": "Dosis de nitrógeno por hectárea en maíz",
+    "elapsed_ms": 90,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 2,
+    "unique_doc_ids": 2,
+    "titles": [
+      "0686c239",
+      "manual_calabaza_milpa_2026"
+    ],
+    "auto_focus": true,
+    "crop_focus": "maiz",
+    "scope": "crop_boost",
+    "answer_first_240": "Parámetros agronómicos relevantes para «Dosis de nitrógeno por hectárea en maíz»:  - SECUENCIA MAÍZ-FRIJOL: La rotación maíz-frijol es benéfica porque el frijol fija nitrógeno que aprovecha el maíz del siguiente ciclo. [1] - BENEFICIOS DE LA ROTACIÓN: - Reducción de plagas especí…"
+  },
+  {
+    "kind": "compound",
+    "query": "¿Cómo se controla el gusano cogollero del maíz?",
+    "elapsed_ms": 90,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 4,
+    "unique_doc_ids": 3,
+    "titles": [
+      "Manual MILPA - Lechuga",
+      "Manual MILPA - Lechuga",
+      "0686c239",
+      "8d1c1e14"
+    ],
+    "auto_focus": true,
+    "crop_focus": "maiz",
+    "scope": "crop_boost",
+    "answer_first_240": "Pasos y recomendaciones para «¿Cómo se controla el gusano cogollero del maíz?»:  - GUÍA COMPLETA DE CULTIVOS PARA EVALUACIÓN DEL SISTEMA RAG ========================================================= SECCIÓN 1: CARACTERÍSTICAS DEL MAÍZ ==================================== El maíz …"
+  },
+  {
+    "kind": "compound",
+    "query": "¿Cuándo regar la lechuga en clima cálido?",
+    "elapsed_ms": 159,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 3,
+    "unique_doc_ids": 2,
+    "titles": [
+      "manual_lechuga_milpa_2026",
+      "Manual MILPA - Lechuga",
+      "Manual MILPA - Lechuga"
+    ],
+    "auto_focus": true,
+    "crop_focus": "lechuga",
+    "scope": "crop_boost",
+    "answer_first_240": "Pasos y recomendaciones para «¿Cuándo regar la lechuga en clima cálido?»:  - arda en `crop_profiles.cycle_days` un valor operativo de 60 días para lechuga, ajustable con un UPDATE sin tocar código. [1] - Requerimientos generales: clima fresco, suelos sueltos con buen drenaje y al…"
+  },
+  {
+    "kind": "compound",
+    "query": "Ciclo de cultivo del frijol en sistema milpa",
+    "elapsed_ms": 170,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 4,
+    "unique_doc_ids": 4,
+    "titles": [
+      "Guia Tecnica de Cultivos - Edicion Sintetica 2025",
+      "Cultivo de Maiz en la Milpa Tradicional",
+      "74b38653",
+      "manual_lechuga_milpa_2026"
+    ],
+    "auto_focus": true,
+    "crop_focus": "frijol",
+    "scope": "crop_boost",
+    "answer_first_240": "Parámetros agronómicos relevantes para «Ciclo de cultivo del frijol en sistema milpa»:  - La fijacion biologica de nitrogeno aporta entre 40 y 80 kg N/ha al sistema, beneficiando cultivos subsecuentes. [1] - 2.2 Variedades por region Variedad Region Ciclo (dias) Color grano Rendi…"
+  },
+  {
+    "kind": "compound",
+    "query": "Distancia de siembra recomendada para calabaza",
+    "elapsed_ms": 122,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 3,
+    "unique_doc_ids": 3,
+    "titles": [
+      "Manual MILPA - Lechuga",
+      "Guia Tecnica de Cultivos - Edicion Sintetica 2025",
+      "manual_lechuga_milpa_2026"
+    ],
+    "auto_focus": true,
+    "crop_focus": "calabaza",
+    "scope": "crop_boost",
+    "answer_first_240": "Parámetros agronómicos relevantes para «Distancia de siembra recomendada para calabaza»:  - Calabaza (Cucurbita spp.) 3.1 Especies cultivadas en Mexico Mexico es centro de origen de al menos cuatro especies de calabaza domesticadas: C. [1] - La calabaza en la milpa cumple funcion…"
+  },
+  {
+    "kind": "compound",
+    "query": "¿Qué humedad de suelo necesita el pepino?",
+    "elapsed_ms": 110,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 3,
+    "unique_doc_ids": 2,
+    "titles": [
+      "Manual MILPA - Lechuga",
+      "Manual MILPA - Lechuga",
+      "manual_calabaza_milpa_2026"
+    ],
+    "auto_focus": true,
+    "crop_focus": "pepino",
+    "scope": "crop_boost",
+    "answer_first_240": "Parámetros agronómicos relevantes para «¿Qué humedad de suelo necesita el pepino?»:  - | Humedad del suelo recomendada: 65 % a 85 % de capacidad de campo (rango operativo MILPA: Ciclo aproximado: 45 a 70 días desde siembra hasta optimal_soil_moisture_min=65, cosecha según la vari…"
+  },
+  {
+    "kind": "compound",
+    "query": "Variedades de tomate resistentes a sequía",
+    "elapsed_ms": 98,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 3,
+    "unique_doc_ids": 2,
+    "titles": [
+      "Manual MILPA - Lechuga",
+      "Manual MILPA - Lechuga",
+      "Tomate"
+    ],
+    "auto_focus": true,
+    "crop_focus": "tomate",
+    "scope": "crop_boost",
+    "answer_first_240": "Hallazgos en la biblioteca para «Variedades de tomate resistentes a sequía»:  - Guía Técnica Integral: Producción de Tomate de Alto Rendimiento (Edición de Vanguardia) La producción comercial de tomate (Solanum lycopersicum) ha evolucionado hacia una disciplina que combina la agr…"
+  },
+  {
+    "kind": "compound",
+    "query": "Manejo integrado de plagas en lechuga",
+    "elapsed_ms": 60,
+    "answer_mode": "synthesis",
+    "insufficient": false,
+    "n_fragments": 3,
+    "unique_doc_ids": 2,
+    "titles": [
+      "Manual MILPA - Lechuga",
+      "Manual MILPA - Lechuga",
+      "manual_lechuga_milpa_2026"
+    ],
+    "auto_focus": true,
+    "crop_focus": "lechuga",
+    "scope": "crop_boost",
+    "answer_first_240": "Hallazgos en la biblioteca para «Manejo integrado de plagas en lechuga»:  - MANUAL TÉCNICO DEL CULTIVO DE LECHUGA EN PARCELAS DE MILPA Riesgos por exceso de lluvia: pudriciones del cuello, mildiú, sclerotinia, lavado de nitratos del suelo, encharcamiento. [1] - Poda o guía: la le…"
+  }
+]

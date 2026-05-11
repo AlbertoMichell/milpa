@@ -1,19 +1,12 @@
 # milpa_ai_backend/core/logic/extraction.py
 # ------------------------------------------------------------
-# Extracción avanzada de contenido:
-#   - PDF (PyMuPDF): texto por "span" con bbox (coords PDF), bloques e imágenes.
-#   - DOCX (python-docx): texto preservando estructura básica (sin bbox).
-#   - TXT: lectura robusta.
-#   - Métricas por página: coverage (heurístico) y DSI% (integridad de estructura).
-#   - Detección de figuras (blocks tipo imagen) con bbox.
-#   - Generación de "fine refs" (bbox por fragmento) para clic-through.
-# Integra con:
-#   - core/logic/tables.py para tablas (detección/parseo con cita por celda).
-#   - core/logic/ocr.py para OCR cuando coverage/DSI son bajos.
-# Persistencia:
-#   - Este módulo SOLO devuelve una estructura rica de extracción.
-#     La persistencia en SQLite (docs/fragments/fine_refs/tables/figures)
-#     puedes hacerla en tu pipeline de ingesta cuando acoples todo.
+# DEPRECATED — pipeline alternativo no cableado al ingest activo.
+#
+# El pipeline operativo vive en `core/logic/extract.py` (extract_document para
+# PDF, extract_docx_to_db para DOCX y extract_text_to_db para TXT/MD). Este
+# módulo retiene utilidades de extracción de bbox por span para usos futuros
+# (visor PDF clic-through). NO IMPORTAR desde el endpoint /api/documents/ingest
+# — dejaría dos pipelines coexistiendo.
 # ------------------------------------------------------------
 from __future__ import annotations
 
@@ -175,17 +168,19 @@ def extract_txt(path: str) -> ExtractionResult:
     """
     Extrae texto plano en UTF-8 (con fallback). Bboxes no aplican.
     """
-    encodings = ("utf-8", "utf-8-sig", "latin-1")
-    content = None
-    for enc in encodings:
+    # Solo usar UTF-8, sin fallback problemáticos
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            content = f.read()
+    except UnicodeDecodeError as e:
+        # Si falla UTF-8, intentar UTF-8-SIG
         try:
-            with open(path, "r", encoding=enc, errors="ignore") as f:
+            with open(path, "r", encoding="utf-8-sig") as f:
                 content = f.read()
-                break
         except Exception:
-            continue
-    if content is None:
-        raise RuntimeError("No se pudo leer TXT en codificaciones comunes.")
+            # Último recurso: leer como bytes y decodificar con reemplazo
+            with open(path, "rb") as f:
+                content = f.read().decode("utf-8", errors="replace")
 
     page = PageExtraction(page=1, text=content, spans=[], dsi=1.0, coverage=1.0, tables=[], figures=[])
     return ExtractionResult(mimetype="text/plain", pages=[page])

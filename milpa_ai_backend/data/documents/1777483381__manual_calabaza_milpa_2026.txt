@@ -1,0 +1,240 @@
+MANUAL TÉCNICO DEL CULTIVO DE CALABAZA EN PARCELAS DE MILPA
+Edición operativa 2026 — guía agronómica integral para acompañar al sistema MILPA
+Fuente curada para la biblioteca MILPA. Procesable por extractor TXT del backend.
+
+────────────────────────────────────────────────────────────────────────────
+A. INFORMACIÓN GENERAL DEL CULTIVO
+────────────────────────────────────────────────────────────────────────────
+
+Nombre común: calabaza
+Nombres científicos asociados: Cucurbita pepo, Cucurbita moschata, Cucurbita
+argyrosperma. La taxonomía MILPA mapea las variantes "cucurbita", "calabaza
+de Castilla", "calabacita", "tamalayota" y "pipiana" al término canónico
+calabaza mediante synonyms.json.
+
+Tipo de cultivo: cucurbitácea anual de hábito rastrero o semi-trepador,
+componente clásico de la milpa mesoamericana junto al maíz y al frijol.
+
+Ciclo aproximado: 95 a 130 días desde siembra hasta cosecha de fruto, con
+un valor de referencia operativa de 105 días que es el que el sistema
+guarda en crop_profiles.cycle_days. Variedades de fruto tierno (calabacita)
+pueden cosecharse a los 60-75 días.
+
+Requerimientos generales: suelos profundos, ricos en materia orgánica, con
+buen drenaje y exposición plena al sol. Tolerancia moderada a la sequía
+después del establecimiento, pero alta demanda hídrica en floración y
+llenado de fruto.
+
+────────────────────────────────────────────────────────────────────────────
+B. CONDICIONES CLIMÁTICAS IDEALES
+────────────────────────────────────────────────────────────────────────────
+
+Temperatura óptima diurna: 20 °C a 30 °C
+Temperatura mínima tolerable: 12 °C (por debajo se detiene la germinación
+y se daña el desarrollo vegetativo).
+Temperatura máxima crítica: 34 °C (por encima de 35 °C cae la cuajado del
+fruto y aparecen abortos florales).
+Humedad relativa recomendada: 50 % a 80 %.
+
+Riesgos por calor extremo: aborto de flores, deshidratación foliar, golpe
+de sol en frutos expuestos.
+Riesgos por frío: detención de la germinación, daño por heladas en plántula,
+pudrición de raíz si el suelo está frío y húmedo.
+Riesgos por exceso de lluvia: enfermedades fúngicas (mildiú, oidio,
+antracnosis), pudrición de raíz, lavado de nutrientes, encharcamiento.
+
+────────────────────────────────────────────────────────────────────────────
+C. CONDICIONES EDAFOLÓGICAS IDEALES
+────────────────────────────────────────────────────────────────────────────
+
+Tipo de suelo recomendado: franco a franco-arenoso, profundo, con buena
+estructura.
+pH recomendado: 6.0 a 7.5 (ligeramente ácido a neutro).
+Drenaje: indispensable; la calabaza no tolera encharcamientos prolongados.
+Materia orgánica: superior a 3 %, idealmente con incorporación de compost
+o estiércol bien curado antes de siembra.
+Nitrógeno (N): demanda media-alta, 80 a 100 kg/ha como referencia.
+Fósforo (P): 60 a 80 kg/ha, fundamental en la formación radicular y
+floración.
+Potasio (K): 80 a 100 kg/ha, especialmente en fructificación para calidad
+y conservación del fruto.
+Conductividad eléctrica: por debajo de 3.0 dS/m. Salinidades altas reducen
+germinación y crecimiento.
+Humedad del suelo recomendada: 50 % a 80 % de capacidad de campo.
+
+────────────────────────────────────────────────────────────────────────────
+D. MANEJO DEL CULTIVO
+────────────────────────────────────────────────────────────────────────────
+
+Preparación del terreno: barbecho, rastreo y formación de surcos o camas
+elevadas si hay riesgo de encharcamiento. Incorporar materia orgánica al
+menos 15 días antes de siembra.
+
+Siembra: directa, dos a tres semillas por golpe a 2-3 cm de profundidad,
+distancia 1.5 a 2 m entre matas. En milpa intercalada, ubicar la calabaza
+en surcos alternos del maíz para aprovechar la cobertura del suelo.
+
+Riego: profundo y espaciado durante el establecimiento; frecuente y
+moderado durante floración y fructificación. Goteo recomendado para
+evitar mojar follaje y reducir hongos.
+
+Fertilización: aplicación basal de fósforo a la siembra; nitrógeno
+fraccionado durante el crecimiento vegetativo; potasio reforzado al
+inicio de fructificación. Ajustar dosis según análisis de suelo.
+
+Control de malezas: deshierbe manual o mecánico durante las primeras
+cuatro semanas. Después la cobertura natural de la planta suprime las
+malezas (función ecológica clave dentro de la milpa).
+
+Manejo de plagas: monitorear gusanos del fruto, pulgones, mosca blanca,
+diabrótica. Trampas amarillas, control biológico (Trichogramma,
+Beauveria bassiana, neem) y rotación.
+
+Manejo de enfermedades: prevenir mildiú, oidio, antracnosis y virosis
+mediante drenaje, separación adecuada, riego al pie y eliminación de
+plantas enfermas.
+
+Poda o guía: no es esencial; opcional en variedades trepadoras.
+
+Polinización: cruzada por insectos (abejas, abejorros). Evitar insecticidas
+durante floración. Considerar polinización manual si la abundancia de
+polinizadores es baja.
+
+Cosecha: para fruto maduro, esperar a que el pedúnculo se seque y la
+cáscara endurezca. Para calabacita, cortar el fruto tierno a 10-15 cm de
+longitud antes de que la semilla endurezca.
+
+────────────────────────────────────────────────────────────────────────────
+E. SOLUCIÓN A PROBLEMAS AMBIENTALES
+────────────────────────────────────────────────────────────────────────────
+
+Calor excesivo: aplicar acolchado vegetal, regar muy temprano por la
+mañana o al atardecer, instalar malla sombra al 30-40 % en parcelas
+expuestas, hidratar el suelo profundamente.
+Exceso de lluvias: mejorar drenaje (zanjas, camas elevadas), suspender
+riego, eliminar restos vegetales en descomposición, aplicar caldo
+sulfocálcico para prevenir hongos.
+Sequía prolongada: priorizar riego por goteo, aumentar materia orgánica,
+acolchar para reducir evaporación, intensificar monitoreo de humedad.
+Humedad del suelo excesiva: suspender riego, mejorar drenaje, airear el
+suelo, retirar mulches encharcados.
+Humedad del suelo baja: aumentar la frecuencia de riego con menor volumen
+por evento, acolchar el suelo, evaluar reparaciones del sistema de riego.
+Riesgo de hongos: reducir riego foliar, aumentar separación entre plantas,
+aplicar caldos minerales preventivos, eliminar plantas afectadas.
+Baja temperatura: cubrir con agrotextil o microtúneles, retrasar siembra
+hasta que el suelo supere 15 °C, monitorear pronóstico de heladas.
+Viento fuerte: instalar barreras rompevientos, reforzar tutores en
+variedades trepadoras, regar para reducir estrés hídrico.
+
+────────────────────────────────────────────────────────────────────────────
+F. SOLUCIÓN A PROBLEMAS NUTRICIONALES
+────────────────────────────────────────────────────────────────────────────
+
+Falta de nitrógeno: aplicar fertilización nitrogenada (urea, sulfato de
+amonio o composta rica en N) en dosis fraccionada. Síntomas: hojas
+amarillas en partes bajas, crecimiento lento.
+Exceso de nitrógeno: suspender aportes, regar para lavado, equilibrar con
+potasio. Síntomas: follaje exuberante con poca floración y fruto.
+Falta de fósforo: aplicar superfosfato triple o roca fosfórica al pie de
+la planta. Síntomas: hojas violáceas, raíz pobre, floración tardía.
+Falta de potasio: aplicar sulfato de potasio o cenizas, especialmente en
+floración y fructificación. Síntomas: bordes de hoja quemados, fruto
+pequeño y blando.
+pH bajo (suelo ácido): aplicar cal agrícola dosificada (1 a 2 t/ha) en
+función del análisis. Repetir lentamente si pH < 5.5.
+pH alto (suelo alcalino): aplicar azufre elemental o materia orgánica
+ácida (compost de hojas), evitar fertilizantes alcalinizantes.
+Salinidad alta: lavado del perfil con agua de baja salinidad, mejorar
+drenaje, reducir fertilizantes salinos, aplicar yeso agrícola si
+predomina sodio.
+Baja materia orgánica: incorporar compost, estiércol curado, abonos verdes
+(crotalaria, mucuna) en rotación.
+
+────────────────────────────────────────────────────────────────────────────
+G. ACTIVIDADES RECOMENDADAS POR ETAPA Y SITUACIÓN
+────────────────────────────────────────────────────────────────────────────
+
+Germinación (días 0 a 12 desde siembra):
+  - Riego suave para mantener humedad superficial.
+  - Monitoreo diario de emergencia.
+  - Control inicial de malezas alrededor de la mata.
+  - Vigilancia de hormigas y aves cortadoras.
+
+Crecimiento vegetativo (días 12 a 45):
+  - Fertilización nitrogenada fraccionada.
+  - Aporques ligeros para fortalecer raíz.
+  - Control de malezas y de plagas iniciales.
+  - Revisar humedad del suelo y temperatura.
+
+Floración (días 45 a 70):
+  - Cuidado especial de polinizadores: evitar insecticidas amplios.
+  - Mantener humedad estable; evitar estrés hídrico.
+  - Aplicar potasio para sostener cuajado.
+  - Vigilar mildiú y oidio si la humedad ambiental supera 80 %.
+
+Fructificación (días 70 a 95):
+  - Revisar frutos contra plagas y enfermedades.
+  - Aplicar potasio adicional.
+  - Riego estable y profundo.
+  - Acolchar suelo para proteger frutos del contacto directo.
+
+Antes de cosecha (días 95 a ciclo completo):
+  - Reducir riego para favorecer maduración y conservación.
+  - Confirmar endurecimiento del pedúnculo y cáscara.
+  - Programar logística de corte y transporte.
+
+Actividades correctivas según condiciones del suelo:
+  - Si se detecta humedad baja, programar riego por goteo controlado.
+  - Si pH se desvía, calibrar enmienda de cal o azufre.
+  - Si nutrientes bajan, refuerzo localizado al pie de la planta.
+
+Actividades correctivas según condiciones climáticas:
+  - Si la temperatura supera 35 °C, aplicar sombra y riego en horas
+    frescas.
+  - Si llueve más de 30 mm en una semana, revisar drenaje y aplicar
+    biofungicidas preventivos.
+  - Si se pronostica frío, cubrir con agrotextil.
+
+────────────────────────────────────────────────────────────────────────────
+H. REGLAS DE DECISIÓN PARA EL MOTOR AGRONÓMICO
+────────────────────────────────────────────────────────────────────────────
+
+Estas reglas son legibles tanto por humanos como por el extractor del
+sistema MILPA. Sirven como base genérica de comparación entre las
+condiciones reales de la parcela y los requerimientos del cultivo.
+
+IF temperatura_aire > 34 THEN aplicar_sombra_y_riego_controlado
+IF temperatura_aire > 38 THEN suspender_actividades_de_campo_y_proteger_frutos
+IF temperatura_aire < 12 THEN cubrir_con_agrotextil_y_retrasar_riego
+IF humedad_suelo < 50 THEN aumentar_frecuencia_de_riego
+IF humedad_suelo < 30 THEN riego_urgente_y_acolchado
+IF humedad_suelo > 80 THEN mejorar_drenaje_y_suspender_riego
+IF lluvia_excesiva = TRUE THEN suspender_riego_y_prevenir_hongos
+IF humedad_aire > 85 AND temperatura_aire > 25 THEN aplicar_biofungicida
+IF nitrogeno_bajo = TRUE THEN aplicar_fuente_nitrogenada_fraccionada
+IF nitrogeno_alto = TRUE THEN suspender_aportes_y_balancear_con_potasio
+IF fosforo_bajo = TRUE THEN aplicar_fosfato_al_pie
+IF potasio_bajo = TRUE THEN reforzar_fertilizacion_potasica_en_floracion
+IF ph_bajo = TRUE THEN aplicar_cal_agricola_dosificada
+IF ph_alto = TRUE THEN aplicar_azufre_o_compost_acido
+IF conductividad_alta = TRUE THEN lavar_perfil_y_mejorar_drenaje
+IF materia_organica_baja = TRUE THEN incorporar_compost_o_abono_verde
+IF etapa = "germinación" THEN riego_suave AND monitoreo_emergencia
+IF etapa = "vegetativo" THEN fertilizacion_nitrogenada AND control_de_malezas
+IF etapa = "floración" THEN cuidar_polinizadores AND mantener_humedad_estable
+IF etapa = "fructificación" THEN reforzar_potasio AND riego_estable
+IF etapa = "cosecha" THEN reducir_riego AND confirmar_madurez
+
+────────────────────────────────────────────────────────────────────────────
+NOTA OPERATIVA PARA MILPA
+────────────────────────────────────────────────────────────────────────────
+
+Este documento se carga a la biblioteca MILPA con licencia interna y se
+indexa por el extractor TXT con chunking semántico, BM25 y vectorización
+multilingüe. Las reglas declarativas de la sección H son la fuente que
+alimenta el motor de recomendaciones, alertas y plan RAG de calendario.
+Ningún archivo del código tiene reglas escritas para "calabaza" como caso
+especial: las reglas viven aquí y se recuperan dinámicamente cuando el
+usuario opera un cultivo cuyo `crop_name` es calabaza, igual que ocurre
+con maíz, frijol, chile, tomate o cualquier cultivo futuro.
