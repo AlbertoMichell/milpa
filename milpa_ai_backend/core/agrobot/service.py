@@ -68,15 +68,21 @@ async def respond(req: AgroBotRequest) -> AgroBotResponse:
 
     context = build_context(req.user_id, req.message)
     target_crop = context.get("target_crop")
+    requested_active = context.get("requested_active_crop")
+    active_crops = context.get("active_crops") or []
+
+    if intent.is_water and not requested_active and len(active_crops) > 1:
+        context["target_crop"] = None
+        target_crop = None
 
     if context.get("rag_conflict"):
         warnings.append("requested_crop_not_active")
-    if not context.get("active_crops"):
+    if not active_crops:
         warnings.append("no_active_crops")
 
     if req.mode != "auto":
         mode = req.mode
-    elif intent.is_library or not context.get("active_crops"):
+    elif intent.is_library or not active_crops:
         mode = "biblioteca"
     else:
         mode = "parcela"

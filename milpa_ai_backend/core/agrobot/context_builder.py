@@ -160,7 +160,8 @@ def build_context(user_id: int, message: str) -> Dict[str, Any]:
     requested_catalog = _detect_catalog_crop(message)
     rag_conflict = bool(requested_catalog and not requested_active)
 
-    target_crop = requested_active or (active_crops[0] if active_crops else None)
+    fallback_crop = active_crops[0] if active_crops else None
+    target_crop = requested_active or fallback_crop
 
     health_by_crop = []
     for crop in active_crops:
@@ -170,6 +171,8 @@ def build_context(user_id: int, message: str) -> Dict[str, Any]:
     return {
         "active_crops": active_crops,
         "target_crop": target_crop,
+        "requested_active_crop": requested_active,
+        "fallback_crop": fallback_crop,
         "requested_crop_name": requested_catalog,
         "rag_conflict": rag_conflict,
         "parcel_latest": parcel_latest,
