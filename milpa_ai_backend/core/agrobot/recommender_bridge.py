@@ -9,11 +9,16 @@ from milpa_ai_backend.api.crops import RecommendationRequest, generate_recommend
 from milpa_ai_backend.core.logic.db import get_conn
 
 
+# AgroBot no debe insertar recomendaciones nuevas por saludos, estado general,
+# consultas de biblioteca ni preguntas hídricas generales. Esos casos se resuelven
+# con sensores + diagnóstico + action_hint en composer.py.
 _SKIP_INTENTS = {
     "water_balance",
     "library_question",
     "garbage",
     "harvest_date",
+    "crop_status",
+    "unknown",
 }
 
 
@@ -34,16 +39,26 @@ def get_recent_recommendation(
     max_age_hours: int = 6,
 ) -> Optional[Dict[str, Any]]:
     """
-    Evita que AgroBot genere una recomendación idéntica o equivalente por cada
-    mensaje del usuario. La tabla actual no tiene columna `intent`, así que se
-    reutiliza cualquier recomendación pendiente reciente del mismo cultivo.
+    Reutiliza una recomendación pendiente reciente para evitar duplicados.
+
+    La tabla actual no tiene columna `intent`, así que se reutiliza cualquier
+    recomendación pendiente reciente del mismo cultivo.
     """
     try:
         with get_conn() as conn:
             row = conn.execute(
                 """
-                SELECT id, user_crop_id, query_text, action, priority, detail_html,
-                       citations, status, faithfulness, created_at
+                SELECT
+                    id,
+                    user_crop_id,
+                    query_text,
+                    action,
+                    priority,
+                    detail_html,
+                    citations,
+                    status,
+                    faithfulness,
+                    created_at
                 FROM recommendations
                 WHERE user_crop_id = ?
                   AND status = 'pendiente'

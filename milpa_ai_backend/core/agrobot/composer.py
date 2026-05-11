@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
 import re
+from typing import Any, Dict, List, Optional
 
 from .diagnostics import (
     build_action_hint,
@@ -9,10 +9,10 @@ from .diagnostics import (
     crop_status_line,
     explain_health,
     profile_comparison,
+    profile_range,
     range_text,
     sensor_summary,
     water_status,
-    profile_range,
 )
 from .intent import IntentResult, normalize_text
 
@@ -24,11 +24,32 @@ _TECHNICAL_RAG_INTENTS = {
     "climate_risk",
 }
 
+_DIRTY_TEXT_MARKERS = {
+    "eres el componente documental",
+    "tu respuesta será usada solo como evidencia",
+    "tu respuesta sera usada solo como evidencia",
+    "no debes desplazar ni contradecir",
+    "pregunta del agricultor",
+    "devuelve solo manejo técnico",
+    "devuelve solo manejo tecnico",
+    "parámetros agronómicos relevantes para «recomendaciones",
+    "parametros agronomicos relevantes para «recomendaciones",
+    "pasos y recomendaciones para «eres",
+    "pasos y recomendaciones para \"eres",
+}
+
+_BAD_GENERIC_MARKERS = {
+    "beneficios de la rotación",
+    "beneficios de la rotacion",
+    "cultivo de cobertura",
+    "sección 12",
+    "seccion 12",
+}
+
 
 def _strip_html(text: Optional[str]) -> str:
     if not text:
         return ""
-
     out = str(text)
     out = re.sub(r"<br\s*/?>", "\n", out, flags=re.IGNORECASE)
     out = re.sub(r"</p>", "\n\n", out, flags=re.IGNORECASE)
@@ -38,6 +59,34 @@ def _strip_html(text: Optional[str]) -> str:
     out = out.replace("&nbsp;", " ").replace("&amp;", "&")
     out = re.sub(r"\n{3,}", "\n\n", out)
     return out.strip()
+
+
+def _is_dirty_text(text: Optional[str]) -> bool:
+    norm = normalize_text(text or "")
+    if not norm:
+        return False
+    return any(normalize_text(marker) in norm for marker in _DIRTY_TEXT_MARKERS)
+
+
+def _is_generic_bad_text(text: Optional[str]) -> bool:
+    norm = normalize_text(text or "")
+    if not norm:
+        return False
+    return any(normalize_text(marker) in norm for marker in _BAD_GENERIC_MARKERS)
+
+
+def _remove_rag_heading(text: str) -> str:
+    patterns = [
+        r"^Pasos y recomendaciones para [\"«][^\"»]+[\"»]\s*:\s*",
+        r"^Hallazgos en la biblioteca para [\"«][^\"»]+[\"»]\s*:\s*",
+        r"^Par[aá]metros agron[oó]micos relevantes para [\"«][^\"»]+[\"»]\s*:\s*",
+        r"^Informaci[oó]n encontrada relacionada con [\"«][^\"»]+[\"»]\s*:\s*",
+        r"^Definici[oó]n de [\"«][^\"»]+[\"»]\s*:\s*",
+    ]
+    out = text.strip()
+    for pattern in patterns:
+        out = re.sub(pattern, "", out, flags=re.IGNORECASE | re.DOTALL).strip()
+    return out
 
 
 def _extract_rag_answer(rag: Optional[Dict[str, Any]]) -> Optional[str]:
@@ -50,21 +99,43 @@ def _extract_rag_answer(rag: Optional[Dict[str, Any]]) -> Optional[str]:
     if not text:
         return None
 
-    m = re.search(r"\n\s*Fuentes:\s*", text, flags=re.IGNORECASE)
-    if m:
-        text = text[: m.start()].strip()
+    if _is_dirty_text(text) or _is_generic_bad_text(text):
+        return None
 
-    # Limpieza mínima. No usamos la limpieza agresiva vieja del frontend.
-    text = re.sub(r"^Pasos y recomendaciones para [\"«][^\"»]+[\"»]\s*:\s*", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^Hallazgos en la biblioteca para [\"«][^\"»]+[\"»]\s*:\s*", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^Par[aá]metros agron[oó]micos relevantes para [\"«][^\"»]+[\"»]\s*:\s*", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^Informaci[oó]n encontrada relacionada con [\"«][^\"»]+[\"»]\s*:\s*", "", text, flags=re.IGNORECASE)
-    text = re.sub(r"^Definici[oó]n de [\"«][^\"»]+[\"»]\s*:\s*", "", text, flags=re.IGNORECASE)
+    if "no hay información suficiente" in normalize_text(text):
+        return None
 
-    text = text.strip()
+    marker = re.search(r"\n\s*Fuentes:\s*", text, flags=re.IGNORECASE)
+    if marker:
+        text = text[: marker.start()].strip()
+
+    text = _remove_rag_heading(text)
+    if _is_dirty_text(text) or _is_generic_bad_text(text):
+        return None
+
     if len(text) > 1100:
         text = text[:1100].rsplit(" ", 1)[0] + "..."
+
     return text or None
+
+
+def _clean_recommendation_detail(text: Optional[str]) -> str:
+    detail = _strip_html(text)
+    if not detail:
+        return ""
+    if _is_dirty_text(detail) or _is_generic_bad_text(detail):
+        return ""
+    if "no hay información suficiente" in normalize_text(detail):
+        return ""
+
+    detail = _remove_rag_heading(detail)
+    if _is_dirty_text(detail) or _is_generic_bad_text(detail):
+        return ""
+
+    # Evita pegar fragmentos crudos excesivos dentro del chat.
+    if len(detail) > 280:
+        detail = detail[:280].rsplit(" ", 1)[0] + "..."
+    return detail.strip()
 
 
 def _recommendation_text(recommendation: Optional[Dict[str, Any]]) -> Optional[str]:
@@ -73,10 +144,10 @@ def _recommendation_text(recommendation: Optional[Dict[str, Any]]) -> Optional[s
 
     action = str(recommendation.get("action") or "").strip()
     priority = str(recommendation.get("priority") or "").strip()
-    detail = _strip_html(recommendation.get("detail_html"))
     source = recommendation.get("source")
+    detail = _clean_recommendation_detail(recommendation.get("detail_html"))
 
-    parts = []
+    parts: List[str] = []
     if priority:
         parts.append(f"prioridad {priority}")
     if source == "recent_pending":
@@ -84,12 +155,8 @@ def _recommendation_text(recommendation: Optional[Dict[str, Any]]) -> Optional[s
 
     suffix = f" ({', '.join(parts)})" if parts else ""
     line = f"{action}{suffix}."
-
     if detail:
-        if len(detail) > 500:
-            detail = detail[:500].rsplit(" ", 1)[0] + "..."
         line += f" {detail}"
-
     return line
 
 
@@ -163,6 +230,7 @@ def _compose_crop_answer(
     health: Optional[Dict[str, Any]],
     recommendation: Optional[Dict[str, Any]],
     rag_text: Optional[str],
+    rag: Optional[Dict[str, Any]],
     mode: str,
 ) -> str:
     sections: List[str] = []
@@ -198,15 +266,19 @@ def _compose_crop_answer(
         health=health,
         recommendation=recommendation,
     )
+
     if rec:
         sections.append("Recomendación:\n" + rec)
     elif action_hint:
         sections.append("Recomendación:\n" + action_hint)
 
-    if rag_text and (mode == "biblioteca" or intent.intent in _TECHNICAL_RAG_INTENTS):
-        sections.append("Soporte de biblioteca:\n" + rag_text)
+    if intent.intent in _TECHNICAL_RAG_INTENTS:
+        if rag_text:
+            sections.append("Soporte de biblioteca:\n" + rag_text)
+        elif rag and rag.get("used"):
+            sections.append("Soporte de biblioteca:\nNo encontré información suficiente en los documentos para respaldar esa parte de la consulta.")
 
-    return "\n\n".join(s for s in sections if s and s.strip())
+    return "\n\n".join(section for section in sections if section and section.strip())
 
 
 def compose_answer(
@@ -221,29 +293,27 @@ def compose_answer(
     if intent.intent == "garbage":
         return (
             "No entendí tu mensaje. Prueba con el nombre de un cultivo activo "
-            "o una consulta como 'cómo estoy de agua' o 'plagas en el maíz'."
+            "o una consulta como '¿cómo estoy de agua?' o 'plagas en el maíz'."
         )
 
     active_crops = context.get("active_crops") or []
     target_crop = context.get("target_crop")
     rag_text = _extract_rag_answer(rag)
 
-    if context.get("rag_conflict") and context.get("requested_crop_name"):
+    if context.get("rag_conflict") and context.get("requested_crop_name") and mode != "biblioteca":
         label = context["requested_crop_name"]
         base = f"Aviso: preguntaste por '{label}', pero no es un cultivo activo en tu parcela."
         if rag_text:
             return f"{base}\n\nInformación de biblioteca:\n{rag_text}"
-        return f"{base} Puedo responder desde biblioteca, pero no puedo hacer diagnóstico personalizado sin un cultivo activo."
-
-    if not active_crops:
-        if rag_text:
-            return rag_text
-        return "Aún no tienes cultivos registrados. Agrega uno en Configuración para recibir diagnóstico de parcela."
+        return f"{base} No puedo hacer diagnóstico personalizado y no encontré información suficiente en la biblioteca para esa solicitud."
 
     if mode == "biblioteca":
         if rag_text:
             return rag_text
-        return "No encontré evidencia suficiente en la biblioteca para responder esa consulta."
+        return "No tengo información suficiente en la biblioteca para procesar esa solicitud."
+
+    if not active_crops:
+        return "Aún no tienes cultivos registrados. Agrega uno en Configuración para recibir diagnóstico de parcela."
 
     if intent.intent == "water_balance" and not target_crop:
         return _compose_water_multicrop(context)
@@ -256,6 +326,7 @@ def compose_answer(
             health=health,
             recommendation=recommendation,
             rag_text=rag_text,
+            rag=rag,
             mode=mode,
         )
 

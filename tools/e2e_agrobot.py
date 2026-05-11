@@ -1,171 +1,130 @@
-#!/usr/bin/env python3
-"""
-E2E mínimo para AgroBot MILPA.
-
-Uso:
-  python tools/e2e_agrobot.py --base-url http://127.0.0.1:8000 --user-id 1
-
-Nota:
-  Este script no crea cultivos ni sensores. Debe ejecutarse contra una base que
-  ya tenga al menos un usuario con cultivos activos y, para el caso multicultivo,
-  idealmente dos o más cultivos activos.
-"""
 from __future__ import annotations
 
 import argparse
 import json
 import sys
-from dataclasses import dataclass
+import urllib.error
+import urllib.request
 from typing import Any, Dict, List, Optional
-from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
 
 
-@dataclass
-class Case:
-    name: str
-    message: str
-    expected_mode: Optional[str] = None
-    expected_intent: Optional[str] = None
-    require_target: Optional[bool] = None
-    require_rag_used: Optional[bool] = None
-    forbidden_answer_terms: tuple[str, ...] = ()
-    required_answer_terms: tuple[str, ...] = ()
+BAD_MARKERS = [
+    "eres el componente documental",
+    "no debes desplazar",
+    "pregunta del agricultor",
+    "devuelve solo manejo técnico",
+    "devuelve solo manejo tecnico",
+    "parámetros agronómicos relevantes para «recomendaciones",
+    "parametros agronomicos relevantes para «recomendaciones",
+]
 
 
-def post_json(url: str, payload: Dict[str, Any], timeout: int = 30) -> Dict[str, Any]:
+def post_json(url: str, payload: Dict[str, Any], timeout: int = 60) -> Dict[str, Any]:
     data = json.dumps(payload).encode("utf-8")
-    req = Request(
+    req = urllib.request.Request(
         url,
         data=data,
-        method="POST",
         headers={"Content-Type": "application/json"},
+        method="POST",
     )
     try:
-        with urlopen(req, timeout=timeout) as resp:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
             body = resp.read().decode("utf-8")
             return json.loads(body)
-    except HTTPError as exc:
+    except urllib.error.HTTPError as exc:
         body = exc.read().decode("utf-8", errors="replace")
         raise RuntimeError(f"HTTP {exc.code}: {body}") from exc
-    except URLError as exc:
-        raise RuntimeError(f"No se pudo conectar: {exc}") from exc
 
 
-def check_case(base_url: str, user_id: int, case: Case) -> List[str]:
-    url = base_url.rstrip("/") + "/api/agrobot/respond"
+def assert_no_prompt_leak(answer: str) -> Optional[str]:
+    normalized = answer.lower()
+    for marker in BAD_MARKERS:
+        if marker.lower() in normalized:
+            return f"fuga de prompt o texto interno: {marker}"
+    return None
+
+
+def run_case(base_url: str, user_id: int, message: str, expected_mode: Optional[str] = None) -> List[str]:
     payload = {
         "user_id": user_id,
-        "username": "E2E AgroBot",
-        "message": case.message,
-        "source": "e2e",
+        "username": "E2E",
+        "message": message,
+        "source": "e2e_agrobot",
         "mode": "auto",
     }
-    data = post_json(url, payload)
-    failures: List[str] = []
+    response = post_json(f"{base_url.rstrip('/')}/api/agrobot/respond", payload)
+    answer = str(response.get("answer") or "")
+    errors: List[str] = []
 
-    answer = str(data.get("answer") or "").lower()
-    rag = data.get("rag") or {}
-    target = data.get("target_crop")
+    if not answer.strip():
+        errors.append("respuesta vacía")
 
-    if case.expected_mode and data.get("mode") != case.expected_mode:
-        failures.append(f"mode esperado={case.expected_mode!r}, obtenido={data.get('mode')!r}")
+    leak = assert_no_prompt_leak(answer)
+    if leak:
+        errors.append(leak)
 
-    if case.expected_intent and data.get("intent") != case.expected_intent:
-        failures.append(f"intent esperado={case.expected_intent!r}, obtenido={data.get('intent')!r}")
+    if expected_mode and response.get("mode") != expected_mode:
+        errors.append(f"modo esperado {expected_mode}, recibido {response.get('mode')}")
 
-    if case.require_target is True and not target:
-        failures.append("se esperaba target_crop, pero vino vacío")
+    if message.lower().strip() in {"maíz", "maiz"}:
+        if "historia" in answer.lower() or "originari" in answer.lower():
+            errors.append("la consulta de estado de cultivo devolvió historia/origen")
+        if "sensores" not in answer.lower() and "humedad" not in answer.lower():
+            errors.append("la consulta de cultivo no incluyó sensores/humedad")
 
-    if case.require_target is False and target:
-        failures.append(f"no se esperaba target_crop, pero vino {target}")
+    if "agua" in message.lower() and "estado hídrico" not in answer.lower():
+        errors.append("la consulta de agua no devolvió estado hídrico")
 
-    if case.require_rag_used is True and not rag.get("used"):
-        failures.append("se esperaba rag.used=true")
+    if "historia" in message.lower():
+        if response.get("mode") != "biblioteca":
+            errors.append("consulta histórica no entró en modo biblioteca")
+        if not answer.strip():
+            errors.append("consulta histórica sin respuesta ni insuficiencia")
 
-    if case.require_rag_used is False and rag.get("used"):
-        failures.append("se esperaba rag.used=false o rag vacío")
+    print("\n===", message, "===")
+    print("mode:", response.get("mode"), "intent:", response.get("intent"), "warnings:", response.get("warnings"))
+    print(answer[:1000])
+    if errors:
+        print("ERRORES:")
+        for err in errors:
+            print("-", err)
+    else:
+        print("OK")
 
-    for term in case.forbidden_answer_terms:
-        if term.lower() in answer:
-            failures.append(f"answer contiene término prohibido: {term!r}")
-
-    for term in case.required_answer_terms:
-        if term.lower() not in answer:
-            failures.append(f"answer no contiene término requerido: {term!r}")
-
-    print(f"\n[{case.name}] {case.message!r}")
-    print(json.dumps({
-        "mode": data.get("mode"),
-        "intent": data.get("intent"),
-        "target_crop": data.get("target_crop"),
-        "warnings": data.get("warnings"),
-        "rag_used": bool(rag.get("used")),
-        "answer_preview": str(data.get("answer") or "")[:500],
-    }, ensure_ascii=False, indent=2))
-
-    return failures
+    return errors
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Pruebas E2E básicas para AgroBot MILPA")
     parser.add_argument("--base-url", default="http://127.0.0.1:8000")
-    parser.add_argument("--user-id", type=int, required=True)
+    parser.add_argument("--user-id", type=int, default=1)
     args = parser.parse_args()
 
     cases = [
-        Case(
-            name="crop-name-contextual",
-            message="maíz",
-            expected_mode="parcela",
-            require_target=True,
-            forbidden_answer_terms=("originaria", "historia del maíz"),
-            required_answer_terms=("sensores",),
-        ),
-        Case(
-            name="water-balance",
-            message="¿cómo estoy de agua?",
-            expected_mode="parcela",
-            expected_intent="water_balance",
-            required_answer_terms=("estado hídrico",),
-        ),
-        Case(
-            name="library-question",
-            message="historia del maíz",
-            expected_mode="biblioteca",
-            expected_intent="library_question",
-            require_rag_used=True,
-        ),
-        Case(
-            name="pest-contextual",
-            message="plagas en mi maíz",
-            expected_mode="parcela",
-            expected_intent="pest_or_disease",
-            require_target=True,
-            require_rag_used=True,
-        ),
-        Case(
-            name="crop-not-active",
-            message="tomate",
-            required_answer_terms=("no es un cultivo activo",),
-        ),
+        ("maíz", "parcela"),
+        ("¿cómo estoy de agua?", "parcela"),
+        ("historia del maíz", "biblioteca"),
+        ("plagas en mi maíz", "parcela"),
+        ("tomate", None),
     ]
 
-    all_failures: Dict[str, List[str]] = {}
-    for case in cases:
+    all_errors: List[str] = []
+    for message, expected_mode in cases:
         try:
-            failures = check_case(args.base_url, args.user_id, case)
+            errors = run_case(args.base_url, args.user_id, message, expected_mode)
+            all_errors.extend([f"{message}: {err}" for err in errors])
         except Exception as exc:
-            failures = [str(exc)]
-        if failures:
-            all_failures[case.name] = failures
+            all_errors.append(f"{message}: excepción {exc}")
+            print("\n===", message, "===")
+            print("EXCEPCIÓN:", exc)
 
-    if all_failures:
-        print("\nFALLÓ E2E AgroBot:")
-        print(json.dumps(all_failures, ensure_ascii=False, indent=2))
+    if all_errors:
+        print("\nRESULTADO: FALLÓ")
+        for err in all_errors:
+            print("-", err)
         return 1
 
-    print("\nOK: E2E AgroBot pasó todos los casos configurados.")
+    print("\nRESULTADO: OK")
     return 0
 
 

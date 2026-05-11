@@ -15,7 +15,7 @@ def _num(value: Any) -> Optional[float]:
 def crop_display_label(crop: Optional[Dict[str, Any]]) -> str:
     if not crop:
         return "cultivo"
-    return crop.get("display_name") or crop.get("crop_name") or "cultivo"
+    return str(crop.get("display_name") or crop.get("crop_name") or "cultivo")
 
 
 def crop_status_line(crop: Optional[Dict[str, Any]]) -> str:
@@ -28,7 +28,10 @@ def crop_status_line(crop: Optional[Dict[str, Any]]) -> str:
     if crop.get("growth_stage"):
         parts.append(f"etapa {crop['growth_stage']}")
     if crop.get("progress") is not None:
-        parts.append(f"avance {int(crop['progress'])}%")
+        try:
+            parts.append(f"avance {int(float(crop['progress']))}%")
+        except (TypeError, ValueError):
+            parts.append(f"avance {crop['progress']}%")
 
     label = crop_display_label(crop)
     if parts:
@@ -41,7 +44,6 @@ def sensor_summary(crop: Optional[Dict[str, Any]]) -> str:
         return ""
 
     parts: List[str] = []
-
     soil = _num(crop.get("soil_moisture"))
     temp = _num(crop.get("air_temp"))
     hum = _num(crop.get("air_humidity"))
@@ -77,10 +79,7 @@ def profile_range(profile: Optional[Dict[str, Any]]) -> Tuple[Optional[float], O
 def temp_range(profile: Optional[Dict[str, Any]]) -> Tuple[Optional[float], Optional[float]]:
     if not profile:
         return None, None
-    return (
-        _num(profile.get("optimal_temp_min")),
-        _num(profile.get("optimal_temp_max")),
-    )
+    return (_num(profile.get("optimal_temp_min")), _num(profile.get("optimal_temp_max")))
 
 
 def air_humidity_range(profile: Optional[Dict[str, Any]]) -> Tuple[Optional[float], Optional[float]]:
@@ -171,6 +170,26 @@ def profile_comparison(crop: Optional[Dict[str, Any]], profile: Optional[Dict[st
     return lines
 
 
+def _factor_to_text(factor: Any) -> Optional[str]:
+    if factor is None:
+        return None
+    if isinstance(factor, dict):
+        message = factor.get("message") or factor.get("summary") or factor.get("label")
+        code = factor.get("code")
+        severity = factor.get("severity")
+        if message:
+            if severity:
+                return f"{message} ({severity})"
+            return str(message)
+        if code:
+            return str(code)
+        return None
+    text = str(factor).strip()
+    if not text or text == "{}":
+        return None
+    return text
+
+
 def explain_health(health: Optional[Dict[str, Any]]) -> List[str]:
     if not health:
         return ["No hay evaluación de salud disponible para este cultivo."]
@@ -178,7 +197,7 @@ def explain_health(health: Optional[Dict[str, Any]]) -> List[str]:
     lines: List[str] = []
     label = health.get("label") or "sin evaluar"
     score = health.get("score")
-    summary = health.get("summary")
+    summary = health.get("summary") or ""
     factors = health.get("factors") or []
 
     if score is not None:
@@ -190,7 +209,8 @@ def explain_health(health: Optional[Dict[str, Any]]) -> List[str]:
         lines.append(str(summary).strip())
 
     if isinstance(factors, list) and factors:
-        clean_factors = [str(f).strip() for f in factors if str(f).strip()]
+        clean_factors = [_factor_to_text(factor) for factor in factors]
+        clean_factors = [factor for factor in clean_factors if factor]
         if clean_factors:
             lines.append("Factores detectados: " + "; ".join(clean_factors) + ".")
 
@@ -233,14 +253,16 @@ def build_action_hint(
     if status == "baja":
         return "Programa riego de recuperación y vuelve a revisar la humedad en 4 a 6 horas."
     if status == "alta":
-        return "Suspende riego temporalmente, revisa drenaje y verifica si hay encharcamiento."
+        return "Suspende el riego temporalmente, revisa drenaje y verifica si hay encharcamiento."
     if severity == "critico":
-        return "Prioriza revisión en campo y valida sensores antes de aplicar manejo correctivo."
+        return "Prioriza una revisión en campo y valida sensores antes de aplicar manejo correctivo."
     if intent_name == "pest_or_disease":
         return "Revisa hojas, tallos y envés para confirmar síntomas antes de aplicar control."
     if intent_name == "fertilization":
         return "Valida etapa del cultivo y condición del suelo antes de fertilizar."
     if intent_name == "soil_condition":
         return "Contrasta pH, conductividad y humedad con el perfil del cultivo antes de corregir suelo."
+    if intent_name == "climate_risk":
+        return "Mantén monitoreo climático y revisa cambios bruscos de temperatura, lluvia o viento."
 
     return "Mantén monitoreo y registra una nueva lectura en el próximo recorrido."
