@@ -2404,6 +2404,29 @@ select:focus, input:focus { outline: none; border-color: var(--primary); box-sha
     <a href="${FRONTEND}/login.html" target="_blank" class="btn btn-secondary">Login</a>
   </div>
 
+  <!-- Autenticacion frontend (token en localStorage de :8080) -->
+  <div class="card">
+    <div class="card-head"><h2>Autenticacion frontend</h2></div>
+    <div class="card-body">
+      <div class="field-group cols-2" style="margin-bottom:12px">
+        <div>
+          <label class="field-label" for="authUser">Usuario</label>
+          <input type="text" id="authUser" autocomplete="username" placeholder="usuario" />
+        </div>
+        <div>
+          <label class="field-label" for="authPass">Contrasena</label>
+          <input type="password" id="authPass" autocomplete="current-password" placeholder="••••••" />
+        </div>
+      </div>
+      <div class="ds-actions" style="align-items:center; gap:10px">
+        <button type="button" class="btn btn-primary" id="btnAuthLogin">Login y guardar token</button>
+        <button type="button" class="btn btn-secondary" id="btnAuthClear">Borrar token</button>
+        <span id="authStatus" class="text-muted"></span>
+      </div>
+      <div class="info-msg">Este token se guarda en localStorage del origen :8080.</div>
+    </div>
+  </div>
+
   <!-- Panel dataset en vivo (misma BD SQLite que el backend :8000 vía proxy /ai) -->
   <div class="card" id="datasetLiveCard">
     <div class="card-head">
@@ -2628,8 +2651,70 @@ select:focus, input:focus { outline: none; border-color: var(--primary); box-sha
 <script>
 // ─── Config ───────────────────────────────────────────────────────────────────
 const FRONTEND = '${FRONTEND}';
+const AUTH_STORAGE_KEY = 'token';
 let parsedDataset = null;
 let activePreviewTab = 'cultivos';
+
+function getAuthToken() {
+  return localStorage.getItem(AUTH_STORAGE_KEY) || sessionStorage.getItem(AUTH_STORAGE_KEY) || '';
+}
+
+function setAuthToken(token) {
+  if (!token) return;
+  localStorage.setItem(AUTH_STORAGE_KEY, token);
+}
+
+function clearAuthToken() {
+  localStorage.removeItem(AUTH_STORAGE_KEY);
+  sessionStorage.removeItem(AUTH_STORAGE_KEY);
+}
+
+function authTokenPreview(token) {
+  if (!token) return 'Sin token cargado.';
+  if (token.length <= 12) return 'Token activo.';
+  return 'Token activo: ' + token.slice(0, 6) + '...' + token.slice(-4);
+}
+
+function renderAuthStatus(msg, isError) {
+  const el = document.getElementById('authStatus');
+  if (!el) return;
+  const token = getAuthToken();
+  const base = msg || authTokenPreview(token);
+  el.textContent = base;
+  el.className = 'text-muted' + (isError ? ' result-err' : '');
+}
+
+async function authLogin() {
+  const user = (document.getElementById('authUser') || {}).value || '';
+  const pass = (document.getElementById('authPass') || {}).value || '';
+  if (!user || !pass) { renderAuthStatus('Usuario y contrasena requeridos.', true); return; }
+  renderAuthStatus('Iniciando sesion...', false);
+  try {
+    const r = await fetch(FRONTEND + '/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ username: String(user).trim(), password: String(pass) }),
+    });
+    const data = await r.json();
+    if (!r.ok || !data?.token) {
+      renderAuthStatus('Login fallido: ' + (data?.error || r.status), true);
+      return;
+    }
+    setAuthToken(String(data.token));
+    renderAuthStatus('Sesion lista para importar datasets.', false);
+  } catch (e) {
+    renderAuthStatus('Error de conexion: ' + e.message, true);
+  }
+}
+
+const btnAuthLogin = document.getElementById('btnAuthLogin');
+if (btnAuthLogin) btnAuthLogin.addEventListener('click', authLogin);
+const btnAuthClear = document.getElementById('btnAuthClear');
+if (btnAuthClear) btnAuthClear.addEventListener('click', () => {
+  clearAuthToken();
+  renderAuthStatus('Token eliminado.', false);
+});
+renderAuthStatus();
 
 // ─── Schemas de columnas ─────────────────────────────────────────────────────
 const SCHEMAS = {
@@ -2871,8 +2956,9 @@ document.getElementById('btnImport').addEventListener('click', async () => {
   if (!parsedDataset) { log('⚠️ Carga un archivo Excel primero.', '#f0ad4e'); return; }
   const userId   = document.getElementById('targetUserId').value;
   const clearOld = document.getElementById('clearExisting').checked;
-  const token    = localStorage.getItem('token') || sessionStorage.getItem('token') || '';
+  const token    = getAuthToken();
   if (!userId) { log('⚠️ Selecciona un usuario.', '#f0ad4e'); return; }
+  if (!token) { log('⚠️ Inicia sesion en el panel de autenticacion primero.', '#f0ad4e'); return; }
   log('📤 Enviando dataset a ' + FRONTEND + ' (usuario ' + userId + ')…', '#9cdcfe');
   try {
     const r = await fetch(FRONTEND + '/api/datasets/import', {
@@ -2892,8 +2978,9 @@ document.getElementById('btnBootstrap').addEventListener('click', async () => {
   const userId = document.getElementById('bootstrapUserId').value;
   const weeks  = Number(document.getElementById('bootstrapWeeks').value) || 24;
   const clear  = document.getElementById('bootstrapClear').checked;
-  const token  = localStorage.getItem('token') || sessionStorage.getItem('token') || '';
+  const token  = getAuthToken();
   if (!userId) { bLog('⚠️ Selecciona un usuario.'); return; }
+  if (!token) { bLog('⚠️ Inicia sesion en el panel de autenticacion primero.'); return; }
   bLog('⏳ Generando dataset sintético…');
   try {
     const r = await fetch(FRONTEND + '/api/datasets/bootstrap', {

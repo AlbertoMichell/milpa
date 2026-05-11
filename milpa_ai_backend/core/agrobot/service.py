@@ -2,23 +2,31 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional
 
-from .composer import compose_answer
-from .context_builder import build_context
-from .evidence import query_rag_for_message, should_query_rag
-from .intent import detect_intent, normalize_text
-from .recommender_bridge import maybe_generate_recommendation
 from .schemas import AgroBotRequest, AgroBotResponse
+from .intent import detect_intent, normalize_text
+from .context_builder import build_context
+from .composer import compose_answer
+from .evidence import query_rag_for_message, should_query_rag
+from .recommender_bridge import maybe_generate_recommendation
 
+
+_PARCEL_WIDE_INTENTS = {
+    "water_balance",
+    "temperature_status",
+    "wind_status",
+    "precipitation_status",
+    "air_humidity_status",
+    "light_status",
+    "climate_status",
+    "soil_condition",
+}
 
 _SINGLE_CROP_FALLBACK_INTENTS = {
     "crop_status",
     "unknown",
-    "water_balance",
     "harvest_date",
     "pest_or_disease",
     "fertilization",
-    "soil_condition",
-    "climate_risk",
 }
 
 
@@ -40,45 +48,23 @@ def _pick_health(context: Dict[str, Any], target_crop: Optional[Dict[str, Any]])
     return None
 
 
-def _resolve_mode(req: AgroBotRequest, intent, context: Dict[str, Any]) -> str:
-    if req.mode != "auto":
-        return req.mode
-    if intent.is_library:
-        return "biblioteca"
-    if not context.get("active_crops"):
-        return "biblioteca"
-    return "parcela"
-
-
-def _resolve_target_crop(context: Dict[str, Any], intent, mode: str) -> Optional[Dict[str, Any]]:
-    """
-    Regla central:
-    - En biblioteca no se usa cultivo activo para diagnosticar.
-    - En parcela, target_crop solo es explícito o fallback cuando existe exactamente un cultivo activo.
-    - Si hay varios cultivos activos y no se mencionó uno, no se toma el primero automáticamente.
-    """
-    active_crops = context.get("active_crops") or []
-    requested_active = context.get("requested_active_crop")
-    fallback_crop = context.get("fallback_crop")
-
-    if mode == "biblioteca":
-        context["target_crop"] = None
-        context["target_crop_source"] = "none"
-        # En biblioteca, preguntar historia/origen de un cultivo no activo no es conflicto.
-        if intent.is_library:
-            context["rag_conflict"] = False
-        return None
-
-    if requested_active:
-        context["target_crop"] = requested_active
+def _resolve_target_crop(context: Dict[str, Any], intent_name: str) -> Optional[Dict[str, Any]]:
+    explicit = context.get("target_crop")
+    if explicit:
         context["target_crop_source"] = "explicit"
-        return requested_active
+        return explicit
 
-    if len(active_crops) == 1 and intent.intent in _SINGLE_CROP_FALLBACK_INTENTS:
-        context["target_crop"] = fallback_crop
-        context["target_crop_source"] = "fallback_single_crop"
-        return fallback_crop
+    active_crops = context.get("active_crops") or []
+    fallback = context.get("fallback_crop")
 
+    if len(active_crops) == 1 and fallback:
+        # Con un solo cultivo, sí conviene responder de forma puntual.
+        if intent_name in _PARCEL_WIDE_INTENTS or intent_name in _SINGLE_CROP_FALLBACK_INTENTS:
+            context["target_crop"] = fallback
+            context["target_crop_source"] = "fallback_single_crop"
+            return fallback
+
+    # Con varios cultivos, no se toma el primero automáticamente.
     context["target_crop"] = None
     context["target_crop_source"] = "none"
     return None
@@ -91,9 +77,8 @@ def _build_context_payload(
 ) -> Dict[str, Any]:
     payload: Dict[str, Any] = {
         "active_crops_count": len(context.get("active_crops") or []),
-        "target_crop_source": context.get("target_crop_source", "none"),
+        "target_crop_source": context.get("target_crop_source"),
     }
-
     if target_crop:
         payload["sensors"] = {
             "soil_moisture": target_crop.get("soil_moisture"),
@@ -102,15 +87,18 @@ def _build_context_payload(
             "light": target_crop.get("light"),
             "precipitation": target_crop.get("precipitation"),
             "wind_speed": target_crop.get("wind_speed"),
+            "sensor_created_at": target_crop.get("sensor_created_at"),
         }
-
     if context.get("parcel_latest"):
         payload["parcel_latest"] = context.get("parcel_latest")
     if context.get("global_edaphology"):
         payload["global_edaphology"] = context.get("global_edaphology")
     if profile:
         payload["profile"] = profile
-
+    if context.get("nutrients_by_crop_id"):
+        payload["nutrients_by_crop_id"] = context.get("nutrients_by_crop_id")
+    if context.get("irrigation_by_crop_id"):
+        payload["irrigation_by_crop_id"] = context.get("irrigation_by_crop_id")
     return payload
 
 
@@ -130,15 +118,22 @@ def _build_target_crop_payload(target_crop: Optional[Dict[str, Any]]) -> Optiona
 async def respond(req: AgroBotRequest) -> AgroBotResponse:
     intent = detect_intent(req.message)
     warnings = []
-
     context = build_context(req.user_id, req.message)
-    mode = _resolve_mode(req, intent, context)
-    target_crop = _resolve_target_crop(context, intent, mode)
+    target_crop = _resolve_target_crop(context, intent.intent)
 
     if context.get("rag_conflict"):
         warnings.append("requested_crop_not_active")
     if not context.get("active_crops"):
         warnings.append("no_active_crops")
+    if intent.is_garbage:
+        warnings.append("low_confidence_input")
+
+    if req.mode != "auto":
+        mode = req.mode
+    elif intent.is_library or not context.get("active_crops"):
+        mode = "biblioteca"
+    else:
+        mode = "parcela"
 
     profile = _select_profile(context, target_crop)
     health = _pick_health(context, target_crop)
@@ -157,7 +152,7 @@ async def respond(req: AgroBotRequest) -> AgroBotResponse:
         if rag_payload.get("error"):
             warnings.append("rag_error")
         if rag_payload.get("insufficient_evidence"):
-            warnings.append(rag_payload.get("insufficient_reason") or "rag_insufficient")
+            warnings.append(str(rag_payload.get("insufficient_reason") or "rag_insufficient"))
 
     recommendation = await maybe_generate_recommendation(
         intent.intent,

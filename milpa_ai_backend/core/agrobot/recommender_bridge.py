@@ -9,11 +9,14 @@ from milpa_ai_backend.api.crops import RecommendationRequest, generate_recommend
 from milpa_ai_backend.core.logic.db import get_conn
 
 
-# AgroBot no debe insertar recomendaciones nuevas por saludos, estado general,
-# consultas de biblioteca ni preguntas hídricas generales. Esos casos se resuelven
-# con sensores + diagnóstico + action_hint en composer.py.
 _SKIP_INTENTS = {
     "water_balance",
+    "temperature_status",
+    "wind_status",
+    "precipitation_status",
+    "air_humidity_status",
+    "light_status",
+    "climate_status",
     "library_question",
     "garbage",
     "harvest_date",
@@ -34,57 +37,29 @@ def _model_to_dict(value: Any) -> Optional[Dict[str, Any]]:
     return None
 
 
-def get_recent_recommendation(
-    user_crop_id: int,
-    max_age_hours: int = 6,
-) -> Optional[Dict[str, Any]]:
-    """
-    Reutiliza una recomendación pendiente reciente para evitar duplicados.
-
-    La tabla actual no tiene columna `intent`, así que se reutiliza cualquier
-    recomendación pendiente reciente del mismo cultivo.
-    """
+def get_recent_recommendation(user_crop_id: int, max_age_hours: int = 6) -> Optional[Dict[str, Any]]:
     try:
         with get_conn() as conn:
             row = conn.execute(
                 """
-                SELECT
-                    id,
-                    user_crop_id,
-                    query_text,
-                    action,
-                    priority,
-                    detail_html,
-                    citations,
-                    status,
-                    faithfulness,
-                    created_at
+                SELECT id, user_crop_id, query_text, action, priority, detail_html,
+                       citations, status, faithfulness, created_at
                 FROM recommendations
                 WHERE user_crop_id = ?
                   AND status = 'pendiente'
                   AND created_at >= datetime('now', ?)
-                ORDER BY created_at DESC
+                ORDER BY datetime(created_at) DESC, id DESC
                 LIMIT 1
                 """,
                 (int(user_crop_id), f"-{int(max_age_hours)} hours"),
             ).fetchone()
     except Exception:
         return None
-
     if not row:
         return None
-
     cols = [
-        "id",
-        "user_crop_id",
-        "query_text",
-        "action",
-        "priority",
-        "detail_html",
-        "citations",
-        "status",
-        "faithfulness",
-        "created_at",
+        "id", "user_crop_id", "query_text", "action", "priority", "detail_html",
+        "citations", "status", "faithfulness", "created_at",
     ]
     return dict(zip(cols, row))
 
@@ -98,16 +73,12 @@ async def maybe_generate_recommendation(
         return None
     if intent_name in _SKIP_INTENTS:
         return None
-
     recent = get_recent_recommendation(int(target_crop_id), max_age_hours=max_age_hours)
     if recent:
         recent["source"] = "recent_pending"
         return recent
-
     try:
-        generated = await generate_recommendation(
-            RecommendationRequest(user_crop_id=int(target_crop_id), force=False)
-        )
+        generated = await generate_recommendation(RecommendationRequest(user_crop_id=int(target_crop_id), force=False))
         data = _model_to_dict(generated)
         if data:
             data["source"] = "generated"

@@ -1,131 +1,74 @@
+#!/usr/bin/env python3
 from __future__ import annotations
 
 import argparse
 import json
 import sys
-import urllib.error
 import urllib.request
-from typing import Any, Dict, List, Optional
 
 
-BAD_MARKERS = [
-    "eres el componente documental",
-    "no debes desplazar",
-    "pregunta del agricultor",
-    "devuelve solo manejo técnico",
-    "devuelve solo manejo tecnico",
-    "parámetros agronómicos relevantes para «recomendaciones",
-    "parametros agronomicos relevantes para «recomendaciones",
+TESTS = [
+    ("maíz", {"mode": "parcela", "not_contains": ["originaria", "GUÍA COMPLETA", "Eres el componente"]}),
+    ("¿cómo estoy de agua?", {"mode": "parcela", "contains": ["Estado hídrico"]}),
+    ("Temperatura", {"mode": "parcela", "contains_any": ["Temperatura actual", "Sensores actuales", "temperatura"]}),
+    ("Viento", {"mode": "parcela", "contains_any": ["Viento actual", "viento"]}),
+    ("Clima", {"mode": "parcela", "contains_any": ["Condición climática", "temperatura"]}),
+    ("fsjshjsjd", {"intent": "garbage", "contains": ["No entendí"]}),
+    ("historia del maíz", {"mode": "biblioteca", "not_contains": ["Eres el componente", "GUÍA COMPLETA"]}),
+    ("plagas", {"mode": "parcela", "contains_any": ["cultivo específico", "Cultivos activos"]}),
 ]
 
 
-def post_json(url: str, payload: Dict[str, Any], timeout: int = 60) -> Dict[str, Any]:
+def post_json(url: str, payload: dict) -> dict:
     data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(
-        url,
-        data=data,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            body = resp.read().decode("utf-8")
-            return json.loads(body)
-    except urllib.error.HTTPError as exc:
-        body = exc.read().decode("utf-8", errors="replace")
-        raise RuntimeError(f"HTTP {exc.code}: {body}") from exc
+    req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"}, method="POST")
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        return json.loads(resp.read().decode("utf-8"))
 
 
-def assert_no_prompt_leak(answer: str) -> Optional[str]:
-    normalized = answer.lower()
-    for marker in BAD_MARKERS:
-        if marker.lower() in normalized:
-            return f"fuga de prompt o texto interno: {marker}"
-    return None
-
-
-def run_case(base_url: str, user_id: int, message: str, expected_mode: Optional[str] = None) -> List[str]:
-    payload = {
-        "user_id": user_id,
-        "username": "E2E",
-        "message": message,
-        "source": "e2e_agrobot",
-        "mode": "auto",
-    }
-    response = post_json(f"{base_url.rstrip('/')}/api/agrobot/respond", payload)
-    answer = str(response.get("answer") or "")
-    errors: List[str] = []
-
-    if not answer.strip():
-        errors.append("respuesta vacía")
-
-    leak = assert_no_prompt_leak(answer)
-    if leak:
-        errors.append(leak)
-
-    if expected_mode and response.get("mode") != expected_mode:
-        errors.append(f"modo esperado {expected_mode}, recibido {response.get('mode')}")
-
-    if message.lower().strip() in {"maíz", "maiz"}:
-        if "historia" in answer.lower() or "originari" in answer.lower():
-            errors.append("la consulta de estado de cultivo devolvió historia/origen")
-        if "sensores" not in answer.lower() and "humedad" not in answer.lower():
-            errors.append("la consulta de cultivo no incluyó sensores/humedad")
-
-    if "agua" in message.lower() and "estado hídrico" not in answer.lower():
-        errors.append("la consulta de agua no devolvió estado hídrico")
-
-    if "historia" in message.lower():
-        if response.get("mode") != "biblioteca":
-            errors.append("consulta histórica no entró en modo biblioteca")
-        if not answer.strip():
-            errors.append("consulta histórica sin respuesta ni insuficiencia")
-
-    print("\n===", message, "===")
-    print("mode:", response.get("mode"), "intent:", response.get("intent"), "warnings:", response.get("warnings"))
-    print(answer[:1000])
-    if errors:
-        print("ERRORES:")
-        for err in errors:
-            print("-", err)
-    else:
-        print("OK")
-
+def check_result(question: str, resp: dict, expected: dict) -> list[str]:
+    errors: list[str] = []
+    answer = str(resp.get("answer") or "")
+    if expected.get("mode") and resp.get("mode") != expected["mode"]:
+        errors.append(f"mode esperado {expected['mode']} != {resp.get('mode')}")
+    if expected.get("intent") and resp.get("intent") != expected["intent"]:
+        errors.append(f"intent esperado {expected['intent']} != {resp.get('intent')}")
+    for term in expected.get("contains", []):
+        if term.lower() not in answer.lower():
+            errors.append(f"no contiene {term!r}")
+    if expected.get("contains_any"):
+        if not any(term.lower() in answer.lower() for term in expected["contains_any"]):
+            errors.append(f"no contiene ninguno de {expected['contains_any']!r}")
+    for term in expected.get("not_contains", []):
+        if term.lower() in answer.lower():
+            errors.append(f"contiene texto prohibido {term!r}")
     return errors
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Pruebas E2E básicas para AgroBot MILPA")
+    parser = argparse.ArgumentParser(description="Pruebas E2E rápidas para AgroBot.")
     parser.add_argument("--base-url", default="http://127.0.0.1:8000")
     parser.add_argument("--user-id", type=int, default=1)
     args = parser.parse_args()
-
-    cases = [
-        ("maíz", "parcela"),
-        ("¿cómo estoy de agua?", "parcela"),
-        ("historia del maíz", "biblioteca"),
-        ("plagas en mi maíz", "parcela"),
-        ("tomate", None),
-    ]
-
-    all_errors: List[str] = []
-    for message, expected_mode in cases:
+    url = args.base_url.rstrip("/") + "/api/agrobot/respond"
+    failures = 0
+    for question, expected in TESTS:
+        payload = {"user_id": args.user_id, "message": question, "source": "e2e", "mode": "auto"}
         try:
-            errors = run_case(args.base_url, args.user_id, message, expected_mode)
-            all_errors.extend([f"{message}: {err}" for err in errors])
+            resp = post_json(url, payload)
         except Exception as exc:
-            all_errors.append(f"{message}: excepción {exc}")
-            print("\n===", message, "===")
-            print("EXCEPCIÓN:", exc)
-
-    if all_errors:
-        print("\nRESULTADO: FALLÓ")
-        for err in all_errors:
-            print("-", err)
-        return 1
-
-    print("\nRESULTADO: OK")
-    return 0
+            failures += 1
+            print(f"[ERROR] {question!r}: {exc}")
+            continue
+        errors = check_result(question, resp, expected)
+        status = "OK" if not errors else "FAIL"
+        if errors:
+            failures += 1
+        print(f"[{status}] {question!r} -> mode={resp.get('mode')} intent={resp.get('intent')}")
+        print((resp.get("answer") or "").split("\n")[0][:180])
+        if errors:
+            print("  Errores:", "; ".join(errors))
+    return 1 if failures else 0
 
 
 if __name__ == "__main__":

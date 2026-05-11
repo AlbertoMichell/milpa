@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ingesta de datos MILPA</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body class="bg-light">
+  <main class="container py-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h1 class="h4 mb-2">Ingesta de datos MILPA</h1>
+        <p class="text-muted mb-4">
+          Esta página vive en el frontend (:4000), por eso puede usar el token del login y llamar a
+          <code>/api/datasets/import</code>. Reemplaza el flujo frágil desde <code>:8080/ui/ingesta</code>.
+        </p>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Usuario destino</label>
+            <select id="userSelect" class="form-select"></select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Archivo XLSX</label>
+            <input id="fileInput" type="file" class="form-control" accept=".xlsx,.xls" />
+          </div>
+          <div class="col-12">
+            <div class="form-check">
+              <input id="clearExisting" class="form-check-input" type="checkbox" checked />
+              <label for="clearExisting" class="form-check-label">Limpiar datos operacionales previos del usuario destino</label>
+            </div>
+          </div>
+          <div class="col-12 d-flex gap-2">
+            <button id="previewBtn" class="btn btn-outline-primary">Previsualizar</button>
+            <button id="importBtn" class="btn btn-success" disabled>Importar dataset</button>
+            <button id="bootstrapBtn" class="btn btn-outline-secondary">Generar demo desde sistema</button>
+          </div>
+        </div>
+
+        <hr />
+        <h2 class="h6">Resultado</h2>
+        <pre id="output" class="bg-dark text-light rounded p-3" style="min-height: 220px; white-space: pre-wrap"></pre>
+      </div>
+    </div>
+  </main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let parsedDataset = null;
+
+function getToken() {
+  return localStorage.getItem('token') || localStorage.getItem('milpa_token') || '';
+}
+
+function log(value) {
+  $('output').textContent = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+}
+
+async function api(path, options = {}) {
+  const token = getToken();
+  if (!token) throw new Error('No hay token en localStorage. Inicia sesión en el frontend primero.');
+  const res = await fetch(path, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      ...(options.headers || {})
+    }
+  });
+  const text = await res.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch (_) { data = text; }
+  if (!res.ok) throw new Error((data && data.error) || text || `HTTP ${res.status}`);
+  return data;
+}
+
+async function loadUsers() {
+  const users = await api('/api/datasets/users');
+  $('userSelect').innerHTML = users.map(u =>
+    `<option value="${u.id}">${u.username} — cultivos: ${u.crop_count}, lecturas: ${u.sensor_readings_count}</option>`
+  ).join('');
+}
+
+function sheetToJson(workbook, sheetName) {
+  const sheet = workbook.Sheets[sheetName];
+  if (!sheet) return [];
+  return XLSX.utils.sheet_to_json(sheet, { defval: null });
+}
+
+async function parseWorkbook(file) {
+  const buffer = await file.arrayBuffer();
+  const wb = XLSX.read(buffer, { type: 'array', cellDates: false });
+  const names = wb.SheetNames.reduce((acc, name) => {
+    acc[name.toLowerCase().trim()] = name;
+    return acc;
+  }, {});
+  const dataset = {
+    cultivos: sheetToJson(wb, names.cultivos || names.crops || 'cultivos'),
+    sensores: sheetToJson(wb, names.sensores || names.sensor_readings || 'sensores'),
+    global: sheetToJson(wb, names.global || names.global_readings || 'global'),
+  };
+  return dataset;
+}
+
+function validateDataset(dataset) {
+  const errors = [];
+  if (!dataset.cultivos?.length) errors.push('Falta hoja cultivos o está vacía.');
+  if (!dataset.sensores?.length) errors.push('Falta hoja sensores o está vacía.');
+  if (!dataset.global?.length) errors.push('Falta hoja global o está vacía.');
+  return errors;
+}
+
+$('previewBtn').addEventListener('click', async () => {
+  try {
+    const file = $('fileInput').files[0];
+    if (!file) throw new Error('Selecciona un archivo XLSX.');
+    parsedDataset = await parseWorkbook(file);
+    const errors = validateDataset(parsedDataset);
+    $('importBtn').disabled = Boolean(errors.length);
+    log({
+      ok: !errors.length,
+      errors,
+      resumen: {
+        cultivos: parsedDataset.cultivos.length,
+        sensores: parsedDataset.sensores.length,
+        global: parsedDataset.global.length,
+      },
+      muestra: {
+        cultivos: parsedDataset.cultivos.slice(0, 3),
+        sensores: parsedDataset.sensores.slice(0, 3),
+        global: parsedDataset.global.slice(0, 3),
+      }
+    });
+  } catch (err) {
+    $('importBtn').disabled = true;
+    log('ERROR: ' + err.message);
+  }
+});
+
+$('importBtn').addEventListener('click', async () => {
+  try {
+    if (!parsedDataset) throw new Error('Primero previsualiza un archivo.');
+    const payload = {
+      target_user_id: Number($('userSelect').value),
+      clear_existing: $('clearExisting').checked,
+      dataset: parsedDataset
+    };
+    const result = await api('/api/datasets/import', { method: 'POST', body: JSON.stringify(payload) });
+    log(result);
+  } catch (err) {
+    log('ERROR: ' + err.message);
+  }
+});
+
+$('bootstrapBtn').addEventListener('click', async () => {
+  try {
+    const payload = {
+      target_user_id: Number($('userSelect').value),
+      clear_existing: $('clearExisting').checked,
+      weeks: 24,
+      interval_days: 7
+    };
+    const result = await api('/api/datasets/bootstrap', { method: 'POST', body: JSON.stringify(payload) });
+    log(result);
+  } catch (err) {
+    log('ERROR: ' + err.message);
+  }
+});
+
+loadUsers().catch(err => log('ERROR cargando usuarios: ' + err.message));
+</script>
+</body>
+</html>
